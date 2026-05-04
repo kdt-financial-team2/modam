@@ -1,0 +1,304 @@
+openapi: 3.0.1
+
+info:
+  title: Couple Finance API
+  description: 커플 공동 금융 서비스 API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api
+
+tags:
+  - name: Auth
+  - name: Account
+  - name: Transaction
+  - name: Spend
+  - name: Savings
+  - name: Point
+  - name: Item
+  - name: Notification
+
+paths:
+
+  # =======================
+  # Auth
+  # =======================
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: 회원가입
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberResponse'
+        '400':
+          description: 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: 로그인
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  # =======================
+  # Account
+  # =======================
+  /accounts:
+    post:
+      tags: [Account]
+      summary: 계좌 생성
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+
+    get:
+      tags: [Account]
+      summary: 계좌 목록 조회
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountListResponse'
+
+  # =======================
+  # Transaction
+  # =======================
+  /transactions/deposit:
+    post:
+      tags: [Transaction]
+      summary: 입금
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+
+  /transactions/withdraw:
+    post:
+      tags: [Transaction]
+      summary: 출금
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+
+  # =======================
+  # Spend
+  # =======================
+  /spend:
+    get:
+      tags: [Spend]
+      summary: 소비 내역 조회
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpendListResponse'
+
+    post:
+      tags: [Spend]
+      summary: 소비 기록 작성
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpendResponse'
+
+  # =======================
+  # Notification
+  # =======================
+  /notifications:
+    get:
+      tags: [Notification]
+      summary: 알림 조회
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+
+components:
+
+  schemas:
+
+    # =======================
+    # Global Response
+    # =======================
+    GlobalResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        code:
+          type: string
+          nullable: true
+        message:
+          type: string
+        data:
+          nullable: true
+          oneOf:
+            - type: object
+            - type: array
+
+    SuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/GlobalResponse'
+
+    ErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/GlobalResponse'
+        - type: object
+          properties:
+            success:
+              example: false
+            code:
+              example: "ERROR"
+            message:
+              example: 실패했습니다.
+
+    # =======================
+    # Entity Schemas
+    # =======================
+    Member:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        userId:
+          type: string
+        email:
+          type: string
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: integer
+        acctNo:
+          type: string
+        bal:
+          type: number
+        availBal:
+          type: number
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        txType:
+          type: string
+        amt:
+          type: number
+        aftBal:
+          type: number
+
+    SpendRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        memo:
+          type: string
+        imgUrl:
+          type: string
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+        isRead:
+          type: string
+
+    # =======================
+    # Wrapped Responses
+    # =======================
+    MemberResponse:
+      allOf:
+        - $ref: '#/components/schemas/GlobalResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Member'
+
+    AccountResponse:
+      allOf:
+        - $ref: '#/components/schemas/GlobalResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Account'
+
+    AccountListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GlobalResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Account'
+
+    TransactionResponse:
+      allOf:
+        - $ref: '#/components/schemas/GlobalResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Transaction'
+
+    SpendResponse:
+      allOf:
+        - $ref: '#/components/schemas/GlobalResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/SpendRecord'
+
+    SpendListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GlobalResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/SpendRecord'
+
+    NotificationListResponse:
+      allOf:
+        - $ref: '#/components/schemas/GlobalResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Notification'
