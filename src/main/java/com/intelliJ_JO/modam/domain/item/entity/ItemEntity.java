@@ -1,4 +1,4 @@
-package com.intelliJ_JO.modam.domain.market.entity;
+package com.intelliJ_JO.modam.domain.item.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -6,23 +6,23 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "market")
+@Table(name = "item")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @SequenceGenerator(
-        name = "market_seq_generator",
-        sequenceName = "market_seq",
+        name = "item_seq_generator",
+        sequenceName = "item_seq",
         allocationSize = 1
 )
 
 
-public class MarketEntity {
+public class ItemEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "market_seq_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "item_seq_generator")
     private Long id;
 
     // 아이템 이름

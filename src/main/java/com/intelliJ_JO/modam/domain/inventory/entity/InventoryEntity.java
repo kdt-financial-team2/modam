@@ -1,7 +1,7 @@
 package com.intelliJ_JO.modam.domain.inventory.entity;
 
+import com.intelliJ_JO.modam.domain.item.entity.ItemEntity;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
-import com.intelliJ_JO.modam.domain.market.entity.MarketEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -30,7 +30,7 @@ public class InventoryEntity {
     // 아이템 (N:1)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false)
-    private Long itemId;
+    private ItemEntity itemId;
 
     // 적용 여부 (Y/N)
     @Column(name = "is_applied", nullable = false)
