@@ -1,0 +1,176 @@
+openapi: 3.0.1
+
+info:
+  title: Couple Finance API
+  description: 커플 공동 금융 서비스 API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api
+
+tags:
+  - name: Auth
+  - name: Notification
+  - name: Point
+  - name: Inventory
+  - name: Invite
+  - name: Analysis
+  - name: Spend
+  - name: Card
+  - name: Saving
+  - name: Transaction
+
+paths:
+
+  # =======================
+  # SIGNUP
+  # =======================
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: 회원가입
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - userId
+                - password
+                - email
+                - phoneNo
+                - agree
+              properties:
+                name:
+                  type: string
+                userId:
+                  type: string
+                password:
+                  type: string
+                email:
+                  type: string
+                phoneNo:
+                  type: string
+                agree:
+                  type: boolean
+                notif:
+                  type: boolean
+                  default: true
+                enFirst:
+                  type: string
+                enLast:
+                  type: string
+                address:
+                  type: string
+                bankName:
+                  type: string
+                persAcctNo:
+                  type: string
+
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  code:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: 회원가입 성공
+                  data:
+                    type: object
+                    properties:
+                      필요한 데이터 변수 이름:
+                        type: string
+                        example: 데이터 값
+
+  # =======================
+  # LOGIN
+  # =======================
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: 로그인
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - password
+              properties:
+                userId:
+                  type: string
+                password:
+                  type: string
+
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  code:
+                    type: string
+                    nullable: true
+                  message:
+                    type: string
+                    example: 로그인 성공
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+
+  # =======================
+  # LOGOUT
+  # =======================
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: 로그아웃
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+          description: Bearer access token
+
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  code:
+                    type: string
+                    example: "200"
+                  message:
+                    type: string
+                    example: 로그아웃 성공
+                  data:
+                    nullable: true
