@@ -1,5 +1,6 @@
 package com.intelliJ_JO.modam.domain.transaction.entity;
 
+import com.intelliJ_JO.modam.domain.card.entity.Card;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,7 +21,7 @@ public class Transaction {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "acc_id", nullable = false)
+    @JoinColumn(name = "acct_id", nullable = false)
     private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,7 +38,7 @@ public class Transaction {
     @Column(length = 50)
     private String category;
 
-    @Column(nullable = false)
+    @Column(name = "amt", nullable = false)
     private Long amount;
 
     @Column(name = "aft_bal", nullable = false)
