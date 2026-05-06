@@ -1,263 +1,393 @@
-openapi: 3.0.1
-
+openapi: 3.0.3
 info:
-  title: Couple Finance API
-  description: 커플 공동 금융 서비스 API
+  title: Modam API
+  description: 공통 응답 구조(GlobalResponse) 정의
   version: 1.0.0
 
 servers:
-  - url: http://localhost:8080/api
+  - url: http://localhost:8080
+    description: Local Server
 
 tags:
-  - name: Auth
-  - name: Account
-  - name: Transaction
-  - name: Spend
-  - name: Savings
-  - name: Point
-  - name: Item
-  - name: Notification
+  - name: Member
+    description: 회원 관련 API
 
 paths:
-
-  # =======================
-  # Auth
-  # =======================
-  /auth/signup:
+  /api/member:
     post:
-      tags: [Auth]
-      summary: 회원가입
+      tags:
+        - Member # 👉 Swagger에서 default 대신 이 이름으로 그룹핑됨
+      summary: 회원 생성
+      description: 새로운 회원을 생성한다.
+      operationId: createMember # 👉 각 API를 구분하는 고유 이름 (Swagger에서 중요)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberCreateRequest'
       responses:
         '200':
-          description: 성공
+          description: 회원 생성 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MemberResponse'
-        '400':
-          description: 실패
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /auth/login:
-    post:
-      tags: [Auth]
-      summary: 로그인
-      responses:
-        '200':
-          description: 성공
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-
-  # =======================
-  # Account
-  # =======================
-  /accounts:
-    post:
-      tags: [Account]
-      summary: 계좌 생성
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountResponse'
+                allOf:
+                  - $ref: '#/components/schemas/GlobalResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MemberCreateResponse'
 
     get:
-      tags: [Account]
-      summary: 계좌 목록 조회
+      tags:
+        - Member
+      summary: 회원 전체 조회
+      description: 모든 회원 목록을 조회한다.
+      operationId: getMembers
       responses:
         '200':
+          description: 회원 목록 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountListResponse'
+                $ref: '#/components/schemas/MemberListResponse'
 
-  # =======================
-  # Transaction
-  # =======================
-  /transactions/deposit:
-    post:
-      tags: [Transaction]
-      summary: 입금
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionResponse'
-
-  /transactions/withdraw:
-    post:
-      tags: [Transaction]
-      summary: 출금
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionResponse'
-
-  # =======================
-  # Spend
-  # =======================
-  /spend:
+  /api/member/{memberId}:
     get:
-      tags: [Spend]
-      summary: 소비 내역 조회
+      tags:
+        - Member
+      summary: 회원 단건 조회
+      description: 특정 회원을 조회한다.
+      operationId: getMemberById
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+
       responses:
         '200':
+          description: 회원 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpendListResponse'
+                allOf:
+                  - $ref: '#/components/schemas/GlobalResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Member'
 
-    post:
-      tags: [Spend]
-      summary: 소비 기록 작성
+    patch:
+      tags:
+        - Member
+      summary: 회원 수정
+      description: 회원 정보를 수정한다.
+      operationId: updateMember
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberUpdateRequest'
       responses:
         '200':
+          description: 회원 수정 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpendResponse'
+                allOf:
+                  - $ref: '#/components/schemas/GlobalResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MemberUpdateResponse'
 
-  # =======================
-  # Notification
-  # =======================
-  /notifications:
-    get:
-      tags: [Notification]
-      summary: 알림 조회
+    delete:
+      tags:
+        - Member
+      summary: 회원 삭제
+      description: 회원을 삭제한다. (soft delete 가능)
+      operationId: deleteMember
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
       responses:
         '200':
+          description: 회원 삭제 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NotificationListResponse'
-
+                allOf:
+                  - $ref: '#/components/schemas/GlobalResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "회원 삭제 완료"
 components:
-
   schemas:
-
-    # =======================
-    # Global Response
-    # =======================
     GlobalResponse:
       type: object
+      description: 모든 API에서 공통으로 사용하는 응답 DTO
       properties:
         success:
           type: boolean
+          description: 요청 성공 여부
+          example: true
         code:
           type: string
+          description: 응답 코드 (성공 시 null 가능)
+          example: "200"
           nullable: true
         message:
           type: string
+          description: 응답 메시지
+          example: "success"
         data:
+          description: 실제 응답 데이터 (제네릭 타입 → 각 API에서 별도 스키마로 지정)
           nullable: true
-          oneOf:
-            - type: object
-            - type: array
-
-    SuccessResponse:
-      allOf:
-        - $ref: '#/components/schemas/GlobalResponse'
-
-    ErrorResponse:
-      allOf:
-        - $ref: '#/components/schemas/GlobalResponse'
-        - type: object
-          properties:
-            success:
-              example: false
-            code:
-              example: "ERROR"
-            message:
-              example: 실패했습니다.
-
-    # =======================
-    # Entity Schemas
-    # =======================
+      required:
+        - success
+        - message
     Member:
       type: object
+      description: 회원 정보 응답 스키마
       properties:
         id:
           type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "홍길동"
+        userId:
+          type: string
+          example: "hong123"
+        email:
+          type: string
+          example: "hong@test.com"
+        agree:
+          type: boolean
+          example: true
+        notif:
+          type: boolean
+          example: true
+        enFirst:
+          type: string
+          example: "GilDong"
+        enLast:
+          type: string
+          example: "Hong"
+        bankName:
+          type: string
+          example: "국민은행"
+        persAcctNo:
+          type: string
+          example: "1234567890"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        active:
+          type: boolean
+          example: true
+        address:
+          type: string
+          example: "서울시 강남구"
+        role:
+          type: string
+          example: "USER"
+        phoneNo:
+          type: string
+          example: "01012345678"
+        profileImg:
+          type: string
+          nullable: true
+          example: "https://example.com/profile.jpg"
+      required:
+        - id
+        - name
+        - userId
+        - email
+        - agree
+        - notif
+        - enFirst
+        - enLast
+        - bankName
+        - persAcctNo
+        - createdAt
+        - updatedAt
+        - active
+        - address
+        - role
+        - phoneNo
+
+    MemberCreateRequest:
+      type: object
+      description: 회원 생성 요청 DTO
+      properties:
         name:
           type: string
         userId:
           type: string
+        pw:
+          type: string
         email:
           type: string
-
-    Account:
+        agree:
+          type: boolean
+        notif:
+          type: boolean
+        enFirst:
+          type: string
+        enLast:
+          type: string
+        bankName:
+          type: string
+        persAcctNo:
+          type: string
+        address:
+          type: string
+        phoneNo:
+          type: string
+        profileImg:
+          type: string
+        rrn:
+          type: string
+      required:
+        - name
+        - userId
+        - pw
+        - email
+        - agree
+        - notif
+        - enFirst
+        - enLast
+        - bankName
+        - persAcctNo
+        - address
+        - phoneNo
+        - rrn
+      
+    MemberCreateResponse:
       type: object
+      description: 회원 생성 응답 DTO (초기에는 name만 반환, 추후 확장 가능)
       properties:
-        id:
-          type: integer
-        acctNo:
+        name:
           type: string
-        bal:
-          type: number
-        availBal:
-          type: number
+          example: "홍길동"
+        result:
+          type: string
+          example: "홍길동님 계정이 생성 되었습니다. or 계정이 생성 되지 않았습니다."
+      required:
+        - name
 
-    Transaction:
+    MemberUpdateRequest:
       type: object
+      description: 회원 수정 요청 DTO (수정 가능한 필드만 포함)
       properties:
-        id:
-          type: integer
-        txType:
+        email:
           type: string
-        amt:
-          type: number
-        aftBal:
-          type: number
+          example: "new@test.com"
+        notif:
+          type: boolean
+          example: true
+        enFirst:
+          type: string
+          example: "GilDong"
+        enLast:
+          type: string
+          example: "Hong"
+        bankName:
+          type: string
+          example: "국민은행"
+        persAcctNo:
+          type: string
+          example: "1234567890"
+        address:
+          type: string
+          example: "서울시 서초구"
+        phoneNo:
+          type: string
+          example: "01012345678"
+        profileImg:
+          type: string
+          example: "https://example.com/profile.jpg"
+      # 부분 수정(PATCH) 형태를 고려하여 required는 지정하지 않음
+      required:
+        - email
+        - notif
+        - enFirst
+        - enLast
+        - bankName
+        - persAcctNo
+        - address
+        - phoneNo
+        - profileImg
 
-    SpendRecord:
+    MemberUpdateResponse:
       type: object
+      description: 회원 수정 응답 DTO (수정된 필드만 포함)
       properties:
-        id:
-          type: integer
-        memo:
+        email:
           type: string
-        imgUrl:
+          example: "new@test.com"
+        notif:
+          type: boolean
+          example: true
+        enFirst:
           type: string
-
-    Notification:
-      type: object
-      properties:
-        id:
-          type: integer
-        message:
+          example: "GilDong"
+        enLast:
           type: string
-        isRead:
+          example: "Hong"
+        bankName:
           type: string
+          example: "국민은행"
+        persAcctNo:
+          type: string
+          example: "1234567890"
+        address:
+          type: string
+          example: "서울시 서초구"
+        phoneNo:
+          type: string
+          example: "01012345678"
+        profileImg:
+          type: string
+          example: "https://example.com/profile.jpg"
+      # request와 동일하게 부분 응답이므로 required는 지정하지 않음
+      required:
+        - email
+        - notif
+        - enFirst
+        - enLast
+        - bankName
+        - persAcctNo
+        - address
+        - phoneNo
+        - profileImg
 
-    # =======================
-    # Wrapped Responses
-    # =======================
-    MemberResponse:
-      allOf:
-        - $ref: '#/components/schemas/GlobalResponse'
-        - type: object
-          properties:
-            data:
-              $ref: '#/components/schemas/Member'
+    
 
-    AccountResponse:
-      allOf:
-        - $ref: '#/components/schemas/GlobalResponse'
-        - type: object
-          properties:
-            data:
-              $ref: '#/components/schemas/Account'
-
-    AccountListResponse:
+    MemberListResponse:
       allOf:
         - $ref: '#/components/schemas/GlobalResponse'
         - type: object
@@ -265,40 +395,6 @@ components:
             data:
               type: array
               items:
-                $ref: '#/components/schemas/Account'
-
-    TransactionResponse:
-      allOf:
-        - $ref: '#/components/schemas/GlobalResponse'
-        - type: object
-          properties:
-            data:
-              $ref: '#/components/schemas/Transaction'
-
-    SpendResponse:
-      allOf:
-        - $ref: '#/components/schemas/GlobalResponse'
-        - type: object
-          properties:
-            data:
-              $ref: '#/components/schemas/SpendRecord'
-
-    SpendListResponse:
-      allOf:
-        - $ref: '#/components/schemas/GlobalResponse'
-        - type: object
-          properties:
-            data:
-              type: array
-              items:
-                $ref: '#/components/schemas/SpendRecord'
-
-    NotificationListResponse:
-      allOf:
-        - $ref: '#/components/schemas/GlobalResponse'
-        - type: object
-          properties:
-            data:
-              type: array
-              items:
-                $ref: '#/components/schemas/Notification'
+                $ref: '#/components/schemas/Member'
+              
+                
