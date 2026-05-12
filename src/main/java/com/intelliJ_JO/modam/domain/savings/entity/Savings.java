@@ -28,8 +28,10 @@ public class Savings {
     private Account account;
 
     // 저축 유형 (자유, 여행, 선물 등)
+    // 🔥 Enum으로 변경된 코드
+    @Enumerated(EnumType.STRING)
     @Column(name = "save_type", nullable = false, length = 50)
-    private String saveType;
+    private SaveType saveType;
 
     // 목표 금액
     @Column(name = "target_amt", nullable = false)
