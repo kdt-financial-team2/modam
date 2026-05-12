@@ -1,5 +1,6 @@
 package com.intelliJ_JO.modam.domain.card.entity;
 
+import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -43,8 +44,11 @@ public class Card {
     private String expiryDate;
 
     // 카드 상태 (ACTIVE, LOST, STOPPED)
-    @Column(length = 20, nullable = false)
-    private String status;
+    // 🔥 Enum으로 변경된 코드
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(name = "status", nullable = false, length = 20)
+    private CardStatus status = CardStatus.ACTIVE;
 
     // 발급 일시
     @CreationTimestamp
@@ -57,7 +61,7 @@ public class Card {
     private LocalDateTime updatedAt;
 
     // 💡 비즈니스 로직: 카드 상태(분실, 정지 등) 변경용 메서드
-    public void updateStatus(String status) {
+    public void updateStatus(CardStatus status) {
         this.status = status;
     }
 }

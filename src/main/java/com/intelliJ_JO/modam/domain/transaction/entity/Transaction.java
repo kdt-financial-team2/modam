@@ -1,5 +1,6 @@
 package com.intelliJ_JO.modam.domain.transaction.entity;
 
+import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.card.entity.Card;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import jakarta.persistence.*;
@@ -32,8 +33,10 @@ public class Transaction {
     @JoinColumn(name = "mem_id", nullable = false)
     private Member member;
 
+    // 🔥 Enum으로 변경된 코드
+    @Enumerated(EnumType.STRING)
     @Column(name = "tx_type", nullable = false, length = 20)
-    private String transactionType; // DEPOSIT, WITHDRAW, PAYMENT
+    private TransactionType txType; // DEPOSIT, WITHDRAW, PAYMENT
 
     @Column(length = 50)
     private String category;

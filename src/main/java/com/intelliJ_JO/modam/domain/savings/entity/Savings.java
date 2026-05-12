@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.domain.savings.entity;
 
 
+import com.intelliJ_JO.modam.domain.account.entity.Account;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -53,8 +54,10 @@ public class Savings {
     private Long autoAmount;
 
     // 자동이체 주기 (매일, 매주, 매월 등 - NULL 허용)
+    // 🔥 Enum으로 변경된 코드
+    @Enumerated(EnumType.STRING)
     @Column(name = "auto_cycle", length = 20)
-    private String autoCycle;
+    private AutoCycle autoCycle;
 
     // 목표 생성 일시
     @CreationTimestamp
