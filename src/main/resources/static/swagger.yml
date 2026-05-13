@@ -148,7 +148,7 @@ paths:
   /api/accounts:
     post:
       tags: [Account]
-      summary: 모임 통장 개설
+      summary: 계좌 개설 (개인/모임 통장)
       operationId: createAccount
       requestBody:
         required: true
@@ -172,7 +172,7 @@ paths:
   /api/accounts/{accountId}:
     get:
       tags: [Account]
-      summary: 모임 통장 단건 조회
+      summary: 계좌 단건 조회
       operationId: getAccount
       parameters:
         - $ref: '#/components/parameters/accountIdPath'
@@ -191,7 +191,7 @@ paths:
 
     patch:
       tags: [Account]
-      summary: 모임 통장 정보 수정
+      summary: 계좌 정보 수정
       operationId: updateAccount
       parameters:
         - $ref: '#/components/parameters/accountIdPath'
@@ -216,7 +216,7 @@ paths:
 
     delete:
       tags: [Account]
-      summary: 모임 통장 해지 (status → CLOSED)
+      summary: 계좌 해지 (status → CLOSED)
       operationId: closeAccount
       parameters:
         - $ref: '#/components/parameters/accountIdPath'
