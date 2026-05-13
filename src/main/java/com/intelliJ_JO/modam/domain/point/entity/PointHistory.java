@@ -25,8 +25,10 @@ public class PointHistory {
     private Member member;
 
     // 구분 (EARN, USE)
-    @Column(nullable = false, length = 10)
-    private String type;
+    // 🔥 Enum으로 변경된 코드
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private PointType type;
 
     // 변동 포인트
     @Column(name = "amt", nullable = false)

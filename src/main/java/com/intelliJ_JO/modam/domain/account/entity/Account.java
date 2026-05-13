@@ -28,9 +28,11 @@ public class Account {
     private String passwordHash;
 
     // 계좌 상태 (ACTIVE, FREEZE, CLOSED) - 기본값 'ACTIVE'
+    // 🔥 Enum으로 변경된 코드
+    @Enumerated(EnumType.STRING)
     @Builder.Default
-    @Column(length = 20, nullable = false)
-    private String status = "ACTIVE";
+    @Column(name = "status", nullable = false, length = 20)
+    private AccountStatus status = AccountStatus.ACTIVE;
 
     // 원장 총 잔액 - 기본값 0
     @Builder.Default

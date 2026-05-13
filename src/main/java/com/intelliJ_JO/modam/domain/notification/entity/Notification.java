@@ -26,8 +26,10 @@ public class Notification {
     private Member member;
 
     // 알림 종류 (DEPOSIT, LIMIT 등)
-    @Column(name = "noti_type", nullable = false, length = 20)
-    private String notiType;
+    // 🔥 Enum으로 변경된 코드
+    @Enumerated(EnumType.STRING)
+    @Column(name = "noti_type", nullable = false, length = 30)
+    private NotificationType notiType;
 
     // 알림 내용
     @Column(length = 500, nullable = false)

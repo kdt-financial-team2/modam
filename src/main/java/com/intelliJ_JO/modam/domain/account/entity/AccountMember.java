@@ -36,9 +36,11 @@ public class AccountMember {
     private String agreeClose = "N";
 
     // 초대 상태 (WAIT, ACCEPT, REJECT / 기본값 'WAIT')
+    // 🔥 Enum으로 변경된 코드
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     @Column(name = "inv_status", nullable = false, length = 20)
-    private String inviteStatus = "WAIT";
+    private InviteStatus inviteStatus = InviteStatus.WAIT;
 
     // 총 입금 누적액 (비고란 요건 반영: 기본값 0)
     @Builder.Default
@@ -57,7 +59,7 @@ public class AccountMember {
 
     // 💡 비즈니스 로직: 초대 수락, 입금 누적액 증가, 해지 동의
     public void acceptInvite() {
-        this.inviteStatus = "ACCEPT";
+        this.inviteStatus = InviteStatus.ACCEPT;
     }
 
     public void addDeposit(Long amount) {
