@@ -1,4 +1,4 @@
-package com.intelliJ_JO.modam.domain.account.dto.response;
+package com.intelliJ_JO.modam.domain.account.dto;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import lombok.Getter;

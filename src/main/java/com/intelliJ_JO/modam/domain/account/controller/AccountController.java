@@ -1,10 +1,10 @@
 package com.intelliJ_JO.modam.domain.account.controller;
 
-import com.intelliJ_JO.modam.domain.account.dto.request.AccountCreateRequestDto;
-import com.intelliJ_JO.modam.domain.account.dto.request.AccountMemberAddRequestDto;
-import com.intelliJ_JO.modam.domain.account.dto.request.AccountUpdateRequestDto;
-import com.intelliJ_JO.modam.domain.account.dto.response.AccountMemberResponseDto;
-import com.intelliJ_JO.modam.domain.account.dto.response.AccountResponseDto;
+import com.intelliJ_JO.modam.domain.account.dto.AccountCreateRequestDto;
+import com.intelliJ_JO.modam.domain.account.dto.AccountMemberAddRequestDto;
+import com.intelliJ_JO.modam.domain.account.dto.AccountUpdateRequestDto;
+import com.intelliJ_JO.modam.domain.account.dto.AccountMemberResponseDto;
+import com.intelliJ_JO.modam.domain.account.dto.AccountResponseDto;
 import com.intelliJ_JO.modam.domain.account.service.AccountService;
 import com.intelliJ_JO.modam.global.response.GlobalResponse;
 import jakarta.validation.Valid;

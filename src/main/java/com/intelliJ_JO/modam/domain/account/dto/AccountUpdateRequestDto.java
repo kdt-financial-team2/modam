@@ -1,4 +1,4 @@
-package com.intelliJ_JO.modam.domain.account.dto.request;
+package com.intelliJ_JO.modam.domain.account.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

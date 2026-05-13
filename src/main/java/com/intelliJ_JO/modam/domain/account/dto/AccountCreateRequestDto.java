@@ -1,4 +1,4 @@
-package com.intelliJ_JO.modam.domain.account.dto.request;
+package com.intelliJ_JO.modam.domain.account.dto;
 
 import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import jakarta.validation.constraints.NotNull;
