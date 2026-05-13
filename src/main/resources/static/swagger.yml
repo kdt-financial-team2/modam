@@ -256,6 +256,57 @@ paths:
                         items:
                           $ref: '#/components/schemas/AccountMemberResponse'
 
+    post:
+      tags: [Account]
+      summary: 모임 통장 파트너 초대 (최대 2명)
+      operationId: inviteMember
+      parameters:
+        - $ref: '#/components/parameters/accountIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountMemberAddRequest'
+      responses:
+        '200':
+          description: 초대 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/GlobalResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AccountMemberResponse'
+
+  /api/accounts/{accountId}/members/{accountMemberId}/accept:
+    patch:
+      tags: [Account]
+      summary: 모임 통장 초대 수락
+      operationId: acceptInvite
+      parameters:
+        - $ref: '#/components/parameters/accountIdPath'
+        - name: accountMemberId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 초대 수락 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/GlobalResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AccountMemberResponse'
+
   # ── Card ────────────────────────────────────────────────────
   /api/cards:
     post:
@@ -1031,6 +1082,11 @@ components:
           format: int64
           example: 1
           description: 계좌 개설 회원 ID
+        accountType:
+          type: string
+          example: "GROUP"
+          enum: [PERSONAL, GROUP]
+          description: "계좌 유형 (PERSONAL: 개인 계좌, GROUP: 모임 통장)"
         password:
           type: string
           nullable: true
@@ -1051,6 +1107,18 @@ components:
           type: string
           nullable: true
           example: "급여"
+      required:
+        - memberId
+        - accountType
+
+    AccountMemberAddRequest:
+      type: object
+      properties:
+        memberId:
+          type: integer
+          format: int64
+          example: 2
+          description: 초대할 회원 ID
       required:
         - memberId
 
@@ -1085,6 +1153,10 @@ components:
         accountNumber:
           type: string
           example: "A1B2C3D4E5F6G7H8"
+        accountType:
+          type: string
+          example: "GROUP"
+          enum: [PERSONAL, GROUP]
         status:
           type: string
           example: "ACTIVE"
@@ -1548,7 +1620,7 @@ components:
           format: int64
           nullable: true
           description: 카드 결제 시에만 포함
-        transactionType:
+        txType:
           type: string
           example: "DEPOSIT"
           enum: [DEPOSIT, WITHDRAW, PAYMENT]
@@ -1567,7 +1639,7 @@ components:
       required:
         - accountId
         - memberId
-        - transactionType
+        - txType
         - amount
 
     TransactionResponse:
@@ -1577,7 +1649,7 @@ components:
           type: integer
           format: int64
           example: 1
-        transactionType:
+        txType:
           type: string
           example: "PAYMENT"
           enum: [DEPOSIT, WITHDRAW, PAYMENT]
