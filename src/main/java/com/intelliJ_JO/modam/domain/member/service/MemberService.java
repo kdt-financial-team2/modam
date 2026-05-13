@@ -14,7 +14,7 @@ import java.util.List;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public MemberCreateResponse createMember(MemberCreateRequest request) {
         Member member = Member.builder()
