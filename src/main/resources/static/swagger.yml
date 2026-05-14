@@ -848,7 +848,7 @@ paths:
         - 출금/결제 시 잔액 부족이면 400 반환
       operationId: createTransaction
       security:
-        - BearerAuth: []
+        - SessionAuth: []
       requestBody:
         required: true
         content:
@@ -919,11 +919,11 @@ paths:
 components:
 
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: "JWT 인증 토큰 (Authorization: Bearer <token>)"
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+      description: "세션 기반 인증 (Spring Security formLogin, JSESSIONID 쿠키)"
 
   parameters:
     memberIdPath:
@@ -1633,6 +1633,10 @@ components:
           type: integer
           format: int64
           example: 1
+        memberId:
+          type: integer
+          format: int64
+          example: 2
         cardId:
           type: integer
           format: int64
@@ -1658,6 +1662,7 @@ components:
           example: "식비"
       required:
         - accountId
+        - memberId
         - txType
         - amount
 

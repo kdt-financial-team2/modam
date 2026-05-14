@@ -34,13 +34,15 @@ public class TransactionService {
     private final CardRepository cardRepository;
 
     @Transactional
-    public TransactionResponseDto createTransaction(TransactionRequestDto request, Long memberId) {
+    public TransactionResponseDto createTransaction(TransactionRequestDto request) {
+        Long memberId = request.getMemberId();
+
         Account account = accountRepository.findById(request.getAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다."));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        // 인증된 사용자가 해당 계좌의 구성원인지 검증
+        // 요청한 회원이 해당 계좌의 구성원(ACCEPT)인지 검증
         accountMemberRepository.findByAccountIdAndMemberId(request.getAccountId(), memberId)
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
                 .orElseThrow(() -> new IllegalArgumentException("해당 계좌에 대한 접근 권한이 없습니다."));
