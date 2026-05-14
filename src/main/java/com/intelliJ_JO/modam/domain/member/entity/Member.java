@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 @Entity // JPA 엔티티 선언
 @Table(name = "member") // 테이블 이름 지정
 @Getter // getter 자동 생성
-@NoArgsConstructor // 기본 생성자 생성
-@AllArgsConstructor // 전체 생성자 생성
-@Builder // 빌더 패턴 적용
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class Member {
 
     @Id // PK 설정
