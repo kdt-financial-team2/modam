@@ -842,7 +842,13 @@ paths:
     post:
       tags: [Transaction]
       summary: 거래 내역 생성 (입금/출금/결제)
+      description: |
+        JWT 인증 필요. 인증 토큰에서 회원 정보를 추출하므로 요청 본문에 memberId 불필요.
+        - PAYMENT 타입인 경우 cardId 필수
+        - 출금/결제 시 잔액 부족이면 400 반환
       operationId: createTransaction
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -860,12 +866,19 @@ paths:
                   - type: object
                     properties:
                       data:
-                        nullable: true
+                        $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: 잘못된 요청 (잔액 부족, PAYMENT인데 cardId 없음, 카드 소유권 불일치 등)
+        '401':
+          description: 인증 토큰 없음 또는 만료
+        '403':
+          description: 해당 계좌에 대한 접근 권한 없음
 
   /api/transactions/{accountId}:
     get:
       tags: [Transaction]
       summary: 거래 내역 조회 (무한 스크롤 – No-offset)
+      description: ID 내림차순으로 정렬. lastTransactionId를 커서로 사용하는 커서 기반 페이지네이션.
       operationId: getTransactions
       parameters:
         - $ref: '#/components/parameters/accountIdPath'
@@ -897,11 +910,20 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: 존재하지 않는 계좌 ID
 
 # ─────────────────────────────────────────────────────────────
 # COMPONENTS
 # ─────────────────────────────────────────────────────────────
 components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "JWT 인증 토큰 (Authorization: Bearer <token>)"
 
   parameters:
     memberIdPath:
@@ -1611,15 +1633,11 @@ components:
           type: integer
           format: int64
           example: 1
-        memberId:
-          type: integer
-          format: int64
-          example: 2
         cardId:
           type: integer
           format: int64
           nullable: true
-          description: 카드 결제 시에만 포함
+          description: "카드 결제 시에만 포함 (txType=PAYMENT 이면 필수)"
         txType:
           type: string
           example: "DEPOSIT"
@@ -1628,6 +1646,8 @@ components:
           type: integer
           format: int64
           example: 30000
+          minimum: 1
+          description: 거래 금액 (0보다 커야 함)
         merchantName:
           type: string
           nullable: true
@@ -1638,7 +1658,6 @@ components:
           example: "식비"
       required:
         - accountId
-        - memberId
         - txType
         - amount
 
