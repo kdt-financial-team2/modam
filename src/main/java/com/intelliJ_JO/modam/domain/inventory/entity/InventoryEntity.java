@@ -5,7 +5,6 @@ import com.intelliJ_JO.modam.domain.item.entity.ItemEntity;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.Builder.Default;
 
 import java.time.LocalDateTime;
 
