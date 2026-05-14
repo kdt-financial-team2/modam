@@ -27,8 +27,12 @@ public class Account {
     @Column(name = "pw_hash", length = 255)
     private String passwordHash;
 
+    // 계좌 유형 (PERSONAL: 개인, GROUP: 모임 통장)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "acct_type", nullable = false, length = 20)
+    private AccountType accountType;
+
     // 계좌 상태 (ACTIVE, FREEZE, CLOSED) - 기본값 'ACTIVE'
-    // 🔥 Enum으로 변경된 코드
     @Enumerated(EnumType.STRING)
     @Builder.Default
     @Column(name = "status", nullable = false, length = 20)
@@ -74,9 +78,21 @@ public class Account {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // 💡 비즈니스 로직 예시: 잔액 업데이트 메서드
     public void updateBalance(Long amount) {
         this.balance += amount;
         this.availableBalance += amount;
+    }
+
+    public void updateDetails(String deliveryAddress, String jobInfo,
+                              String tradePurpose, String fundSource, Long spendLimitAmount) {
+        if (deliveryAddress != null) this.deliveryAddress = deliveryAddress;
+        if (jobInfo != null) this.jobInfo = jobInfo;
+        if (tradePurpose != null) this.tradePurpose = tradePurpose;
+        if (fundSource != null) this.fundSource = fundSource;
+        if (spendLimitAmount != null) this.spendLimitAmount = spendLimitAmount;
+    }
+
+    public void close() {
+        this.status = AccountStatus.CLOSED;
     }
 }
