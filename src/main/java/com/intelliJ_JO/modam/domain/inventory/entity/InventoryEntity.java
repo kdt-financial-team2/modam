@@ -5,6 +5,8 @@ import com.intelliJ_JO.modam.domain.item.entity.ItemEntity;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.Builder.Default;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -43,6 +45,7 @@ public class InventoryEntity {
     // 적용 상태 (APPLIED, NOT_APPLIED)
     @Enumerated(EnumType.STRING)
     @Column(name = "apply_status", nullable = false)
+    @Builder.Default
     private ApplyStatus applyStatus = ApplyStatus.NOT_APPLIED;
 
     // 생성일

@@ -61,6 +61,7 @@ public class ItemEntity {
     // =========================================================
     @Enumerated(EnumType.STRING)
     @Column(name = "is_active", nullable = false)
+    @Builder.Default
     private ItemStatus isActive = ItemStatus.ACTIVE;
 
     // ==============================
