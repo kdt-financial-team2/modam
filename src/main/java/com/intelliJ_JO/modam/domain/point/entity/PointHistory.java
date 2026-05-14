@@ -142,30 +142,4 @@ public class PointHistory {
         this.amt = -point;
     }
 
-    // =========================================
-    // 🔥 저축 목표 달성 포인트 지급 예시
-    //
-    // Savings 테이블에서:
-    // curr_amt >= target_amt
-    // 조건 만족 시 포인트 지급 가능
-    //
-    // ex)
-    //
-    // if (savings.getCurrAmt() >= savings.getTargetAmt()) {
-    //
-    //     Point point = Point.builder()
-    //             .member(member)
-    //             .type(PointType.SAVE)
-    //             .amt(3000)
-    //             .aftBal(15000)
-    //             .descrip("저축 목표 달성 보상")
-    //             .build();
-    //
-    //     pointRepository.save(point);
-    // }
-    //
-    // 의미:
-    // +3000 포인트 지급 후
-    // 최종 포인트 잔액이 15000 상태 저장
-    // =========================================
 }
