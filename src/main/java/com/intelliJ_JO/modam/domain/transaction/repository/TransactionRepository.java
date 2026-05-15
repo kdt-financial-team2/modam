@@ -10,10 +10,9 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    // 💡 [무한 스크롤용 1] 처음 화면 진입 시 (가장 최근 내역 10개 호출)
-    List<Transaction> findByAccountIdOrderByCreatedAtDesc(Long accountId, Pageable pageable);
+    // [무한 스크롤용 1] 처음 화면 진입 시 — 가장 최근 ID 순으로 size개 반환
+    List<Transaction> findByAccountIdOrderByIdDesc(Long accountId, Pageable pageable);
 
-    // 💡 [무한 스크롤용 2] 스크롤을 내렸을 때 (마지막으로 본 ID보다 더 옛날 데이터 10개 호출)
-    // "이 계좌의 거래 내역 중, 방금 본 마지막 거래ID(lastTransactionId)보다 작은(이전) 것들을 최신순으로 가져와!"
-    List<Transaction> findByAccountIdAndIdLessThanOrderByCreatedAtDesc(Long accountId, Long lastTransactionId, Pageable pageable);
+    // [무한 스크롤용 2] 스크롤 시 — lastTransactionId보다 작은(이전) 거래를 ID 내림차순으로 반환
+    List<Transaction> findByAccountIdAndIdLessThanOrderByIdDesc(Long accountId, Long lastTransactionId, Pageable pageable);
 }

@@ -13,6 +13,8 @@ tags:
     description: 회원 관련 API
   - name: Account
     description: 모임 통장(계좌) 관련 API
+  - name: Invite
+    description: 모임 통장 초대 관련 API
   - name: Card
     description: 카드 관련 API
   - name: Comment
@@ -256,8 +258,10 @@ paths:
                         items:
                           $ref: '#/components/schemas/AccountMemberResponse'
 
+  # ── Invite ──────────────────────────────────────────────────
+  /api/invites/accounts/{accountId}:
     post:
-      tags: [Account]
+      tags: [Invite]
       summary: 모임 통장 파트너 초대 (최대 2명)
       operationId: inviteMember
       parameters:
@@ -267,7 +271,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountMemberAddRequest'
+              $ref: '#/components/schemas/InviteRequest'
       responses:
         '200':
           description: 초대 성공
@@ -279,15 +283,16 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/AccountMemberResponse'
+                        $ref: '#/components/schemas/InviteResponse'
+        '400':
+          description: 잘못된 요청 (개인 계좌, 최대 인원 초과, 중복 초대)
 
-  /api/accounts/{accountId}/members/{accountMemberId}/accept:
+  /api/invites/{accountMemberId}/accept:
     patch:
-      tags: [Account]
+      tags: [Invite]
       summary: 모임 통장 초대 수락
       operationId: acceptInvite
       parameters:
-        - $ref: '#/components/parameters/accountIdPath'
         - name: accountMemberId
           in: path
           required: true
@@ -305,7 +310,9 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/AccountMemberResponse'
+                        $ref: '#/components/schemas/InviteResponse'
+        '400':
+          description: 존재하지 않는 초대 정보
 
   # ── Card ────────────────────────────────────────────────────
   /api/cards:
@@ -842,7 +849,13 @@ paths:
     post:
       tags: [Transaction]
       summary: 거래 내역 생성 (입금/출금/결제)
+      description: |
+        JWT 인증 필요. 인증 토큰에서 회원 정보를 추출하므로 요청 본문에 memberId 불필요.
+        - PAYMENT 타입인 경우 cardId 필수
+        - 출금/결제 시 잔액 부족이면 400 반환
       operationId: createTransaction
+      security:
+        - SessionAuth: []
       requestBody:
         required: true
         content:
@@ -860,12 +873,19 @@ paths:
                   - type: object
                     properties:
                       data:
-                        nullable: true
+                        $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: 잘못된 요청 (잔액 부족, PAYMENT인데 cardId 없음, 카드 소유권 불일치 등)
+        '401':
+          description: 인증 토큰 없음 또는 만료
+        '403':
+          description: 해당 계좌에 대한 접근 권한 없음
 
   /api/transactions/{accountId}:
     get:
       tags: [Transaction]
       summary: 거래 내역 조회 (무한 스크롤 – No-offset)
+      description: ID 내림차순으로 정렬. lastTransactionId를 커서로 사용하는 커서 기반 페이지네이션.
       operationId: getTransactions
       parameters:
         - $ref: '#/components/parameters/accountIdPath'
@@ -897,11 +917,20 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: 존재하지 않는 계좌 ID
 
 # ─────────────────────────────────────────────────────────────
 # COMPONENTS
 # ─────────────────────────────────────────────────────────────
 components:
+
+  securitySchemes:
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+      description: "세션 기반 인증 (Spring Security formLogin, JSESSIONID 쿠키)"
 
   parameters:
     memberIdPath:
@@ -1111,17 +1140,6 @@ components:
         - memberId
         - accountType
 
-    AccountMemberAddRequest:
-      type: object
-      properties:
-        memberId:
-          type: integer
-          format: int64
-          example: 2
-          description: 초대할 회원 ID
-      required:
-        - memberId
-
     AccountUpdateRequest:
       type: object
       properties:
@@ -1200,6 +1218,41 @@ components:
           type: integer
           format: int64
           example: 100000
+
+    # ── Invite ─────────────────────────────────────────────────
+    InviteRequest:
+      type: object
+      properties:
+        memberId:
+          type: integer
+          format: int64
+          example: 2
+          description: 초대할 회원 ID
+      required:
+        - memberId
+
+    InviteResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        memberId:
+          type: integer
+          format: int64
+          example: 2
+        memberName:
+          type: string
+          example: "홍길동"
+        inviteStatus:
+          type: string
+          example: "WAIT"
+          enum: [WAIT, ACCEPT, REJECT]
+        totalDeposit:
+          type: integer
+          format: int64
+          example: 0
 
     # ── Card ───────────────────────────────────────────────────
     CardCreateRequest:
@@ -1619,7 +1672,7 @@ components:
           type: integer
           format: int64
           nullable: true
-          description: 카드 결제 시에만 포함
+          description: "카드 결제 시에만 포함 (txType=PAYMENT 이면 필수)"
         txType:
           type: string
           example: "DEPOSIT"
@@ -1628,6 +1681,8 @@ components:
           type: integer
           format: int64
           example: 30000
+          minimum: 1
+          description: 거래 금액 (0보다 커야 함)
         merchantName:
           type: string
           nullable: true

@@ -1,4 +1,4 @@
-package com.intelliJ_JO.modam.domain.transaction.dto.response;
+package com.intelliJ_JO.modam.domain.transaction.dto;
 
 import com.intelliJ_JO.modam.domain.transaction.entity.Transaction;
 import lombok.Getter;
