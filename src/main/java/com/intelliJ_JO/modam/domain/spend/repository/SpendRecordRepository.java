@@ -1,17 +1,23 @@
 package com.intelliJ_JO.modam.domain.spend.repository;
 
 import com.intelliJ_JO.modam.domain.spend.entity.SpendRecord;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface SpendRecordRepository extends JpaRepository<SpendRecord, Long> {
 
-    // 거래 ID로 소비 기록 단건 조회 (거래 1건당 소비 기록 1건)
     Optional<SpendRecord> findByTransactionId(Long transactionId);
 
-    // 동일 거래에 소비 기록이 이미 존재하는지 중복 확인
     boolean existsByTransactionId(Long transactionId);
+
+    // 계좌별 소비 기록 목록 (무한 스크롤 - 처음)
+    List<SpendRecord> findByTransaction_AccountIdOrderByIdDesc(Long accountId, Pageable pageable);
+
+    // 계좌별 소비 기록 목록 (무한 스크롤 - 이후)
+    List<SpendRecord> findByTransaction_AccountIdAndIdLessThanOrderByIdDesc(Long accountId, Long lastRecordId, Pageable pageable);
 }
