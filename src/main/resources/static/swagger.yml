@@ -13,6 +13,8 @@ tags:
     description: 회원 관련 API
   - name: Account
     description: 모임 통장(계좌) 관련 API
+  - name: Invite
+    description: 모임 통장 초대 관련 API
   - name: Card
     description: 카드 관련 API
   - name: Comment
@@ -256,8 +258,10 @@ paths:
                         items:
                           $ref: '#/components/schemas/AccountMemberResponse'
 
+  # ── Invite ──────────────────────────────────────────────────
+  /api/invites/accounts/{accountId}:
     post:
-      tags: [Account]
+      tags: [Invite]
       summary: 모임 통장 파트너 초대 (최대 2명)
       operationId: inviteMember
       parameters:
@@ -267,7 +271,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountMemberAddRequest'
+              $ref: '#/components/schemas/InviteRequest'
       responses:
         '200':
           description: 초대 성공
@@ -279,15 +283,16 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/AccountMemberResponse'
+                        $ref: '#/components/schemas/InviteResponse'
+        '400':
+          description: 잘못된 요청 (개인 계좌, 최대 인원 초과, 중복 초대)
 
-  /api/accounts/{accountId}/members/{accountMemberId}/accept:
+  /api/invites/{accountMemberId}/accept:
     patch:
-      tags: [Account]
+      tags: [Invite]
       summary: 모임 통장 초대 수락
       operationId: acceptInvite
       parameters:
-        - $ref: '#/components/parameters/accountIdPath'
         - name: accountMemberId
           in: path
           required: true
@@ -305,7 +310,9 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/AccountMemberResponse'
+                        $ref: '#/components/schemas/InviteResponse'
+        '400':
+          description: 존재하지 않는 초대 정보
 
   # ── Card ────────────────────────────────────────────────────
   /api/cards:
@@ -1133,17 +1140,6 @@ components:
         - memberId
         - accountType
 
-    AccountMemberAddRequest:
-      type: object
-      properties:
-        memberId:
-          type: integer
-          format: int64
-          example: 2
-          description: 초대할 회원 ID
-      required:
-        - memberId
-
     AccountUpdateRequest:
       type: object
       properties:
@@ -1222,6 +1218,41 @@ components:
           type: integer
           format: int64
           example: 100000
+
+    # ── Invite ─────────────────────────────────────────────────
+    InviteRequest:
+      type: object
+      properties:
+        memberId:
+          type: integer
+          format: int64
+          example: 2
+          description: 초대할 회원 ID
+      required:
+        - memberId
+
+    InviteResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        memberId:
+          type: integer
+          format: int64
+          example: 2
+        memberName:
+          type: string
+          example: "홍길동"
+        inviteStatus:
+          type: string
+          example: "WAIT"
+          enum: [WAIT, ACCEPT, REJECT]
+        totalDeposit:
+          type: integer
+          format: int64
+          example: 0
 
     # ── Card ───────────────────────────────────────────────────
     CardCreateRequest:
