@@ -15,6 +15,9 @@ public class TransactionRequestDto {
     @NotNull(message = "계좌 ID는 필수입니다.")
     private Long accountId;
 
+    @NotNull(message = "사용자 ID는 필수입니다.")
+    private Long memberId;
+
     private Long cardId; // 카드 결제 시에만 포함, 입출금 시 null
 
     @NotNull(message = "거래 유형(DEPOSIT/WITHDRAW/PAYMENT)은 필수입니다.")
