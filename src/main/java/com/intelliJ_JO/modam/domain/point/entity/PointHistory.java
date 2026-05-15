@@ -68,7 +68,7 @@ public class PointHistory {
     // DB에 SAVE / SPEND 문자열 저장
     // =========================================
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false, length = 20)
+    @Column(name = "type", nullable = false, length = 10)
     private PointType type;
 
     // =========================================
