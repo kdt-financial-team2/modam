@@ -1,10 +1,10 @@
 package com.intelliJ_JO.modam.domain.savings.service;
 
-import com.intelliJ_JO.modam.domain.savings.dto.request.SavingsCreateRequestDto;
-import com.intelliJ_JO.modam.domain.savings.dto.response.SavingsResponseDto;
+import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
+import com.intelliJ_JO.modam.domain.savings.dto.SavingsCreateRequestDto;
+import com.intelliJ_JO.modam.domain.savings.dto.SavingsResponseDto;
 import com.intelliJ_JO.modam.domain.savings.entity.Savings;
 import com.intelliJ_JO.modam.domain.savings.repository.SavingsRepository;
-// import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,51 +14,67 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // 데이터 읽기 전용으로 기본 세팅 (성능 최적화)
 public class SavingsService {
 
     private final SavingsRepository savingsRepository;
-    // private final AccountRepository accountRepository; // 조장님 작업 후 주석 해제!
 
-    // 1. 새로운 저축 목표 생성 (Create)
-    @Transactional // 데이터를 DB에 저장(Insert)해야 하므로 이 메서드만 readOnly 해제!
-    public void createSavings(SavingsCreateRequestDto requestDto) {
 
-        /* 🚨 [TODO] Account 리포지토리가 준비되면 주석 해제!
+    private final AccountRepository accountRepository;
 
-        // 1) 연결할 모임 통장(계좌)이 실제로 존재하는지 확인
-        Account account = accountRepository.findById(requestDto.getAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 모임 통장을 찾을 수 없습니다."));
+    /**
+     * 1. 새로운 저축 목표 생성
+     */
+    @Transactional
+    public SavingsResponseDto createSavings(SavingsCreateRequestDto requestDto) {
+        // TODO: Account 조회 로직 연결 필요 (현재는 연관관계 세팅 보류)
+        // Account account = accountRepository.findById(requestDto.getAccountId()).orElseThrow(...);
 
-        // 2) 프론트에서 isAuto 값이 안 넘어왔다면 기본값 'N'으로 세팅
-        String isAuto = (requestDto.getIsAuto() != null) ? requestDto.getIsAuto() : "N";
-
-        // 3) 저축 엔티티 조립 (Builder 패턴 활용)
         Savings savings = Savings.builder()
-                .account(account)
+                // .account(account)
                 .saveType(requestDto.getSaveType())
-                .targetAmount(requestDto.getTargetAmount())
-                .targetDate(requestDto.getTargetDate())
-                .isAuto(isAuto)
-                .autoAmount(requestDto.getAutoAmount())
+                .targetAmount(requestDto.getTargetAmount()) // ✨ 풀네임 수정
+                .targetDate(requestDto.getTargetDate())     // ✨ 풀네임 수정
+                .isAuto(requestDto.getIsAuto() != null ? requestDto.getIsAuto() : "N")
+                .autoAmount(requestDto.getAutoAmount())     // ✨ 풀네임 수정
                 .autoCycle(requestDto.getAutoCycle())
-                // currentAmount는 엔티티의 @Builder.Default 덕분에 자동으로 0L이 들어갑니다!
+                .currentAmount(0L)                          // ✨ 풀네임 수정 (초기 금액 0원)
                 .build();
 
-        // 4) DB에 저장
-        savingsRepository.save(savings);
-        */
+        Savings savedSavings = savingsRepository.save(savings);
+        return new SavingsResponseDto(savedSavings);
     }
 
-    // 2. 특정 모임 통장의 저축 목표 목록 조회 (Read)
+    /**
+     * 2. 특정 계좌의 저축 목표 목록 조회
+     */
+    @Transactional(readOnly = true)
     public List<SavingsResponseDto> getSavingsByAccountId(Long accountId) {
-
-        // DB에서 해당 계좌의 저축 목표들을 싹 긁어옵니다.
-        List<Savings> savingsList = savingsRepository.findByAccountId(accountId);
-
-        // 가져온 엔티티 리스트를 프론트엔드 맞춤형 DTO 리스트로 변환해서 반환합니다.
-        return savingsList.stream()
+        return savingsRepository.findByAccountId(accountId).stream()
                 .map(SavingsResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 3. 저축 목표에 금액 납입 (Update)
+     * - 돈을 납입하면 현재 모인 금액(currentAmount)이 증가합니다.
+     */
+    @Transactional
+    public void depositToSavings(Long savingsId, Long amount) {
+        // 1. 납입하려는 금액이 유효한지 1차 검증
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("납입 금액은 0원보다 커야 합니다.");
+        }
+
+        // 2. 납입할 저축 목표 엔티티 조회
+        Savings savings = savingsRepository.findById(savingsId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 저축 목표입니다."));
+
+        // 3. 💡 향후 고도화 포인트: 실제 Account(모임 통장) 원장에서 돈을 빼는 로직이 여기에 추가되어야 합니다!
+        // accountService.withdraw(savings.getAccount().getId(), amount);
+
+        // 4. 저축 엔티티의 현재 모인 금액 증가 (엔티티 내부에 만들어둔 메서드 호출)
+        savings.addAmount(amount);
+
+        // 더티 체킹(Dirty Checking) 덕분에 별도의 save() 호출 없이도 DB에 자동 업데이트 됩니다!
     }
 }
