@@ -1,7 +1,6 @@
 package com.intelliJ_JO.modam.domain.account.controller;
 
 import com.intelliJ_JO.modam.domain.account.dto.AccountCreateRequestDto;
-import com.intelliJ_JO.modam.domain.account.dto.AccountMemberAddRequestDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountUpdateRequestDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountMemberResponseDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountResponseDto;
@@ -56,19 +55,4 @@ public class AccountController {
         return GlobalResponse.ok(accountService.getAccountMembers(accountId));
     }
 
-    // 모임 통장 파트너 초대
-    @PostMapping("/{accountId}/members")
-    public GlobalResponse<AccountMemberResponseDto> inviteMember(
-            @PathVariable Long accountId,
-            @Valid @RequestBody AccountMemberAddRequestDto request) {
-        return GlobalResponse.ok(accountService.inviteMember(accountId, request));
-    }
-
-    // 초대 수락
-    @PatchMapping("/{accountId}/members/{accountMemberId}/accept")
-    public GlobalResponse<AccountMemberResponseDto> acceptInvite(
-            @PathVariable Long accountId,
-            @PathVariable Long accountMemberId) {
-        return GlobalResponse.ok(accountService.acceptInvite(accountMemberId));
-    }
 }
