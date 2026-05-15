@@ -1,13 +1,11 @@
 package com.intelliJ_JO.modam.domain.account.service;
 
 import com.intelliJ_JO.modam.domain.account.dto.AccountCreateRequestDto;
-import com.intelliJ_JO.modam.domain.account.dto.AccountMemberAddRequestDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountUpdateRequestDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountMemberResponseDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountResponseDto;
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
-import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
@@ -22,6 +20,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+// 계좌 생성·조회·수정·해지 및 참여 회원 조회 담당 서비스
+// 초대(invite) 관련 로직은 InviteService로 분리
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -32,11 +32,14 @@ public class AccountService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    // 계좌 개설 (개인/모임 통장)
+    // 개설자는 초대 절차 없이 바로 ACCEPT 상태의 AccountMember로 등록
     @Transactional
     public AccountResponseDto createAccount(AccountCreateRequestDto request) {
         Member member = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
+        // 비밀번호가 없는 계좌는 passwordHash를 null로 저장
         String passwordHash = request.getPassword() != null
                 ? passwordEncoder.encode(request.getPassword()) : null;
 
@@ -62,12 +65,14 @@ public class AccountService {
         return new AccountResponseDto(saved);
     }
 
+    // 계좌 단건 조회
     public AccountResponseDto getAccount(Long accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
         return new AccountResponseDto(account);
     }
 
+    // 계좌 정보 수정 (배송지, 직업, 거래목적, 자금출처, 소비한도)
     @Transactional
     public AccountResponseDto updateAccount(Long accountId, AccountUpdateRequestDto request) {
         Account account = accountRepository.findById(accountId)
@@ -82,6 +87,7 @@ public class AccountService {
         return new AccountResponseDto(account);
     }
 
+    // 계좌 해지 (status → CLOSED)
     @Transactional
     public void closeAccount(Long accountId) {
         Account account = accountRepository.findById(accountId)
@@ -89,53 +95,14 @@ public class AccountService {
         account.close();
     }
 
+    // 모임 통장 참여 회원 전체 조회 (WAIT/ACCEPT/REJECT 모두 포함)
     public List<AccountMemberResponseDto> getAccountMembers(Long accountId) {
         return accountMemberRepository.findByAccountId(accountId).stream()
                 .map(AccountMemberResponseDto::new)
                 .collect(Collectors.toList());
     }
 
-    // ── 모임 통장 초대 (GROUP 전용, 최대 2명) ──────────────────────
-    @Transactional
-    public AccountMemberResponseDto inviteMember(Long accountId, AccountMemberAddRequestDto request) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
-
-        if (account.getAccountType() != AccountType.GROUP) {
-            throw new IllegalStateException("개인 계좌에는 회원을 초대할 수 없습니다.");
-        }
-
-        // REJECT 제외 활성 인원이 2명 이상이면 초대 불가
-        long activeCount = accountMemberRepository
-                .countByAccountIdAndInviteStatusNot(accountId, InviteStatus.REJECT);
-        if (activeCount >= 2) {
-            throw new IllegalStateException("모임 통장에는 최대 2명까지 참여할 수 있습니다.");
-        }
-
-        Member member = memberRepository.findById(request.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-
-        // 이미 초대(비REJECT)된 회원인지 확인
-        accountMemberRepository.findByAccountIdAndMemberId(accountId, request.getMemberId())
-                .filter(am -> am.getInviteStatus() != InviteStatus.REJECT)
-                .ifPresent(am -> { throw new IllegalStateException("이미 초대된 회원입니다."); });
-
-        AccountMember accountMember = AccountMember.builder()
-                .account(account)
-                .member(member)
-                .build(); // inviteStatus 기본값 = WAIT
-
-        return new AccountMemberResponseDto(accountMemberRepository.save(accountMember));
-    }
-
-    @Transactional
-    public AccountMemberResponseDto acceptInvite(Long accountMemberId) {
-        AccountMember accountMember = accountMemberRepository.findById(accountMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 초대 정보입니다."));
-        accountMember.acceptInvite();
-        return new AccountMemberResponseDto(accountMember);
-    }
-
+    // 계좌 번호 생성 (UUID 기반 16자리 대문자, 중복 시 재생성)
     private String generateAccountNumber() {
         String candidate;
         do {
