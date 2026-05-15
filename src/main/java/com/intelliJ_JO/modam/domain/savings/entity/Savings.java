@@ -69,8 +69,26 @@ public class Savings {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // ✨ 포인트 지급 중복 방지를 위한 플래그 컬럼 추가
+    @Builder.Default
+    @Column(name = "is_half_awarded", nullable = false, length = 1)
+    private String isHalfAwarded = "N"; // 50% 달성 시 'Y'로 변경
+
+    @Builder.Default
+    @Column(name = "is_full_awarded", nullable = false, length = 1)
+    private String isFullAwarded = "N"; // 100% 달성 시 'Y'로 변경
+
     // 💡 비즈니스 로직: 저축 금액 추가 메서드 (나중에 Service에서 사용)
     public void addAmount(Long amount) {
         this.currentAmount += amount;
+    }
+
+    // ✨ 포인트 지급 상태 업데이트 메서드
+    public void completeHalfAward() {
+        this.isHalfAwarded = "Y";
+    }
+
+    public void completeFullAward() {
+        this.isFullAwarded = "Y";
     }
 }
