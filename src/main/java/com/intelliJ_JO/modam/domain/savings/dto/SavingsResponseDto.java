@@ -1,4 +1,4 @@
-package com.intelliJ_JO.modam.domain.savings.dto.response;
+package com.intelliJ_JO.modam.domain.savings.dto;
 
 import com.intelliJ_JO.modam.domain.savings.entity.Savings;
 import lombok.Getter;

@@ -1,11 +1,15 @@
 package com.intelliJ_JO.modam.domain.card.service;
 
+import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
 import com.intelliJ_JO.modam.domain.card.dto.request.CardCreateRequestDto;
 import com.intelliJ_JO.modam.domain.card.dto.response.CardResponseDto;
 import com.intelliJ_JO.modam.domain.card.entity.Card;
+import com.intelliJ_JO.modam.domain.card.entity.CardStatus;
 import com.intelliJ_JO.modam.domain.card.repository.CardRepository;
-// import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
-// import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
+import com.intelliJ_JO.modam.domain.member.entity.Member;
+import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
+import com.intelliJ_JO.modam.global.util.AES256Util;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,18 +19,19 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // 기본적으로 데이터를 읽기만 하는 메서드가 많을 때 성능을 높여줍니다.
+@Transactional(readOnly = true)
 public class CardService {
 
     private final CardRepository cardRepository;
-    // private final AccountRepository accountRepository; // 조장님 작업 후 주석 해제!
-    // private final MemberRepository memberRepository;   // 조장님 작업 후 주석 해제!
+    private final AccountRepository accountRepository; // 봉인 해제!
+    private final MemberRepository memberRepository;   // 봉인 해제!
+    private final AES256Util aes256Util;             // 🔥 암호화 유틸리티 주입!
 
-    // 1. 카드 발급 (Create)
-    @Transactional // 데이터를 변경(Insert)하므로 readOnly = false 역할
+    /**
+     * 1. 카드 발급 (Create)
+     */
+    @Transactional
     public void issueCard(CardCreateRequestDto requestDto) {
-
-        /* 🚨 [TODO] Account, Member 리포지토리가 준비되면 주석 해제하여 사용하세요!
 
         // 1) 계좌와 멤버가 실제로 존재하는지 검증
         Account account = accountRepository.findById(requestDto.getAccountId())
@@ -34,33 +39,46 @@ public class CardService {
         Member member = memberRepository.findById(requestDto.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
-        // 2) 중복된 카드 번호가 있는지 한 번 더 방어 (선택 사항)
-        if (cardRepository.findByCardNumber(requestDto.getCardNumber()).isPresent()) {
+        // 2) 💡 프론트에서 넘어온 평문 카드 번호를 AES-256으로 암호화
+        String encryptedCardNumber = aes256Util.encrypt(requestDto.getCardNumber());
+
+        // 3) 중복된 카드 번호가 있는지 한 번 더 방어 (DB에는 암호화되어 저장되므로, 암호화된 값으로 비교해야 함)
+        if (cardRepository.findByCardNumber(encryptedCardNumber).isPresent()) {
             throw new IllegalArgumentException("이미 등록된 카드 번호입니다.");
         }
 
-        // 3) 카드 엔티티 생성
+        // 4) 카드 엔티티 생성
         Card card = Card.builder()
                 .account(account)
                 .member(member)
-                .cardNumber(requestDto.getCardNumber())
+                .cardNumber(encryptedCardNumber) // 🔥 DB에는 암호화된 번호가 들어갑니다!
                 .expiryDate(requestDto.getExpiryDate())
-                .status("ACTIVE") // 카드를 처음 발급하면 상태는 무조건 '정상(ACTIVE)'
+                // status는 @Builder.Default 처리가 되어 있으므로 자동으로 ACTIVE가 들어갑니다.
                 .build();
 
-        // 4) DB에 저장
+        // 5) DB에 저장
         cardRepository.save(card);
-        */
     }
 
-    // 2. 모임 통장(계좌)에 연결된 카드 목록 조회 (Read)
+    /**
+     * 2. 모임 통장(계좌)에 연결된 카드 목록 조회 (Read)
+     */
     public List<CardResponseDto> getCardsByAccountId(Long accountId) {
-        // DB에서 계좌 ID로 카드 목록을 싹 가져옵니다.
         List<Card> cards = cardRepository.findByAccountId(accountId);
 
-        // 가져온 Card 엔티티들을 프론트엔드에 줄 CardResponseDto로 변환해서 리턴합니다.
         return cards.stream()
-                .map(CardResponseDto::new) // 우리가 아까 만든 DTO 생성자 활용!
+                .map(CardResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 3. 카드 상태 변경 (Update) - 분실(LOST) 또는 정지(STOPPED) 처리
+     */
+    @Transactional
+    public void changeCardStatus(Long cardId, CardStatus newStatus) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 카드를 찾을 수 없습니다."));
+
+        card.updateStatus(newStatus);
     }
 }
