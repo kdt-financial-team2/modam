@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "attendance")
@@ -14,7 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-@EntityListeners(AuditingEntityListener.class) // 생성 시간을 자동으로 찍기 위해 필요
+@EntityListeners(AuditingEntityListener.class) // 생성 시간을 자동으로 찍어주는 리스너
 public class Attendance {
 
     @Id
@@ -26,8 +27,9 @@ public class Attendance {
     private Member member;
 
     @Column(name = "attendance_date", nullable = false)
-    private LocalDate attendanceDate; // 출석한 날짜 (시간 제외)
+    private LocalDate attendanceDate;
 
-    // 생성자나 빌더를 통해 데이터를 넣을 때 날짜를 수동으로 넣거나,
-    // 서비스 로직에서 LocalDate.now()를 주입해주면 됩니다.
+    @CreatedDate
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private LocalDateTime createdAt;
 }
