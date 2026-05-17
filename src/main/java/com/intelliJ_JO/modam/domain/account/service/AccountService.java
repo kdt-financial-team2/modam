@@ -6,6 +6,7 @@ import com.intelliJ_JO.modam.domain.account.dto.AccountMemberResponseDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountResponseDto;
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
+import com.intelliJ_JO.modam.domain.account.entity.AccountStatus;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
@@ -77,6 +78,11 @@ public class AccountService {
     public AccountResponseDto updateAccount(Long accountId, AccountUpdateRequestDto request) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
+
+        if (account.getStatus() == AccountStatus.CLOSED) {
+            throw new IllegalStateException("해지된 계좌는 수정할 수 없습니다.");
+        }
+
         account.updateDetails(
                 request.getDeliveryAddress(),
                 request.getJobInfo(),
@@ -92,6 +98,14 @@ public class AccountService {
     public void closeAccount(Long accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
+
+        if (account.getStatus() == AccountStatus.CLOSED) {
+            throw new IllegalStateException("이미 해지된 계좌입니다.");
+        }
+        if (account.getBalance() > 0) {
+            throw new IllegalStateException("잔액이 남아 있는 계좌는 해지할 수 없습니다.");
+        }
+
         account.close();
     }
 

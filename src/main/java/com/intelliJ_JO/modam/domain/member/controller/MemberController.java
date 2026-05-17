@@ -4,6 +4,7 @@ package com.intelliJ_JO.modam.domain.member.controller;
 import com.intelliJ_JO.modam.domain.member.dto.*;
 import com.intelliJ_JO.modam.domain.member.service.MemberService;
 import com.intelliJ_JO.modam.global.response.GlobalResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ public class MemberController {
 
     // 회원 생성
     @PostMapping
-    public GlobalResponse<MemberCreateResponse> createMember(@RequestBody MemberCreateRequest request) {
+    public GlobalResponse<MemberCreateResponse> createMember(@Valid @RequestBody MemberCreateRequest request) {
         return GlobalResponse.ok(memberService.createMember(request));
     }
 
@@ -37,7 +38,7 @@ public class MemberController {
     @PatchMapping("/{memberId}")
     public GlobalResponse<MemberUpdateResponse> updateMember(
             @PathVariable Long memberId,
-            @RequestBody MemberUpdateRequest request
+            @Valid @RequestBody MemberUpdateRequest request
     ) {
         return GlobalResponse.ok(memberService.updateMember(memberId, request));
     }

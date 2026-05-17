@@ -102,17 +102,18 @@ public class SavingsService {
         long current = savings.getCurrentAmount();
         long target = savings.getTargetAmount();
 
+        if (current >= (target / 2) && "N".equals(savings.getIsHalfAwarded())) {
+            savings.completeHalfAward();
+
+            // TODO: 50% 달성 포인트 지급 API 호출부
+            // pointHistoryService.earnPoint(memberId, "50% 저축 달성", 100);
+        }
+
         if (current >= target && "N".equals(savings.getIsFullAwarded())) {
             savings.completeFullAward();
 
             // TODO: 100% 달성 포인트 지급 API 호출부
             // pointHistoryService.earnPoint(memberId, "100% 저축 달성", 500);
-        }
-        else if (current >= (target / 2) && "N".equals(savings.getIsHalfAwarded())) {
-            savings.completeHalfAward();
-
-            // TODO: 50% 달성 포인트 지급 API 호출부
-            // pointHistoryService.earnPoint(memberId, "50% 저축 달성", 100);
         }
     }
 }

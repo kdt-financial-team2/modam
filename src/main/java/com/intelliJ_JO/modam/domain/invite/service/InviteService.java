@@ -65,6 +65,11 @@ public class InviteService {
     public InviteResponseDto accept(Long accountMemberId) {
         AccountMember accountMember = accountMemberRepository.findById(accountMemberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 초대 정보입니다."));
+
+        if (accountMember.getInviteStatus() != InviteStatus.WAIT) {
+            throw new IllegalStateException("대기 중인 초대만 수락할 수 있습니다.");
+        }
+
         accountMember.acceptInvite();
         return new InviteResponseDto(accountMember);
     }
