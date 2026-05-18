@@ -129,37 +129,4 @@ public class PointHistory {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // =========================================
-    // 포인트 적립 메서드
-    //
-    // ex)
-    // 출석 보상
-    // 저축 목표 달성 보상
-    // 소비 절약 보상
-    // =========================================
-    public void earnPoint(int point) {
-
-        // 🔥 적립 타입 저장
-        this.type = PointType.SAVE;
-
-        // 🔥 적립 포인트 저장
-        this.amt = point;
-    }
-
-    // =========================================
-    // 포인트 사용 메서드
-    //
-    // ex)
-    // 상점 아이템 구매
-    // 테마 구매
-    // 이모티콘 구매
-    // =========================================
-    public void usePoint(int point) {
-
-        // 🔥 사용 타입 저장
-        this.type = PointType.SPEND;
-
-        // 🔥 사용은 음수 처리
-        this.amt = -point;
-    }
 }

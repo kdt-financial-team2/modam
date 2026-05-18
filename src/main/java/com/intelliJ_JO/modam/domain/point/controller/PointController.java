@@ -1,112 +1,56 @@
 package com.intelliJ_JO.modam.domain.point.controller;
 
+import com.intelliJ_JO.modam.config.security.CustomUserDetails;
 import com.intelliJ_JO.modam.domain.point.dto.response.PointResponse;
 import com.intelliJ_JO.modam.domain.point.dto.request.PointSaveRequest;
 import com.intelliJ_JO.modam.domain.point.dto.request.PointSpendRequest;
 import com.intelliJ_JO.modam.domain.point.service.PointService;
+import com.intelliJ_JO.modam.global.response.GlobalResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-
-// =========================================
-// 🔥 Point API 기본 URL
-// =========================================
-@RequestMapping("/points")
-
+@RequestMapping("/api/points")
 @RequiredArgsConstructor
 public class PointController {
 
     private final PointService pointService;
 
-    // =========================================
-    // 포인트 내역 조회
-    //
-    // ex)
-    // GET /points/1
-    // =========================================
-    @GetMapping("/{memberId}")
-    public List<PointResponse> getPointHistories(
-            @PathVariable Long memberId
-    ) {
-
-        return pointService.getPointHistories(memberId);
+    // GET /api/points — 내 포인트 내역 조회
+    @GetMapping
+    public GlobalResponse<List<PointResponse>> getPointHistories(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return GlobalResponse.ok(
+                pointService.getPointHistories(userDetails.getMember().getId()));
     }
 
-    // =========================================
-    // 포인트 적립
-    //
-    // ex)
-    // 출석 체크
-    // 저축 목표 달성
-    // 카드 결제 보상
-    //
-    // POST /points/save
-    // =========================================
+    // GET /api/points/current — 내 현재 보유 포인트 조회
+    @GetMapping("/current")
+    public GlobalResponse<Integer> getCurrentPoint(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return GlobalResponse.ok(
+                pointService.getCurrentPoint(userDetails.getMember().getId()));
+    }
+
+    // POST /api/points/save — 포인트 적립
     @PostMapping("/save")
-    public PointResponse savePoint(
-
-            // =========================================
-            // 🔥 @Valid 검증 추가
-            //
-            // DTO 유효성 검사 수행
-            //
-            // ex)
-            // null 값 검사
-            // 음수 검사
-            // 빈 문자열 검사
-            // =========================================
-            @Valid
-
-            // =========================================
-            // 요청 Body(JSON) 받기
-            // =========================================
-            @RequestBody PointSaveRequest request
-    ) {
-
-        return pointService.savePoint(request);
+    public GlobalResponse<PointResponse> savePoint(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody PointSaveRequest request) {
+        return GlobalResponse.ok(
+                pointService.savePoint(userDetails.getMember().getId(), request));
     }
 
-    // =========================================
-    // 포인트 사용
-    //
-    // ex)
-    // 아이템 구매
-    // 테마 구매
-    //
-    // POST /points/spend
-    // =========================================
+    // POST /api/points/spend — 포인트 사용
     @PostMapping("/spend")
-    public PointResponse spendPoint(
-
-            // =========================================
-            // 🔥 @Valid 검증 추가
-            // =========================================
-            @Valid
-
-            // =========================================
-            // 요청 Body(JSON) 받기
-            // =========================================
-            @RequestBody PointSpendRequest request
-    ) {
-
-        return pointService.spendPoint(request);
-    }
-
-    // =========================================
-    // 현재 보유 포인트 조회
-    //
-    // ex)
-    // GET /points/current/1
-    // =========================================
-    @GetMapping("/current/{memberId}")
-    public Integer getCurrentPoint(
-            @PathVariable Long memberId
-    ) {
-
-        return pointService.getCurrentPoint(memberId);
+    public GlobalResponse<PointResponse> spendPoint(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody PointSpendRequest request) {
+        return GlobalResponse.ok(
+                pointService.spendPoint(userDetails.getMember().getId(), request));
     }
 }

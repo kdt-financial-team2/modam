@@ -6,6 +6,9 @@ import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.notification.entity.NotificationType;
 import com.intelliJ_JO.modam.domain.notification.service.NotificationService;
+import com.intelliJ_JO.modam.domain.point.dto.request.PointSaveRequest;
+import com.intelliJ_JO.modam.domain.point.entity.PointReason;
+import com.intelliJ_JO.modam.domain.point.service.PointService;
 import com.intelliJ_JO.modam.domain.savings.dto.SavingsCreateRequestDto;
 import com.intelliJ_JO.modam.domain.savings.dto.SavingsResponseDto;
 import com.intelliJ_JO.modam.domain.savings.entity.Savings;
@@ -30,6 +33,7 @@ public class SavingsService {
     private final TransactionService transactionService;
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
+    private final PointService pointService;
 
     /**
      * 1. 새로운 저축 목표 생성
@@ -110,14 +114,20 @@ public class SavingsService {
 
         if (current >= (target / 2) && "N".equals(savings.getIsHalfAwarded())) {
             savings.completeHalfAward();
-            // TODO: 50% 달성 포인트 지급 API 호출부
-            // pointHistoryService.earnPoint(memberId, "50% 저축 달성", 100);
+            pointService.savePoint(memberId, PointSaveRequest.builder()
+                    .reason(PointReason.SAVINGS_50)
+                    .amt(100)
+                    .descrip("저축 목표 50% 달성 보상")
+                    .build());
         }
 
         if (current >= target && "N".equals(savings.getIsFullAwarded())) {
             savings.completeFullAward();
-            // TODO: 100% 달성 포인트 지급 API 호출부
-            // pointHistoryService.earnPoint(memberId, "100% 저축 달성", 500);
+            pointService.savePoint(memberId, PointSaveRequest.builder()
+                    .reason(PointReason.SAVINGS_100)
+                    .amt(500)
+                    .descrip("저축 목표 100% 달성 보상")
+                    .build());
 
             Member member = memberRepository.findById(memberId)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));

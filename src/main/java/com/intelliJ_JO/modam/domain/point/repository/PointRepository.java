@@ -3,7 +3,12 @@ package com.intelliJ_JO.modam.domain.point.repository;
 import com.intelliJ_JO.modam.domain.point.entity.PointHistory;
 import com.intelliJ_JO.modam.domain.point.entity.PointReason;
 import com.intelliJ_JO.modam.domain.point.entity.PointType;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +24,7 @@ public interface PointRepository extends JpaRepository<PointHistory, Long> {
     // 포인트 사용 내역
     // 포인트 적립 내역
     // =========================================
-    List<PointHistory> findByMemberId(Long memberId);
+    List<PointHistory> findByMemberIdOrderByCreatedAtDesc(Long memberId);
 
     // =========================================
     // 회원 최신 포인트 내역 조회
@@ -31,6 +36,16 @@ public interface PointRepository extends JpaRepository<PointHistory, Long> {
     // =========================================
     Optional<PointHistory>
     findTopByMemberIdOrderByCreatedAtDesc(Long memberId);
+
+    // =========================================
+    // 🔥 잔액 조회 + 비관적 락
+    //
+    // 동시 적립/사용 요청 시 Race Condition 방지
+    // 트랜잭션 종료 전까지 다른 트랜잭션 대기
+    // =========================================
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM PointHistory p WHERE p.member.id = :memberId ORDER BY p.createdAt DESC")
+    List<PointHistory> findLatestByMemberIdWithLock(@Param("memberId") Long memberId, Pageable pageable);
 
     // =========================================
     // 회원 + 포인트 타입 조회
