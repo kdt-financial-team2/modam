@@ -12,4 +12,5 @@ public interface AccountMemberRepository extends JpaRepository<AccountMember, Lo
     List<AccountMember> findByMemberId(Long memberId);
     Optional<AccountMember> findByAccountIdAndMemberId(Long accountId, Long memberId);
     long countByAccountIdAndInviteStatusNot(Long accountId, InviteStatus inviteStatus);
+    List<AccountMember> findByAccountIdAndInviteStatus(Long accountId, InviteStatus inviteStatus);
 }

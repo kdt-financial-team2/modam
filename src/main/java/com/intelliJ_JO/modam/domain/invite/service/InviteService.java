@@ -10,6 +10,8 @@ import com.intelliJ_JO.modam.domain.invite.dto.InviteRequestDto;
 import com.intelliJ_JO.modam.domain.invite.dto.InviteResponseDto;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
+import com.intelliJ_JO.modam.domain.notification.entity.NotificationType;
+import com.intelliJ_JO.modam.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ public class InviteService {
     private final AccountRepository accountRepository;
     private final AccountMemberRepository accountMemberRepository;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     // 모임 통장에 파트너를 초대 (GROUP 계좌 전용, 최대 2명)
     // inviteStatus 기본값은 AccountMember 엔티티의 @Builder.Default → WAIT
@@ -57,7 +60,11 @@ public class InviteService {
                 .member(member)
                 .build();
 
-        return new InviteResponseDto(accountMemberRepository.save(accountMember));
+        InviteResponseDto response = new InviteResponseDto(accountMemberRepository.save(accountMember));
+
+        String msg = String.format("계좌(%s) 모임통장에 초대되었습니다.", account.getAccountNumber());
+        notificationService.send(member, NotificationType.INVITE, msg, "/invites/" + response.getId());
+        return response;
     }
 
     // 초대 수락 처리 → inviteStatus를 ACCEPT로 변경

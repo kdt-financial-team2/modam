@@ -2,13 +2,17 @@ package com.intelliJ_JO.modam.domain.savings.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
+import com.intelliJ_JO.modam.domain.member.entity.Member;
+import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
+import com.intelliJ_JO.modam.domain.notification.entity.NotificationType;
+import com.intelliJ_JO.modam.domain.notification.service.NotificationService;
 import com.intelliJ_JO.modam.domain.savings.dto.SavingsCreateRequestDto;
 import com.intelliJ_JO.modam.domain.savings.dto.SavingsResponseDto;
 import com.intelliJ_JO.modam.domain.savings.entity.Savings;
 import com.intelliJ_JO.modam.domain.savings.repository.SavingsRepository;
-import com.intelliJ_JO.modam.domain.transaction.dto.TransactionRequestDto; // 🔥 주석 해제
-import com.intelliJ_JO.modam.domain.transaction.entity.TransactionType; // 🔥 주석 해제
-import com.intelliJ_JO.modam.domain.transaction.service.TransactionService; // 🔥 주석 해제
+import com.intelliJ_JO.modam.domain.transaction.dto.TransactionRequestDto;
+import com.intelliJ_JO.modam.domain.transaction.entity.TransactionType;
+import com.intelliJ_JO.modam.domain.transaction.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +27,9 @@ public class SavingsService {
 
     private final SavingsRepository savingsRepository;
     private final AccountRepository accountRepository;
-    private final TransactionService transactionService; // 🔥 주석 해제 완료
+    private final TransactionService transactionService;
+    private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     /**
      * 1. 새로운 저축 목표 생성
@@ -104,16 +110,20 @@ public class SavingsService {
 
         if (current >= (target / 2) && "N".equals(savings.getIsHalfAwarded())) {
             savings.completeHalfAward();
-
             // TODO: 50% 달성 포인트 지급 API 호출부
             // pointHistoryService.earnPoint(memberId, "50% 저축 달성", 100);
         }
 
         if (current >= target && "N".equals(savings.getIsFullAwarded())) {
             savings.completeFullAward();
-
             // TODO: 100% 달성 포인트 지급 API 호출부
             // pointHistoryService.earnPoint(memberId, "100% 저축 달성", 500);
+
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+            String msg = String.format("저축 목표 달성! %,d원이 모두 적립되었습니다.", target);
+            notificationService.send(member, NotificationType.SAVINGS_GOAL, msg,
+                    "/savings/" + savings.getId());
         }
     }
 }
