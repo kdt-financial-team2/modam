@@ -52,6 +52,14 @@ public class Account {
     @Column(name = "limit_amt")
     private Long spendLimitAmount;
 
+    // 1회 이체 한도 (NULL 허용)
+    @Column(name = "once_transfer_limit")
+    private Long onceTransferLimit;
+
+    // 1일 이체 한도 (NULL 허용)
+    @Column(name = "daily_transfer_limit")
+    private Long dailyTransferLimit;
+
     // 배송 주소 (카드 배송지 등, NULL 허용)
     @Column(name = "deliv_addr", length = 255)
     private String deliveryAddress;
@@ -84,12 +92,15 @@ public class Account {
     }
 
     public void updateDetails(String deliveryAddress, String jobInfo,
-                              String tradePurpose, String fundSource, Long spendLimitAmount) {
+                              String tradePurpose, String fundSource,
+                              Long spendLimitAmount, Long onceTransferLimit, Long dailyTransferLimit) {
         if (deliveryAddress != null) this.deliveryAddress = deliveryAddress;
         if (jobInfo != null) this.jobInfo = jobInfo;
         if (tradePurpose != null) this.tradePurpose = tradePurpose;
         if (fundSource != null) this.fundSource = fundSource;
         if (spendLimitAmount != null) this.spendLimitAmount = spendLimitAmount;
+        if (onceTransferLimit != null) this.onceTransferLimit = onceTransferLimit;
+        if (dailyTransferLimit != null) this.dailyTransferLimit = dailyTransferLimit;
     }
 
     public void close() {

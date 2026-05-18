@@ -4,14 +4,15 @@ import com.intelliJ_JO.modam.domain.account.dto.AccountCreateRequestDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountUpdateRequestDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountMemberResponseDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountResponseDto;
+import com.intelliJ_JO.modam.domain.account.dto.GroupAccountStatusDto;
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.AccountStatus;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
-import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-// 계좌 생성·조회·수정·해지 및 참여 회원 조회 담당 서비스
-// 초대(invite) 관련 로직은 InviteService로 분리
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -30,28 +29,25 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMemberRepository accountMemberRepository;
-    private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    // 계좌 개설 (개인/모임 통장)
-    // 개설자는 초대 절차 없이 바로 ACCEPT 상태의 AccountMember로 등록
+    // 계좌 개설 — 세션의 인증된 사용자를 개설자로 등록
     @Transactional
-    public AccountResponseDto createAccount(AccountCreateRequestDto request) {
-        Member member = memberRepository.findById(request.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-
-        // 비밀번호가 없는 계좌는 passwordHash를 null로 저장
-        String passwordHash = request.getPassword() != null
-                ? passwordEncoder.encode(request.getPassword()) : null;
+    public AccountResponseDto createAccount(AccountCreateRequestDto request, Member member) {
+        if (!request.getPassword().equals(request.getPasswordConfirm())) {
+            throw new IllegalArgumentException("계좌 비밀번호가 일치하지 않습니다.");
+        }
 
         Account account = Account.builder()
                 .accountNumber(generateAccountNumber())
-                .passwordHash(passwordHash)
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .accountType(request.getAccountType())
                 .deliveryAddress(request.getDeliveryAddress())
                 .jobInfo(request.getJobInfo())
                 .tradePurpose(request.getTradePurpose())
                 .fundSource(request.getFundSource())
+                .onceTransferLimit(request.getOnceTransferLimit())
+                .dailyTransferLimit(request.getDailyTransferLimit())
                 .build();
 
         Account saved = accountRepository.save(account);
@@ -66,6 +62,21 @@ public class AccountService {
         return new AccountResponseDto(saved);
     }
 
+    // 로그인 후 분기용 — 모임통장 보유 여부 반환
+    public GroupAccountStatusDto getGroupAccountStatus(Member member) {
+        return accountMemberRepository.findByMemberId(member.getId()).stream()
+                .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .findFirst()
+                .map(am -> new GroupAccountStatusDto(true, am.getAccount().getId(), am.getAccount().getAccountNumber()))
+                .orElse(new GroupAccountStatusDto(false, null, null));
+    }
+
+    // 4번 화면 진입 시 계좌번호 미리 보기 — 저장하지 않고 번호만 반환
+    public String generatePreviewAccountNumber() {
+        return generateAccountNumber();
+    }
+
     // 계좌 단건 조회
     public AccountResponseDto getAccount(Long accountId) {
         Account account = accountRepository.findById(accountId)
@@ -73,7 +84,7 @@ public class AccountService {
         return new AccountResponseDto(account);
     }
 
-    // 계좌 정보 수정 (배송지, 직업, 거래목적, 자금출처, 소비한도)
+    // 계좌 정보 수정
     @Transactional
     public AccountResponseDto updateAccount(Long accountId, AccountUpdateRequestDto request) {
         Account account = accountRepository.findById(accountId)
@@ -88,12 +99,14 @@ public class AccountService {
                 request.getJobInfo(),
                 request.getTradePurpose(),
                 request.getFundSource(),
-                request.getSpendLimitAmount()
+                request.getSpendLimitAmount(),
+                request.getOnceTransferLimit(),
+                request.getDailyTransferLimit()
         );
         return new AccountResponseDto(account);
     }
 
-    // 계좌 해지 (status → CLOSED)
+    // 계좌 해지
     @Transactional
     public void closeAccount(Long accountId) {
         Account account = accountRepository.findById(accountId)
@@ -109,7 +122,7 @@ public class AccountService {
         account.close();
     }
 
-    // 모임 통장 참여 회원 전체 조회 (WAIT/ACCEPT/REJECT 모두 포함)
+    // 모임 통장 참여 회원 전체 조회
     public List<AccountMemberResponseDto> getAccountMembers(Long accountId) {
         return accountMemberRepository.findByAccountId(accountId).stream()
                 .map(AccountMemberResponseDto::new)
