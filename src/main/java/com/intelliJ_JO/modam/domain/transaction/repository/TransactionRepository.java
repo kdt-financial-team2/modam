@@ -28,4 +28,36 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                                 @Param("memberId") Long memberId,
                                 @Param("types") List<TransactionType> types,
                                 @Param("startOfDay") LocalDateTime startOfDay);
+
+    // 소비 분석: 기간 내 출금/결제 총합
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
+           "WHERE t.account.id = :accountId AND t.txType IN :types " +
+           "AND t.createdAt >= :start AND t.createdAt < :end")
+    Long sumSpendByAccountAndPeriod(@Param("accountId") Long accountId,
+                                    @Param("types") List<TransactionType> types,
+                                    @Param("start") LocalDateTime start,
+                                    @Param("end") LocalDateTime end);
+
+    // 소비 분석: 기간 내 카테고리별 합계 (도넛 차트용)
+    @Query(value = "SELECT COALESCE(category, '기타'), SUM(amt) " +
+                   "FROM transaction WHERE acct_id = :accountId " +
+                   "AND tx_type IN ('WITHDRAW', 'PAYMENT') " +
+                   "AND created_at >= :start AND created_at < :end " +
+                   "GROUP BY COALESCE(category, '기타') ORDER BY SUM(amt) DESC",
+           nativeQuery = true)
+    List<Object[]> sumSpendGroupByCategory(@Param("accountId") Long accountId,
+                                           @Param("start") LocalDateTime start,
+                                           @Param("end") LocalDateTime end);
+
+    // 소비 분석: 월별 합계 (라인 차트용)
+    @Query(value = "SELECT YEAR(created_at), MONTH(created_at), SUM(amt) " +
+                   "FROM transaction WHERE acct_id = :accountId " +
+                   "AND tx_type IN ('WITHDRAW', 'PAYMENT') " +
+                   "AND created_at >= :start AND created_at < :end " +
+                   "GROUP BY YEAR(created_at), MONTH(created_at) " +
+                   "ORDER BY YEAR(created_at), MONTH(created_at)",
+           nativeQuery = true)
+    List<Object[]> sumSpendGroupByMonth(@Param("accountId") Long accountId,
+                                        @Param("start") LocalDateTime start,
+                                        @Param("end") LocalDateTime end);
 }
