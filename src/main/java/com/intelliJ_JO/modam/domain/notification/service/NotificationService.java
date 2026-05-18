@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
@@ -42,7 +44,7 @@ public class NotificationService {
         return emitter;
     }
 
-    // 알림 저장 + SSE push — 외부 @Transactional 안에서 호출 시 동일 트랜잭션에 참여
+    // 알림 저장 + SSE push — 트랜잭션 커밋 확정 후에만 SSE 발송
     @Transactional
     public void send(Member member, NotificationType type, String message, String targetUrl) {
         Notification notification = Notification.builder()
@@ -52,7 +54,21 @@ public class NotificationService {
                 .targetUrl(targetUrl)
                 .build();
         notificationRepository.save(notification);
-        pushToEmitter(member.getId(), notification);
+
+        Long memberId = member.getId();
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            // 트랜잭션이 커밋된 후에만 SSE push — 롤백 시 발송 안 됨
+            TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        pushToEmitter(memberId, notification);
+                    }
+                }
+            );
+        } else {
+            pushToEmitter(memberId, notification);
+        }
     }
 
     private void pushToEmitter(Long memberId, Notification notification) {
