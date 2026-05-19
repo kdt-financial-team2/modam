@@ -1,9 +1,11 @@
 package com.intelliJ_JO.modam.domain.card.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
+import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
-import com.intelliJ_JO.modam.domain.card.dto.request.CardCreateRequestDto;
-import com.intelliJ_JO.modam.domain.card.dto.response.CardResponseDto;
+import com.intelliJ_JO.modam.domain.card.dto.CardCreateRequestDto;
+import com.intelliJ_JO.modam.domain.card.dto.CardResponseDto;
 import com.intelliJ_JO.modam.domain.card.entity.Card;
 import com.intelliJ_JO.modam.domain.card.entity.CardStatus;
 import com.intelliJ_JO.modam.domain.card.repository.CardRepository;
@@ -23,9 +25,10 @@ import java.util.stream.Collectors;
 public class CardService {
 
     private final CardRepository cardRepository;
-    private final AccountRepository accountRepository; // 봉인 해제!
-    private final MemberRepository memberRepository;   // 봉인 해제!
-    private final AES256Util aes256Util;             // 🔥 암호화 유틸리티 주입!
+    private final AccountRepository accountRepository;
+    private final AccountMemberRepository accountMemberRepository;
+    private final MemberRepository memberRepository;
+    private final AES256Util aes256Util;
 
     /**
      * 1. 카드 발급 (Create)
@@ -39,15 +42,20 @@ public class CardService {
         Member member = memberRepository.findById(requestDto.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
-        // 2) 💡 프론트에서 넘어온 평문 카드 번호를 AES-256으로 암호화
+        // 2) 해당 멤버가 계좌의 ACCEPT 구성원인지 검증
+        accountMemberRepository.findByAccountIdAndMemberId(requestDto.getAccountId(), requestDto.getMemberId())
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .orElseThrow(() -> new IllegalArgumentException("해당 계좌의 구성원만 카드를 발급받을 수 있습니다."));
+
+        // 3) 💡 프론트에서 넘어온 평문 카드 번호를 AES-256으로 암호화
         String encryptedCardNumber = aes256Util.encrypt(requestDto.getCardNumber());
 
-        // 3) 중복된 카드 번호가 있는지 한 번 더 방어 (DB에는 암호화되어 저장되므로, 암호화된 값으로 비교해야 함)
+        // 4) 중복된 카드 번호가 있는지 한 번 더 방어 (DB에는 암호화되어 저장되므로, 암호화된 값으로 비교해야 함)
         if (cardRepository.findByCardNumber(encryptedCardNumber).isPresent()) {
             throw new IllegalArgumentException("이미 등록된 카드 번호입니다.");
         }
 
-        // 4) 카드 엔티티 생성
+        // 5) 카드 엔티티 생성
         Card card = Card.builder()
                 .account(account)
                 .member(member)
@@ -56,7 +64,7 @@ public class CardService {
                 // status는 @Builder.Default 처리가 되어 있으므로 자동으로 ACTIVE가 들어갑니다.
                 .build();
 
-        // 5) DB에 저장
+        // 6) DB에 저장
         cardRepository.save(card);
     }
 
@@ -75,9 +83,13 @@ public class CardService {
      * 3. 카드 상태 변경 (Update) - 분실(LOST) 또는 정지(STOPPED) 처리
      */
     @Transactional
-    public void changeCardStatus(Long cardId, CardStatus newStatus) {
+    public void changeCardStatus(Long cardId, Long memberId, CardStatus newStatus) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 카드를 찾을 수 없습니다."));
+
+        if (!card.getMember().getId().equals(memberId)) {
+            throw new IllegalArgumentException("본인 카드만 상태를 변경할 수 있습니다.");
+        }
 
         card.updateStatus(newStatus);
     }

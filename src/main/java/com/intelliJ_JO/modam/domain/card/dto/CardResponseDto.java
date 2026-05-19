@@ -1,4 +1,4 @@
-package com.intelliJ_JO.modam.domain.card.dto.response;
+package com.intelliJ_JO.modam.domain.card.dto;
 
 import com.intelliJ_JO.modam.domain.card.entity.Card;
 import lombok.Getter;

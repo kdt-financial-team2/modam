@@ -1,4 +1,4 @@
-package com.intelliJ_JO.modam.domain.card.dto.request;
+package com.intelliJ_JO.modam.domain.card.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

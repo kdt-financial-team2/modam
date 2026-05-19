@@ -13,4 +13,6 @@ public class AccountUpdateRequestDto {
     private String tradePurpose;
     private String fundSource;
     private Long spendLimitAmount;
+    private Long onceTransferLimit;
+    private Long dailyTransferLimit;
 }

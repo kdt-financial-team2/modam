@@ -8,77 +8,119 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
-@Entity // JPA 엔티티 선언
-@Table(name = "member") // 테이블 이름 지정
-@Getter // getter 자동 생성
+@Entity
+@Table(name = "member")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class Member {
 
-    @Id // PK 설정
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // auto increment
-    private Long id; // 회원 고유 ID
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
-    private String name; // 사용자 이름
+    private String name;
 
     @Column(name = "user_id", nullable = false, unique = true)
-    private String userId; // 로그인 ID (유니크)
+    private String userId;
 
     @Column(name = "pw_hash", nullable = false)
-    private String pwHash; // 비밀번호 해시값
+    private String pwHash;
 
     @Column(nullable = false, unique = true)
-    private String email; // 이메일 (유니크)
+    private String email;
 
-    @Column(nullable = false)
-    private boolean agree; // 약관 동의 여부
+    // 필수 약관 동의 4개
+    @Column(name = "agree_age", nullable = false)
+    private boolean agreeAge;       // 만 14세 이상
 
-    @Column(nullable = false)
-    private boolean notif; // 알림 수신 여부
+    @Column(name = "agree_service", nullable = false)
+    private boolean agreeService;   // 모담 이용약관
+
+    @Column(name = "agree_privacy", nullable = false)
+    private boolean agreePrivacy;   // 개인정보 수집 및 이용
+
+    @Column(name = "agree_finance", nullable = false)
+    private boolean agreeFinance;   // 전자금융거래 이용약관
+
+    // 선택 약관 동의 2개
+    @Builder.Default
+    @Column(name = "notif", nullable = false)
+    private boolean notif = false;          // 마케팅 정보 수신 동의
+
+    @Builder.Default
+    @Column(name = "agree_third_party", nullable = false)
+    private boolean agreeThirdParty = false; // 개인정보 제3자 제공 동의
 
     @Column(name = "en_first", nullable = false)
-    private String enFirst; // 영문 이름 (이름)
+    private String enFirst;
 
     @Column(name = "en_last", nullable = false)
-    private String enLast; // 영문 이름 (성)
+    private String enLast;
 
     @Column(name = "bank_name", nullable = false)
-    private String bankName; // 은행명
+    private String bankName;
 
     @Column(name = "pers_acct_no", nullable = false)
-    private String persAcctNo; // 개인 계좌 번호
+    private String persAcctNo;
+
+    @Column(name = "zip_code", nullable = false, length = 10)
+    private String zipCode;         // 우편번호
+
+    @Column(nullable = false)
+    private String address;         // 기본주소
+
+    @Column(name = "address_detail")
+    private String addressDetail;   // 상세주소 (선택)
+
+    @Column(name = "phone_no", nullable = false, unique = true)
+    private String phoneNo;
+
+    @Column(name = "profile_img")
+    private String profileImg;
+
+    @Column(nullable = false)
+    private String rrn;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
-    private LocalDateTime createdAt; // 생성일
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt; // 수정일
+    private LocalDateTime updatedAt;
 
-    @Column(nullable = false)
     @Builder.Default
-    private boolean active = true; // 계정 활성화 여부
-
-    @Column(nullable = false, length = 255)
-    private String address; // 주소
+    @Column(nullable = false)
+    private boolean active = true;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MemberRole role = MemberRole.USER; // 권한 (기본 USER)
+    private MemberRole role = MemberRole.USER;
 
-    @Column(name = "phone_no", nullable = false, unique = true)
-    private String phoneNo; // 전화번호
+    public void updateInfo(String name, String pwHash, String email,
+                           String enFirst, String enLast,
+                           String bankName, String persAcctNo,
+                           String zipCode, String address, String addressDetail,
+                           String phoneNo, String profileImg) {
+        if (name != null)          this.name = name;
+        if (pwHash != null)        this.pwHash = pwHash;
+        if (email != null)         this.email = email;
+        if (enFirst != null)       this.enFirst = enFirst;
+        if (enLast != null)        this.enLast = enLast;
+        if (bankName != null)      this.bankName = bankName;
+        if (persAcctNo != null)    this.persAcctNo = persAcctNo;
+        if (zipCode != null)       this.zipCode = zipCode;
+        if (address != null)       this.address = address;
+        if (addressDetail != null) this.addressDetail = addressDetail;
+        if (phoneNo != null)       this.phoneNo = phoneNo;
+        if (profileImg != null)    this.profileImg = profileImg;
+    }
 
-    @Column(name = "profile_img")
-    private String profileImg; // 프로필 이미지 URL
-
-    @Column(nullable = false)
-    private String rrn; // → encryptedRrn 으로 변경 + 암호화 처리
-    // 주민등록번호
-
-
+    public void deactivate() {
+        this.active = false;
+    }
 }

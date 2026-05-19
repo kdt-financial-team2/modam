@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.domain.transaction.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
@@ -8,6 +9,8 @@ import com.intelliJ_JO.modam.domain.card.entity.Card;
 import com.intelliJ_JO.modam.domain.card.repository.CardRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
+import com.intelliJ_JO.modam.domain.notification.entity.NotificationType;
+import com.intelliJ_JO.modam.domain.notification.service.NotificationService;
 import com.intelliJ_JO.modam.domain.transaction.dto.TransactionRequestDto;
 import com.intelliJ_JO.modam.domain.transaction.dto.TransactionResponseDto;
 import com.intelliJ_JO.modam.domain.transaction.entity.Transaction;
@@ -19,6 +22,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +38,10 @@ public class TransactionService {
     private final AccountMemberRepository accountMemberRepository;
     private final MemberRepository memberRepository;
     private final CardRepository cardRepository;
+    private final NotificationService notificationService;
+
+    private static final List<TransactionType> WITHDRAW_TYPES =
+            List.of(TransactionType.WITHDRAW, TransactionType.PAYMENT);
 
     // 입금(DEPOSIT), 출금(WITHDRAW), 카드결제(PAYMENT) 처리 — 모든 거래의 진입점
     @Transactional
@@ -94,7 +104,44 @@ public class TransactionService {
                 .category(request.getCategory())
                 .build();
 
-        return new TransactionResponseDto(transactionRepository.save(transaction));
+        TransactionResponseDto result = new TransactionResponseDto(transactionRepository.save(transaction));
+        sendTransactionNotifications(account, member, type, amount, result.getAfterBalance());
+        return result;
+    }
+
+    private void sendTransactionNotifications(Account account, Member actor,
+                                              TransactionType type, Long amount, Long afterBalance) {
+        String accountPath = "/accounts/" + account.getId();
+
+        if (type == TransactionType.DEPOSIT) {
+            // 입금: 계좌의 ACCEPT 구성원 전체에게 알림
+            String msg = String.format("%,d원이 모임통장에 입금되었습니다. (잔액: %,d원)", amount, afterBalance);
+            accountMemberRepository.findByAccountIdAndInviteStatus(account.getId(), InviteStatus.ACCEPT)
+                    .forEach(am -> notificationService.send(am.getMember(), NotificationType.DEPOSIT, msg, accountPath));
+        } else {
+            // 출금/결제: 본인에게만 알림
+            String msg = String.format("%,d원이 출금되었습니다. (잔액: %,d원)", amount, afterBalance);
+            notificationService.send(actor, NotificationType.WITHDRAW, msg, accountPath);
+
+            // 1회 이체 한도 초과 경고
+            Long onceLimit = account.getOnceTransferLimit();
+            if (onceLimit != null && amount >= onceLimit) {
+                String warnMsg = String.format("1회 이체 한도(%,d원)를 초과한 출금이 발생했습니다.", onceLimit);
+                notificationService.send(actor, NotificationType.LIMIT_WARNING, warnMsg, accountPath);
+            }
+
+            // 1일 이체 한도 도달 경고
+            Long dailyLimit = account.getDailyTransferLimit();
+            if (dailyLimit != null) {
+                LocalDateTime startOfToday = LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
+                Long todayTotal = transactionRepository.sumWithdrawAmountSince(
+                        account.getId(), actor.getId(), WITHDRAW_TYPES, startOfToday);
+                if (todayTotal >= dailyLimit) {
+                    String warnMsg = String.format("오늘의 누적 출금액이 1일 이체 한도(%,d원)에 도달했습니다.", dailyLimit);
+                    notificationService.send(actor, NotificationType.LIMIT_WARNING, warnMsg, accountPath);
+                }
+            }
+        }
     }
 
     // 커서 기반 페이지네이션으로 거래 내역 조회 — lastTransactionId 없으면 최신순 첫 페이지

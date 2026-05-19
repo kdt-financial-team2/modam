@@ -14,6 +14,8 @@ public class AccountResponseDto {
     private Long balance;
     private Long availableBalance;
     private Long spendLimitAmount;
+    private Long onceTransferLimit;
+    private Long dailyTransferLimit;
     private LocalDateTime createdAt;
 
     public AccountResponseDto(Account account) {
@@ -24,6 +26,8 @@ public class AccountResponseDto {
         this.balance = account.getBalance();
         this.availableBalance = account.getAvailableBalance();
         this.spendLimitAmount = account.getSpendLimitAmount();
+        this.onceTransferLimit = account.getOnceTransferLimit();
+        this.dailyTransferLimit = account.getDailyTransferLimit();
         this.createdAt = account.getCreatedAt();
     }
 }

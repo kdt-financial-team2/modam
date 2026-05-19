@@ -1,7 +1,7 @@
 package com.intelliJ_JO.modam.domain.card.controller;
 
-import com.intelliJ_JO.modam.domain.card.dto.request.CardCreateRequestDto;
-import com.intelliJ_JO.modam.domain.card.dto.response.CardResponseDto;
+import com.intelliJ_JO.modam.domain.card.dto.CardCreateRequestDto;
+import com.intelliJ_JO.modam.domain.card.dto.CardResponseDto;
 import com.intelliJ_JO.modam.domain.card.entity.CardStatus;
 import com.intelliJ_JO.modam.domain.card.service.CardService;
 import com.intelliJ_JO.modam.global.response.GlobalResponse;
@@ -32,13 +32,14 @@ public class CardController {
     }
 
     // 3. 카드 상태 변경 (분실 신고, 일시 정지 등)
-    // 💡 URL 경로 예시: PATCH "/api/cards/1/status?status=LOST"
+    // 💡 URL 경로 예시: PATCH "/api/cards/1/status?memberId=1&status=LOST"
     @PatchMapping("/{cardId}/status")
     public GlobalResponse<Void> changeCardStatus(
             @PathVariable Long cardId,
-            @RequestParam CardStatus status) { // Enum 타입으로 안전하게 파라미터를 받습니다.
+            @RequestParam Long memberId,
+            @RequestParam CardStatus status) {
 
-        cardService.changeCardStatus(cardId, status);
+        cardService.changeCardStatus(cardId, memberId, status);
         return GlobalResponse.ok("카드 상태가 성공적으로 변경되었습니다.");
     }
 }

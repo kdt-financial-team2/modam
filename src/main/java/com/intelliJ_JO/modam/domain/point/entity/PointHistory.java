@@ -1,7 +1,6 @@
 package com.intelliJ_JO.modam.domain.point.entity;
 
 import com.intelliJ_JO.modam.domain.member.entity.Member;
-import com.intelliJ_JO.modam.domain.point.entity.PointType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,9 +12,10 @@ import java.time.LocalDateTime;
 
 // =========================================
 // 🔥 테이블명
-// point 테이블과 매핑
+// point_history 테이블과 매핑
 // =========================================
 @Table(name = "point_history")
+
 @Getter
 
 // =========================================
@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 // 엔티티 값 무분별 수정 방지
 // =========================================
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+
 @AllArgsConstructor
 @Builder
 
@@ -31,6 +32,7 @@ import java.time.LocalDateTime;
 // created_at 자동 생성
 // =========================================
 @EntityListeners(AuditingEntityListener.class)
+
 @SequenceGenerator(
         name = "point_seq_generator",
 
@@ -72,6 +74,25 @@ public class PointHistory {
     private PointType type;
 
     // =========================================
+    // 🔥 포인트 발생 사유 추가
+    //
+    // ex)
+    // ATTENDANCE
+    // SAVINGS_50
+    // CARD_PAYMENT
+    //
+    // 🔥 왜 포인트가 지급/사용 되었는지 저장
+    //
+    // type 과의 차이:
+    //
+    // type   → SAVE / SPEND
+    // reason → 왜 SAVE/SPEND 되었는지
+    // =========================================
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reason", nullable = false, length = 30)
+    private PointReason reason;
+
+    // =========================================
     // 포인트 변화량
     //
     // ex)
@@ -107,39 +128,5 @@ public class PointHistory {
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    // =========================================
-    // 포인트 적립 메서드
-    //
-    // ex)
-    // 출석 보상
-    // 저축 목표 달성 보상
-    // 소비 절약 보상
-    // =========================================
-    public void earnPoint(int point) {
-
-        // 🔥 적립 타입 저장
-        this.type = PointType.SAVE;
-
-        // 🔥 적립 포인트 저장
-        this.amt = point;
-    }
-
-    // =========================================
-    // 포인트 사용 메서드
-    //
-    // ex)
-    // 상점 아이템 구매
-    // 테마 구매
-    // 이모티콘 구매
-    // =========================================
-    public void usePoint(int point) {
-
-        // 🔥 사용 타입 저장
-        this.type = PointType.SPEND;
-
-        // 🔥 사용은 음수 처리
-        this.amt = -point;
-    }
 
 }
