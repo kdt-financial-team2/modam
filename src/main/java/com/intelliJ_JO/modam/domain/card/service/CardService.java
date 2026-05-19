@@ -2,8 +2,8 @@ package com.intelliJ_JO.modam.domain.card.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
-import com.intelliJ_JO.modam.domain.card.dto.request.CardCreateRequestDto;
-import com.intelliJ_JO.modam.domain.card.dto.response.CardResponseDto;
+import com.intelliJ_JO.modam.domain.card.dto.CardCreateRequestDto;
+import com.intelliJ_JO.modam.domain.card.dto.CardResponseDto;
 import com.intelliJ_JO.modam.domain.card.entity.Card;
 import com.intelliJ_JO.modam.domain.card.entity.CardStatus;
 import com.intelliJ_JO.modam.domain.card.repository.CardRepository;
