@@ -97,6 +97,10 @@ public class Member {
     private boolean active = true;
 
     @Builder.Default
+    @Column(nullable = false, length = 20)
+    private String theme = "pink";
+
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MemberRole role = MemberRole.USER;
@@ -122,5 +126,9 @@ public class Member {
 
     public void deactivate() {
         this.active = false;
+    }
+
+    public void updateTheme(String theme) {
+        this.theme = theme;
     }
 }
