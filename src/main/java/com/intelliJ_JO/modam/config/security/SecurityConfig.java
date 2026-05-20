@@ -39,12 +39,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authenticationProvider(authenticationProvider())
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/", "/login", "/signup", "/signup/**", "/terms",
                     "/members/join",
                     "/css/**", "/js/**", "/images/**",
-                    "/swagger-ui/**", "/v3/api-docs/**"
+                    "/swagger-ui/**", "/v3/api-docs/**",
+                    "/h2-console/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
