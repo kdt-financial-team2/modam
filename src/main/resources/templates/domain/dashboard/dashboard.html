@@ -11,7 +11,7 @@
 <body class="min-h-screen flex flex-col bg-white">
 
   <!-- 헤더 -->
-  <div th:replace="~{fragments/header :: nav}"></div>
+  <div th:replace="~{common/layout/header :: nav}"></div>
 
   <!-- 메인 콘텐츠 -->
   <main class="flex-1 w-full max-w-[1440px] mx-auto bg-gray-50">
@@ -286,7 +286,7 @@
   </main>
 
   <!-- 푸터 -->
-  <div th:replace="~{fragments/footer :: footer}"></div>
+  <div th:replace="~{common/layout/footer :: footer}"></div>
 
   <script>
     lucide.createIcons();

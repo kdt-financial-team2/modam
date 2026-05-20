@@ -10,7 +10,7 @@
 <body class="min-h-screen bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] flex flex-col">
 
   <!-- 헤더 -->
-  <header th:replace="~{fragments/header :: simple-header}"></header>
+  <header th:replace="~{common/layout/header :: simple-header}"></header>
 
   <!-- 메인 콘텐츠 -->
   <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
@@ -93,7 +93,7 @@
   </div>
 
   <!-- 푸터 -->
-  <footer th:replace="~{fragments/footer :: simple-footer}"></footer>
+  <footer th:replace="~{common/layout/footer :: simple-footer}"></footer>
 
   <script>
     lucide.createIcons();

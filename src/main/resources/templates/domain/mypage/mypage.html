@@ -8,7 +8,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="min-h-screen flex flex-col bg-white">
-  <div th:replace="~{fragments/header :: nav}"></div>
+  <div th:replace="~{common/layout/header :: nav}"></div>
 
   <main class="flex-1 w-full max-w-[1440px] mx-auto bg-gray-50">
     <div class="px-8 py-12">
@@ -157,7 +157,7 @@
     </div>
   </div>
 
-  <div th:replace="~{fragments/footer :: footer}"></div>
+  <div th:replace="~{common/layout/footer :: footer}"></div>
   <script>lucide.createIcons();</script>
 </body>
 </html>

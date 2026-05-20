@@ -10,7 +10,7 @@
 <body class="min-h-screen bg-[#FAFAFA] relative">
 
   <!-- 헤더 -->
-  <header th:replace="~{fragments/header :: simple-header}"></header>
+  <header th:replace="~{common/layout/header :: simple-header}"></header>
 
   <!-- 메인 콘텐츠 -->
   <div class="max-w-[800px] mx-auto px-8 py-12">
@@ -299,7 +299,7 @@
   </div>
 
   <!-- 푸터 -->
-  <footer th:replace="~{fragments/footer :: simple-footer}"></footer>
+  <footer th:replace="~{common/layout/footer :: simple-footer}"></footer>
 
   <script>
     lucide.createIcons();

@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen flex flex-col bg-white">
-  <header th:replace="~{fragments/header :: simple-header}"></header>
+  <header th:replace="~{common/layout/header :: simple-header}"></header>
 
   <main class="flex-1 max-w-[800px] mx-auto px-8 py-12">
     <h1 class="text-4xl font-bold text-gray-900 mb-10">이용약관</h1>
@@ -39,6 +39,6 @@
     </div>
   </main>
 
-  <footer th:replace="~{fragments/footer :: simple-footer}"></footer>
+  <footer th:replace="~{common/layout/footer :: simple-footer}"></footer>
 </body>
 </html>
