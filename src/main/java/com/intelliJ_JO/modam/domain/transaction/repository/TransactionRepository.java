@@ -49,6 +49,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                                            @Param("start") LocalDateTime start,
                                            @Param("end") LocalDateTime end);
 
+    // 소비 제한: 멤버별 기간 내 카테고리별 지출 합계
+    @Query("SELECT COALESCE(t.category, '기타'), SUM(t.amount) FROM Transaction t " +
+           "WHERE t.member.id = :memberId AND t.txType IN :types " +
+           "AND t.createdAt >= :start AND t.createdAt < :end " +
+           "GROUP BY COALESCE(t.category, '기타')")
+    List<Object[]> sumSpendGroupByCategoryAndMember(@Param("memberId") Long memberId,
+                                                    @Param("types") List<TransactionType> types,
+                                                    @Param("start") LocalDateTime start,
+                                                    @Param("end") LocalDateTime end);
+
     // 소비 분석: 월별 합계 (라인 차트용)
     @Query(value = "SELECT YEAR(created_at), MONTH(created_at), SUM(amt) " +
                    "FROM transaction WHERE acct_id = :accountId " +

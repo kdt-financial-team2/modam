@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- 공통 헤더 (로그인 후 네비게이션 포함) -->
+<nav th:fragment="nav" class="sticky top-0 z-30 bg-white border-b border-gray-100">
+  <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+    <a th:href="@{/dashboard}" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+      <img th:src="@{/images/logo.png}" alt="Modam Logo" class="h-20 w-auto object-contain"/>
+    </a>
+
+    <div class="flex items-center gap-10">
+      <a th:href="@{/consumption-history}"
+         th:classappend="${currentPage == 'consumption-history'} ? 'text-gray-900 font-medium border-b-2 border-[#F5A5A5]' : 'text-gray-600'"
+         class="text-[15px] hover:text-[#F5A5A5] transition-colors py-2">
+        소비기록
+      </a>
+      <a th:href="@{/savings}"
+         th:classappend="${currentPage == 'savings'} ? 'text-gray-900 font-medium border-b-2 border-[#F5A5A5]' : 'text-gray-600'"
+         class="text-[15px] hover:text-[#F5A5A5] transition-colors py-2">
+        목표저축
+      </a>
+      <a th:href="@{/point-shop}"
+         th:classappend="${currentPage == 'point-shop'} ? 'text-gray-900 font-medium border-b-2 border-[#F5A5A5]' : 'text-gray-600'"
+         class="text-[15px] hover:text-[#F5A5A5] transition-colors py-2 flex items-center gap-2">
+        <span>포인트</span>
+        <span class="text-[#F5A5A5] font-semibold text-sm" th:text="${couplePoints != null} ? ${#numbers.formatInteger(couplePoints, 0, 'COMMA') + 'P'} : '0P'">0P</span>
+      </a>
+
+      <!-- 알림 버튼 -->
+      <div class="relative ml-2" id="notificationContainer">
+        <button onclick="toggleNotifications()" class="w-11 h-11 rounded-full bg-[#FCE8E3] flex items-center justify-center hover:bg-[#FBD5CE] transition-colors relative">
+          <i data-lucide="bell" class="w-5 h-5 text-gray-700"></i>
+          <div th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}"
+               class="absolute -top-1 -right-1 w-5 h-5 bg-[#F5A5A5] rounded-full flex items-center justify-center">
+            <span class="text-white text-xs font-bold" th:text="${unreadNotificationCount}">0</span>
+          </div>
+        </button>
+
+        <!-- 알림 드롭다운 -->
+        <div id="notificationDropdown" class="hidden absolute right-0 mt-3 w-[360px] bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <h3 class="text-[17px] font-bold text-gray-900">알림</h3>
+            <button onclick="markAllAsRead()" class="text-sm text-[#F5A5A5] hover:text-[#F28B8B] transition-colors font-medium">전체 읽음</button>
+          </div>
+          <div class="max-h-[420px] overflow-y-auto p-2" id="notificationList">
+            <!-- 알림 목록 (서버에서 th:each로 렌더링) -->
+            <div th:each="notification : ${notifications}"
+                 th:classappend="${!notification.read} ? 'bg-[#FFF7F5] hover:bg-[#FFE4E8]' : 'hover:bg-gray-50'"
+                 class="w-full text-left px-4 py-3 rounded-xl mb-1 transition-colors">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-full bg-[#FCE8E3] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <i data-lucide="bell" class="w-5 h-5 text-[#F5A5A5]"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-800 mb-0.5" th:text="${notification.title}">알림 제목</p>
+                  <p class="text-xs text-gray-500 mb-1" th:text="${notification.description}">알림 내용</p>
+                  <p class="text-xs text-gray-400" th:text="${notification.time}">시간</p>
+                </div>
+              </div>
+            </div>
+            <!-- 알림 없을 때 -->
+            <div th:if="${#lists.isEmpty(notifications)}" class="text-center py-12 px-6">
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i data-lucide="bell" class="w-8 h-8 text-gray-400"></i>
+              </div>
+              <p class="text-gray-500 text-sm">알림이 없습니다</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 프로필 버튼 -->
+      <div class="relative" id="profileContainer">
+        <button onclick="toggleProfile()" class="w-11 h-11 rounded-full bg-[#FCE8E3] flex items-center justify-center hover:bg-[#FBD5CE] transition-colors">
+          <i data-lucide="user" class="w-5 h-5 text-gray-700"></i>
+        </button>
+        <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden">
+          <a th:href="@{/mypage}" class="flex items-center gap-3 px-5 py-3 text-gray-800 hover:bg-[#FFF7F5] transition-colors">
+            <i data-lucide="user" class="w-5 h-5"></i>
+            <span>마이페이지</span>
+          </a>
+          <form th:action="@{/logout}" method="post" class="w-full">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="w-full flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-[#FFF7F5] transition-colors">
+              <i data-lucide="log-out" class="w-5 h-5"></i>
+              <span>로그아웃</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- 로고만 있는 단순 헤더 (로그인/회원가입 등) -->
+<header th:fragment="simple-header" class="px-16 py-1 bg-white border-b border-gray-100 h-24 flex items-center">
+  <a th:href="@{/}" class="hover:opacity-80 transition-opacity">
+    <img th:src="@{/images/logo.png}" alt="Modam Logo" class="h-20 w-auto object-contain"/>
+  </a>
+</header>
+
+</body>
+</html>

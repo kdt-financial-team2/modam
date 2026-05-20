@@ -39,17 +39,23 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authenticationProvider(authenticationProvider())
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/login", "/members/join",
-                    "/swagger-ui/**", "/v3/api-docs/**"
+                    "/", "/login", "/signup", "/signup/**", "/terms",
+                    "/members/join",
+                    "/css/**", "/js/**", "/images/**",
+                    "/swagger-ui/**", "/swagger-ui.html",
+                    "/v3/api-docs", "/v3/api-docs/**",
+                    "/h2-console/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/", true)
+                .defaultSuccessUrl("/dashboard", true)
                 .failureUrl("/login?error")
                 .usernameParameter("userId")
                 .passwordParameter("password")

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>테마 설정 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen flex flex-col bg-white">
+  <div th:replace="~{common/layout/header :: nav}"></div>
+
+  <main class="flex-1 w-full max-w-[1440px] mx-auto bg-[#FAFAFA]">
+    <div class="max-w-[700px] mx-auto px-8 py-12">
+      <h1 class="text-4xl font-bold text-gray-900 mb-3">테마 설정</h1>
+      <p class="text-gray-600 mb-10">원하는 테마 색상을 선택해보세요</p>
+
+      <form th:action="@{/theme-settings}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+          <h2 class="text-xl font-bold text-gray-900 mb-6">컬러 테마 선택</h2>
+
+          <div class="grid grid-cols-3 gap-4 mb-8">
+            <!-- 핑크 (기본) -->
+            <label class="cursor-pointer">
+              <input type="radio" name="theme" value="pink" th:checked="${currentTheme == 'pink' or currentTheme == null}" class="hidden theme-radio"/>
+              <div class="theme-card border-2 border-[#F5A5A5] rounded-2xl p-4 text-center transition-all">
+                <div class="w-12 h-12 bg-[#F5A5A5] rounded-full mx-auto mb-3"></div>
+                <p class="font-medium text-gray-800">핑크 (기본)</p>
+                <div class="flex gap-1 justify-center mt-2">
+                  <div class="w-4 h-4 rounded-full bg-[#F5A5A5]"></div>
+                  <div class="w-4 h-4 rounded-full bg-[#FCE8E3]"></div>
+                  <div class="w-4 h-4 rounded-full bg-[#A5C9E8]"></div>
+                </div>
+              </div>
+            </label>
+
+            <!-- 라벤더 -->
+            <label class="cursor-pointer">
+              <input type="radio" name="theme" value="lavender" th:checked="${currentTheme == 'lavender'}" class="hidden theme-radio"/>
+              <div class="theme-card border-2 border-gray-200 rounded-2xl p-4 text-center transition-all hover:border-purple-300">
+                <div class="w-12 h-12 bg-purple-400 rounded-full mx-auto mb-3"></div>
+                <p class="font-medium text-gray-800">라벤더</p>
+                <div class="flex gap-1 justify-center mt-2">
+                  <div class="w-4 h-4 rounded-full bg-purple-400"></div>
+                  <div class="w-4 h-4 rounded-full bg-purple-100"></div>
+                  <div class="w-4 h-4 rounded-full bg-blue-300"></div>
+                </div>
+              </div>
+            </label>
+
+            <!-- 민트 -->
+            <label class="cursor-pointer">
+              <input type="radio" name="theme" value="mint" th:checked="${currentTheme == 'mint'}" class="hidden theme-radio"/>
+              <div class="theme-card border-2 border-gray-200 rounded-2xl p-4 text-center transition-all hover:border-green-300">
+                <div class="w-12 h-12 bg-emerald-400 rounded-full mx-auto mb-3"></div>
+                <p class="font-medium text-gray-800">민트</p>
+                <div class="flex gap-1 justify-center mt-2">
+                  <div class="w-4 h-4 rounded-full bg-emerald-400"></div>
+                  <div class="w-4 h-4 rounded-full bg-emerald-100"></div>
+                  <div class="w-4 h-4 rounded-full bg-teal-300"></div>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <button type="submit" class="w-full py-4 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors shadow-md font-medium">테마 저장하기</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <div th:replace="~{common/layout/footer :: footer}"></div>
+  <script>
+    lucide.createIcons();
+
+    document.querySelectorAll('.theme-radio').forEach(radio => {
+      radio.addEventListener('change', function() {
+        document.querySelectorAll('.theme-card').forEach(card => {
+          card.classList.remove('border-[#F5A5A5]', 'border-purple-300', 'border-green-300');
+          card.classList.add('border-gray-200');
+        });
+        this.nextElementSibling.classList.remove('border-gray-200');
+        this.nextElementSibling.classList.add('border-[#F5A5A5]');
+      });
+    });
+  </script>
+</body>
+</html>

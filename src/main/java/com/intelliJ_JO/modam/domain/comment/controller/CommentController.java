@@ -6,6 +6,8 @@ import com.intelliJ_JO.modam.domain.comment.dto.request.CommentUpdateRequestDto;
 import com.intelliJ_JO.modam.domain.comment.dto.response.CommentResponseDto;
 import com.intelliJ_JO.modam.domain.comment.service.CommentService;
 import com.intelliJ_JO.modam.global.response.GlobalResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,13 +15,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "소비 기록 댓글", description = "소비 기록 댓글 작성/조회/수정/삭제 API")
 @RestController
 @RequiredArgsConstructor
 public class CommentController {
 
     private final CommentService commentService;
 
-    // POST /api/spend-records/{recordId}/comments — 댓글 작성
+    @Operation(summary = "댓글 작성")
     @PostMapping("/api/spend-records/{recordId}/comments")
     public GlobalResponse<CommentResponseDto> createComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -29,7 +32,7 @@ public class CommentController {
                 userDetails.getMember().getId(), recordId, request));
     }
 
-    // GET /api/spend-records/{recordId}/comments — 댓글 목록 조회
+    @Operation(summary = "댓글 목록 조회")
     @GetMapping("/api/spend-records/{recordId}/comments")
     public GlobalResponse<List<CommentResponseDto>> getComments(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -38,7 +41,7 @@ public class CommentController {
                 userDetails.getMember().getId(), recordId));
     }
 
-    // PATCH /api/comments/{commentId} — 댓글 수정 (본인만)
+    @Operation(summary = "댓글 수정")
     @PatchMapping("/api/comments/{commentId}")
     public GlobalResponse<CommentResponseDto> updateComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -48,7 +51,7 @@ public class CommentController {
                 userDetails.getMember().getId(), commentId, request));
     }
 
-    // DELETE /api/comments/{commentId} — 댓글 삭제 (본인만)
+    @Operation(summary = "댓글 삭제")
     @DeleteMapping("/api/comments/{commentId}")
     public GlobalResponse<Void> deleteComment(
             @AuthenticationPrincipal CustomUserDetails userDetails,

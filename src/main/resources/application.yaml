@@ -6,17 +6,15 @@ spring:
     name: modam
 
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:file:./data/modamdb
     driver-class-name: org.h2.Driver
     username: test
     password: 1234
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    properties:
-      "[hibernate.format_sql]": true
+      ddl-auto: update
+    show-sql: false
 
   h2:
     console:
@@ -32,4 +30,5 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    url: /swagger.yml
+    path: /swagger-ui.html
+    url: /v3/api-docs
