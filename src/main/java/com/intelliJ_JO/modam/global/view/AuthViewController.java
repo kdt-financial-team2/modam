@@ -5,6 +5,9 @@ import com.intelliJ_JO.modam.domain.member.dto.SignupForm;
 import com.intelliJ_JO.modam.domain.member.service.MemberService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +27,20 @@ public class AuthViewController {
     }
 
     @GetMapping("/login")
-    public String login() {
+    public String login(@RequestParam(required = false) String error,
+                        HttpSession session,
+                        Model model) {
+        if (error != null) {
+            AuthenticationException ex = (AuthenticationException)
+                    session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+            String message = "아이디 또는 비밀번호가 올바르지 않습니다.";
+            if (ex instanceof DisabledException) {
+                message = "비활성화된 계정입니다. 관리자에게 문의하세요.";
+            } else if (ex instanceof BadCredentialsException) {
+                message = "아이디 또는 비밀번호가 올바르지 않습니다.";
+            }
+            model.addAttribute("loginError", message);
+        }
         return "domain/auth/login";
     }
 
