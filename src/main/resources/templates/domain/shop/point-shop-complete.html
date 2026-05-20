@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>구매 완료 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen flex flex-col bg-white">
+  <div th:replace="~{fragments/header :: nav}"></div>
+  <main class="flex-1 w-full max-w-[1440px] mx-auto bg-[#FAFAFA]">
+    <div class="max-w-[500px] mx-auto px-8 py-12 text-center">
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-12">
+        <div class="w-24 h-24 bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-full flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="gift" class="w-12 h-12 text-[#F5A5A5]"></i>
+        </div>
+        <h1 class="text-4xl font-bold text-gray-900 mb-3">구매 완료!</h1>
+        <p class="text-gray-600 mb-8"><span th:text="${product.name}">상품명</span>을(를) 구매했습니다</p>
+
+        <div class="bg-[#FCE8E3] rounded-2xl p-6 mb-8">
+          <p class="text-sm text-gray-600 mb-1">차감된 포인트</p>
+          <p class="text-3xl font-bold text-[#F5A5A5]">-<span th:text="${#numbers.formatInteger(product.pointCost, 0, 'COMMA')}">0</span>P</p>
+          <p class="text-sm text-gray-500 mt-2">잔여 포인트: <span th:text="${#numbers.formatInteger(remainingPoints, 0, 'COMMA')}">0</span>P</p>
+        </div>
+
+        <div class="flex gap-4">
+          <a th:href="@{/point-shop}" class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors font-medium">쇼핑 계속</a>
+          <a th:href="@{/dashboard}" class="flex-1 py-4 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors font-medium">홈으로</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div th:replace="~{fragments/footer :: footer}"></div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

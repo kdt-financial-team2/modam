@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>소비 제한 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen flex flex-col bg-white">
+  <div th:replace="~{fragments/header :: nav}"></div>
+
+  <main class="flex-1 w-full max-w-[1440px] mx-auto bg-gray-50">
+    <div class="px-8 py-12 max-w-[800px] mx-auto">
+      <h1 class="text-4xl font-bold text-gray-900 mb-3">소비 제한</h1>
+      <p class="text-gray-600 text-lg mb-10">카테고리별 예산을 설정하고 관리하세요</p>
+
+      <form th:action="@{/spending-limit}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="space-y-6">
+          <div th:each="limit : ${spendingLimits}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-[#FCE8E3] rounded-xl flex items-center justify-center">
+                  <i th:attr="data-lucide=${limit.iconName}" class="w-6 h-6 text-[#F5A5A5]"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900" th:text="${limit.category}">카테고리</h3>
+                  <p class="text-sm text-gray-500">이번 달 지출: ₩<span th:text="${#numbers.formatInteger(limit.spent, 0, 'COMMA')}">0</span></p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="number" th:name="${'limit_' + limit.category}" th:value="${limit.budgetAmount}"
+                       class="w-32 px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-[#F5A5A5] focus:outline-none text-right text-gray-900"
+                       placeholder="0"/>
+                <span class="text-gray-600">원</span>
+              </div>
+            </div>
+
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="h-2 rounded-full transition-all"
+                   th:classappend="${limit.percentage > 80} ? 'bg-red-400' : 'bg-[#F5A5A5]'"
+                   th:style="'width: ' + ${limit.percentage > 100 ? 100 : limit.percentage} + '%'"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-1"><span th:text="${limit.percentage}">0</span>% 사용</p>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full mt-8 py-4 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors shadow-md font-medium text-lg">저장하기</button>
+      </form>
+    </div>
+  </main>
+
+  <div th:replace="~{fragments/footer :: footer}"></div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

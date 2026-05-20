@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>파트너 초대 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen flex flex-col bg-white">
+  <div th:replace="~{fragments/header :: nav}"></div>
+
+  <main class="flex-1 w-full max-w-[1440px] mx-auto bg-[#FAFAFA]">
+    <div class="max-w-[600px] mx-auto px-8 py-12">
+      <h1 class="text-4xl font-bold text-gray-900 mb-3">파트너 초대</h1>
+      <p class="text-gray-600 text-lg mb-10">파트너에게 초대 코드를 공유하세요</p>
+
+      <!-- 이미 연결된 경우 -->
+      <div th:if="${partnerConnected}" class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 text-center mb-8">
+        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-[#F5A5A5] to-[#FFB8B8] flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="user" class="w-10 h-10 text-white"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2" th:text="${partnerName}">파트너 이름</h2>
+        <p class="text-green-600 font-medium">✓ 연결 완료</p>
+      </div>
+
+      <!-- 초대 코드 -->
+      <div th:unless="${partnerConnected}" class="space-y-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">내 초대 코드</h2>
+          <div class="bg-[#FCE8E3] rounded-2xl p-6 flex items-center justify-between">
+            <span class="text-3xl font-bold text-[#F5A5A5] font-mono tracking-widest" th:text="${inviteCode}">MODAM123</span>
+            <button onclick="copyInviteCode()" class="p-3 bg-white rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
+              <i data-lucide="copy" class="w-5 h-5 text-gray-600"></i>
+            </button>
+          </div>
+          <div id="copyMsg" class="hidden text-center mt-2 text-sm text-[#F5A5A5]">✓ 코드가 복사되었습니다</div>
+          <p class="text-sm text-gray-500 mt-4">이 코드를 파트너에게 공유하면 연결됩니다</p>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">파트너 코드 입력</h2>
+          <form th:action="@{/invite/connect}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="flex gap-3">
+              <input type="text" name="partnerCode" placeholder="파트너 코드를 입력하세요" maxlength="10"
+                     class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors uppercase tracking-widest text-center text-lg"/>
+              <button type="submit" class="px-6 py-4 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors font-medium">연결하기</button>
+            </div>
+            <p th:if="${connectError}" class="text-red-500 text-sm mt-2" th:text="${connectError}">오류 메시지</p>
+          </form>
+        </div>
+
+        <!-- 커플 연결 시 포인트 안내 -->
+        <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-2xl p-6">
+          <div class="flex items-start gap-3">
+            <i data-lucide="gift" class="w-6 h-6 text-[#F5A5A5] flex-shrink-0 mt-0.5"></i>
+            <div>
+              <p class="font-semibold text-gray-800 mb-1">커플 연결 기념 포인트!</p>
+              <p class="text-sm text-gray-600">파트너와 연결하면 5,000P가 즉시 지급됩니다</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div th:replace="~{fragments/footer :: footer}"></div>
+
+  <script>
+    lucide.createIcons();
+    function copyInviteCode() {
+      navigator.clipboard.writeText(document.querySelector('.font-mono').textContent.trim()).then(() => {
+        document.getElementById('copyMsg').classList.remove('hidden');
+        setTimeout(() => document.getElementById('copyMsg').classList.add('hidden'), 2000);
+      });
+    }
+  </script>
+</body>
+</html>
