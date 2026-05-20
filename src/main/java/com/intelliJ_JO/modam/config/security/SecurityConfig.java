@@ -40,7 +40,7 @@ public class SecurityConfig {
         http
             .authenticationProvider(authenticationProvider())
             .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/", "/login", "/signup", "/signup/**", "/terms",
