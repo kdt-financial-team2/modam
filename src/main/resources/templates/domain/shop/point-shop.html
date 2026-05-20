@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>포인트샵 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen flex flex-col bg-white">
+  <div th:replace="~{common/layout/header :: nav}"></div>
+
+  <main class="flex-1 w-full max-w-[1440px] mx-auto bg-gray-50">
+    <div class="px-8 py-12">
+      <!-- 포인트 현황 배너 -->
+      <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-3xl p-8 mb-10">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">포인트샵</h1>
+            <p class="text-gray-600">모은 포인트로 다양한 상품을 구매해보세요</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm text-gray-600 mb-1">보유 포인트</p>
+            <p class="text-5xl font-bold text-[#F5A5A5]"><span th:text="${#numbers.formatInteger(couplePoints, 0, 'COMMA')}">0</span>P</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카테고리 필터 -->
+      <div class="flex gap-3 mb-8 flex-wrap">
+        <a th:href="@{/point-shop}"
+           th:classappend="${selectedCategory == null} ? 'bg-[#F5A5A5] text-white' : 'bg-white text-gray-700 hover:border-[#F5A5A5]'"
+           class="px-5 py-2.5 rounded-full border-2 border-gray-200 transition-colors font-medium">전체</a>
+        <a th:each="cat : ${categories}"
+           th:href="@{/point-shop(category=${cat})}"
+           th:text="${cat}"
+           th:classappend="${selectedCategory == cat} ? 'bg-[#F5A5A5] text-white' : 'bg-white text-gray-700 hover:border-[#F5A5A5]'"
+           class="px-5 py-2.5 rounded-full border-2 border-gray-200 transition-colors font-medium">카테고리</a>
+      </div>
+
+      <!-- 상품 그리드 -->
+      <div class="grid grid-cols-4 gap-6">
+        <div th:each="product : ${products}" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:border-[#FCE8E3] transition-all">
+          <a th:href="@{/point-shop/product/{id}(id=${product.id})}">
+            <div class="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
+              <img th:if="${product.imageUrl}" th:src="${product.imageUrl}" th:alt="${product.name}" class="w-full h-full object-cover"/>
+              <i th:unless="${product.imageUrl}" data-lucide="gift" class="w-16 h-16 text-gray-300"></i>
+            </div>
+            <div class="p-5">
+              <span class="text-xs text-[#F5A5A5] font-medium bg-[#FCE8E3] px-2 py-1 rounded-full" th:text="${product.category}">카테고리</span>
+              <h3 class="text-gray-900 font-semibold mt-2 mb-1" th:text="${product.name}">상품명</h3>
+              <p class="text-sm text-gray-500 mb-3" th:text="${product.description}">설명</p>
+              <div class="flex items-center justify-between">
+                <span class="text-lg font-bold text-[#F5A5A5]"><span th:text="${#numbers.formatInteger(product.pointCost, 0, 'COMMA')}">0</span>P</span>
+                <span th:if="${couplePoints >= product.pointCost}"
+                      class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">구매 가능</span>
+                <span th:unless="${couplePoints >= product.pointCost}"
+                      class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">포인트 부족</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div th:if="${#lists.isEmpty(products)}" class="text-center py-20">
+        <i data-lucide="gift" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+        <p class="text-xl text-gray-500">상품이 없습니다</p>
+      </div>
+    </div>
+  </main>
+
+  <div th:replace="~{common/layout/footer :: footer}"></div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
