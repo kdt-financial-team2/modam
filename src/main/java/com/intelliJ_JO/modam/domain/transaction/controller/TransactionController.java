@@ -4,12 +4,15 @@ import com.intelliJ_JO.modam.domain.transaction.dto.TransactionRequestDto;
 import com.intelliJ_JO.modam.domain.transaction.dto.TransactionResponseDto;
 import com.intelliJ_JO.modam.domain.transaction.service.TransactionService;
 import com.intelliJ_JO.modam.global.response.GlobalResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "거래 내역", description = "거래 생성/조회 API")
 @RestController
 @RequestMapping("/api/transactions")
 @RequiredArgsConstructor
@@ -17,14 +20,14 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    // 거래 내역 생성: 요청 본문의 거래 정보를 검증 후 새 거래를 등록하고 결과를 반환
+    @Operation(summary = "거래 생성")
     @PostMapping
     public GlobalResponse<TransactionResponseDto> createTransaction(
             @Valid @RequestBody TransactionRequestDto request) {
         return GlobalResponse.ok(transactionService.createTransaction(request));
     }
 
-    // 계좌 거래 목록 조회: 커서 기반 페이지네이션으로 특정 계좌의 거래 내역을 size 개씩 반환
+    @Operation(summary = "계좌 거래 목록 조회 (커서 기반 페이지네이션)")
     @GetMapping("/{accountId}")
     public GlobalResponse<List<TransactionResponseDto>> getTransactions(
             @PathVariable Long accountId,

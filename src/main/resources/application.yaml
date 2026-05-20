@@ -6,7 +6,7 @@ spring:
     name: modam
 
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:file:./data/modamdb
     driver-class-name: org.h2.Driver
     username: test
     password: 1234
@@ -30,4 +30,4 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    url: /swagger.yml
+    path: /swagger-ui.html
