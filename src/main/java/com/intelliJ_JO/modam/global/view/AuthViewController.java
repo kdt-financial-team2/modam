@@ -155,14 +155,4 @@ public class AuthViewController {
     public String terms() {
         return "domain/auth/terms";
     }
-
-    @GetMapping("/account-setup")
-    public String accountSetup() {
-        return "domain/auth/account-setup";
-    }
-
-    @GetMapping("/account-setup-complete")
-    public String accountSetupComplete() {
-        return "domain/auth/account-setup-complete";
-    }
 }
