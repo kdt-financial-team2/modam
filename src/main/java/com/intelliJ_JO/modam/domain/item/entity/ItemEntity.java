@@ -48,6 +48,18 @@ public class ItemEntity {
     @Column(name = "img_url")
     private String imgUrl;
 
+    // ==============================
+    // 이모지 (이미지 없을 때 대체 표시)
+    // ==============================
+    @Column(name = "image", length = 10)
+    private String image;
+
+    // ==============================
+    // 상품 설명
+    // ==============================
+    @Column(name = "description", length = 500)
+    private String description;
+
     // =========================================================
     // [수정 포인트] 활성 여부 기존 String "Y/N" 방식 → ENUM으로 변경
     //
