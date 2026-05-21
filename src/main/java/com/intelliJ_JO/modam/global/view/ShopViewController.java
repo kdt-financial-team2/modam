@@ -15,7 +15,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
-@RequiredArgsConstructor
 public class ShopViewController {
 
     private final ShopService shopService;

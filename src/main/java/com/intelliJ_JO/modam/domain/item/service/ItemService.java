@@ -4,6 +4,7 @@ import com.intelliJ_JO.modam.domain.item.entity.ItemEntity;
 import com.intelliJ_JO.modam.domain.item.enums.ItemStatus;
 import com.intelliJ_JO.modam.domain.item.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class ItemService {
     );
 
     public List<Map<String, String>> getCategories() {
-        return itemRepository.findDistinctItemTypeByIsActive(ItemStatus.ACTIVE)
+        return itemRepository.findDistinctItemTypesByIsActive(ItemStatus.ACTIVE)
                 .stream()
                 .map(type -> Map.of(
                         "value", type,
@@ -33,8 +34,8 @@ public class ItemService {
 
     public List<ItemEntity> getItems(String category) {
         if (category == null || category.isBlank()) {
-            return itemRepository.findByIsActive(ItemStatus.ACTIVE);
+            return itemRepository.findByIsActive(ItemStatus.ACTIVE, Pageable.unpaged()).getContent();
         }
-        return itemRepository.findByItemTypeAndIsActive(category, ItemStatus.ACTIVE);
+        return itemRepository.findByItemTypeAndIsActive(category, ItemStatus.ACTIVE, Pageable.unpaged()).getContent();
     }
 }
