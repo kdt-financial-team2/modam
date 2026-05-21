@@ -6,6 +6,7 @@
   <title>회원가입 - 모담</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body class="min-h-screen bg-[#FAFAFA] relative">
 
@@ -309,9 +310,13 @@
     }
 
     function searchAddress() {
-      // 카카오 우편번호 API 연동 예시
-      // new daum.Postcode({ oncomplete: function(data) { ... } }).open();
-      alert('주소 검색 API를 연동해주세요 (카카오 Postcode API)');
+      new daum.Postcode({
+        oncomplete: function(data) {
+          document.getElementById('postalCode').value = data.zonecode;
+          document.getElementById('address').value = data.roadAddress || data.jibunAddress;
+          document.getElementById('addressDetail').focus();
+        }
+      }).open();
     }
   </script>
 </body>
