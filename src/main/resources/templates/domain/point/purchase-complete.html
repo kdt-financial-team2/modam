@@ -27,7 +27,7 @@
 <body class="min-h-screen bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] flex flex-col">
 
   <!-- ===== 헤더 ===== -->
-  <th:block th:replace="~{layout/header :: nav}"></th:block>
+  <th:block th:replace="~{common/layout/header :: nav}"></th:block>
 
   <!-- ===== 메인 콘텐츠 ===== -->
   <main class="flex-1 flex flex-col items-center justify-center px-8 py-12">
@@ -118,7 +118,7 @@
   </main>
 
   <!-- ===== 푸터 ===== -->
-  <th:block th:replace="~{layout/footer :: footer}"></th:block>
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
 
   <script th:inline="javascript">
     const serverProduct       = /*[[${product}]]*/ null;
@@ -148,6 +148,6 @@
       launchConfetti();
     });
   </script>
-  <th:block th:replace="~{layout/header :: scripts}"></th:block>
+  <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
 </body>
 </html>

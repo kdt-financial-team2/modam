@@ -92,10 +92,22 @@
         </div>
       </div>
 
-      <a th:href="@{/login}"
-         class="block w-full py-5 bg-[#F5A5A5] text-white text-xl rounded-2xl hover:bg-[#F28B8B] transition-colors shadow-lg">
-        모담 시작하기
-      </a>
+      <!-- 모임통장 개설 여부 선택 -->
+      <div class="mb-6">
+        <p class="text-lg text-gray-700 mb-4">모임통장을 지금 바로 개설하시겠어요?</p>
+        <div class="grid grid-cols-2 gap-4">
+          <a th:href="@{/group-account/new}"
+             class="flex flex-col items-center gap-2 py-5 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors shadow-lg">
+            <i data-lucide="heart" class="w-7 h-7"></i>
+            <span class="text-lg">지금 개설하기</span>
+          </a>
+          <a th:href="@{/login}"
+             class="flex flex-col items-center gap-2 py-5 bg-gray-100 text-gray-600 rounded-2xl hover:bg-gray-200 transition-colors">
+            <i data-lucide="clock" class="w-7 h-7"></i>
+            <span class="text-lg">나중에 할게요</span>
+          </a>
+        </div>
+      </div>
     </div>
 
   </div>

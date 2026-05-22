@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class SavingsViewController {
 
     @GetMapping("/savings")
-    public String savings() {
-        return "domain/savings/savings";
+    public String savingsList() {
+        return "domain/savings/savings-list";
     }
 
-    @GetMapping("/savings-goal-setup")
+    @GetMapping("/savings/setup")
     public String savingsGoalSetup() {
         return "domain/savings/savings-goal-setup";
     }

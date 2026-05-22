@@ -4,10 +4,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class InviteViewController {
+public class CoupleViewController {
 
     @GetMapping("/invite")
     public String invite() {
-        return "domain/onboarding/invite";
+        return "domain/couple/invite";
     }
 }
