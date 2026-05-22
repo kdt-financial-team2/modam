@@ -1,10 +1,10 @@
-package com.intelliJ_JO.modam.domain.spend.service;
+package com.intelliJ_JO.modam.domain.spendinglimit.service;
 
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
-import com.intelliJ_JO.modam.domain.spend.dto.SpendingLimitDto;
-import com.intelliJ_JO.modam.domain.spend.entity.SpendingLimit;
-import com.intelliJ_JO.modam.domain.spend.repository.SpendingLimitRepository;
+import com.intelliJ_JO.modam.domain.spendinglimit.dto.SpendingLimitDto;
+import com.intelliJ_JO.modam.domain.spendinglimit.entity.SpendingLimit;
+import com.intelliJ_JO.modam.domain.spendinglimit.repository.SpendingLimitRepository;
 import com.intelliJ_JO.modam.domain.transaction.entity.TransactionType;
 import com.intelliJ_JO.modam.domain.transaction.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;

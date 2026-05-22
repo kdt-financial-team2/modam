@@ -1,6 +1,6 @@
-package com.intelliJ_JO.modam.domain.spend.dto;
+package com.intelliJ_JO.modam.domain.spendrecord.dto;
 
-import com.intelliJ_JO.modam.domain.spend.entity.SpendRecord;
+import com.intelliJ_JO.modam.domain.spendrecord.entity.SpendRecord;
 import com.intelliJ_JO.modam.domain.transaction.entity.Transaction;
 import lombok.Getter;
 

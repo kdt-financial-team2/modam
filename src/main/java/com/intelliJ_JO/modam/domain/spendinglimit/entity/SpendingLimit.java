@@ -1,4 +1,4 @@
-package com.intelliJ_JO.modam.domain.spend.entity;
+package com.intelliJ_JO.modam.domain.spendinglimit.entity;
 
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import jakarta.persistence.*;

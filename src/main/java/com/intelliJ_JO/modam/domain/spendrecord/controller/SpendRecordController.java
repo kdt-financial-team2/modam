@@ -1,10 +1,10 @@
-package com.intelliJ_JO.modam.domain.spend.controller;
+package com.intelliJ_JO.modam.domain.spendrecord.controller;
 
 import com.intelliJ_JO.modam.config.security.CustomUserDetails;
-import com.intelliJ_JO.modam.domain.spend.dto.SpendRecordCreateRequestDto;
-import com.intelliJ_JO.modam.domain.spend.dto.SpendRecordResponseDto;
-import com.intelliJ_JO.modam.domain.spend.dto.SpendRecordUpdateRequestDto;
-import com.intelliJ_JO.modam.domain.spend.service.SpendRecordService;
+import com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto;
+import com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordResponseDto;
+import com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordUpdateRequestDto;
+import com.intelliJ_JO.modam.domain.spendrecord.service.SpendRecordService;
 import com.intelliJ_JO.modam.global.response.GlobalResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

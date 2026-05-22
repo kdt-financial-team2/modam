@@ -1,4 +1,4 @@
-package com.intelliJ_JO.modam.domain.spend.dto;
+package com.intelliJ_JO.modam.domain.spendinglimit.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

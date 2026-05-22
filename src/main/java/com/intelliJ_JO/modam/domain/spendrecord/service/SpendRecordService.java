@@ -1,12 +1,12 @@
-package com.intelliJ_JO.modam.domain.spend.service;
+package com.intelliJ_JO.modam.domain.spendrecord.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
-import com.intelliJ_JO.modam.domain.spend.dto.SpendRecordCreateRequestDto;
-import com.intelliJ_JO.modam.domain.spend.dto.SpendRecordResponseDto;
-import com.intelliJ_JO.modam.domain.spend.dto.SpendRecordUpdateRequestDto;
-import com.intelliJ_JO.modam.domain.spend.entity.SpendRecord;
-import com.intelliJ_JO.modam.domain.spend.repository.SpendRecordRepository;
+import com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto;
+import com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordResponseDto;
+import com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordUpdateRequestDto;
+import com.intelliJ_JO.modam.domain.spendrecord.entity.SpendRecord;
+import com.intelliJ_JO.modam.domain.spendrecord.repository.SpendRecordRepository;
 import com.intelliJ_JO.modam.domain.transaction.entity.Transaction;
 import com.intelliJ_JO.modam.domain.transaction.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,6 @@ public class SpendRecordService {
         Transaction transaction = transactionRepository.findById(request.getTransactionId())
                 .orElseThrow(() -> new IllegalArgumentException("거래 내역을 찾을 수 없습니다."));
 
-        // 본인의 거래에만 소비 기록 생성 가능
         if (!transaction.getMember().getId().equals(memberId)) {
             throw new IllegalArgumentException("본인의 거래에만 소비 기록을 생성할 수 있습니다.");
         }
@@ -51,7 +50,6 @@ public class SpendRecordService {
         return new SpendRecordResponseDto(spendRecordRepository.save(spendRecord));
     }
 
-    // 거래 ID로 단건 조회 — 해당 계좌의 ACCEPT 구성원만 접근 가능
     public SpendRecordResponseDto getSpendRecordByTransaction(Long memberId, Long transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new IllegalArgumentException("거래 내역을 찾을 수 없습니다."));
@@ -65,7 +63,6 @@ public class SpendRecordService {
         return new SpendRecordResponseDto(spendRecord);
     }
 
-    // 계좌별 소비 기록 목록 — ACCEPT 구성원만 접근 가능, 커서 기반 페이지네이션
     public List<SpendRecordResponseDto> getSpendRecordsByAccount(Long memberId, Long accountId,
                                                                   Long lastRecordId, int size) {
         accountMemberRepository.findByAccountIdAndMemberId(accountId, memberId)
@@ -88,7 +85,6 @@ public class SpendRecordService {
         SpendRecord spendRecord = spendRecordRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("소비 기록을 찾을 수 없습니다."));
 
-        // 본인의 거래에 대한 소비 기록만 수정 가능
         if (!spendRecord.getTransaction().getMember().getId().equals(memberId)) {
             throw new IllegalArgumentException("본인의 소비 기록만 수정할 수 있습니다.");
         }
@@ -107,7 +103,6 @@ public class SpendRecordService {
         SpendRecord spendRecord = spendRecordRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("소비 기록을 찾을 수 없습니다."));
 
-        // 본인의 거래에 대한 소비 기록만 삭제 가능
         if (!spendRecord.getTransaction().getMember().getId().equals(memberId)) {
             throw new IllegalArgumentException("본인의 소비 기록만 삭제할 수 있습니다.");
         }

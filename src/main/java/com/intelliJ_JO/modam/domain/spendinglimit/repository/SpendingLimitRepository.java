@@ -1,6 +1,6 @@
-package com.intelliJ_JO.modam.domain.spend.repository;
+package com.intelliJ_JO.modam.domain.spendinglimit.repository;
 
-import com.intelliJ_JO.modam.domain.spend.entity.SpendingLimit;
+import com.intelliJ_JO.modam.domain.spendinglimit.entity.SpendingLimit;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
