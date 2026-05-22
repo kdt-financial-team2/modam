@@ -1,5 +1,11 @@
 package com.intelliJ_JO.modam.domain.member.service;
 
+import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
+import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
+import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
+import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
 import com.intelliJ_JO.modam.domain.member.dto.*;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
@@ -16,6 +22,8 @@ import java.util.List;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final AccountRepository accountRepository;
+    private final AccountMemberRepository accountMemberRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Transactional
@@ -59,7 +67,22 @@ public class MemberService {
                 .rrn(passwordEncoder.encode(request.getRrn()))
                 .build();
 
-        return MemberCreateResponse.from(memberRepository.save(member));
+        Member saved = memberRepository.save(member);
+
+        if (request.getPersAcctNo() != null && !request.getPersAcctNo().isBlank()) {
+            Account account = accountRepository.save(Account.builder()
+                    .accountNumber(request.getPersAcctNo())
+                    .accountType(AccountType.PERSONAL)
+                    .build());
+
+            accountMemberRepository.save(AccountMember.builder()
+                    .account(account)
+                    .member(saved)
+                    .inviteStatus(InviteStatus.ACCEPT)
+                    .build());
+        }
+
+        return MemberCreateResponse.from(saved);
     }
 
     public MemberListResponse getMembers() {
