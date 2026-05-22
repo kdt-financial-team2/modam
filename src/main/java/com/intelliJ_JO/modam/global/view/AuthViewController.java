@@ -10,7 +10,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -20,9 +19,11 @@ public class AuthViewController {
     private static final String SESSION_SIGNUP = "signupForm";
 
     @GetMapping("/login")
-    public String login(@RequestParam(required = false) String error, Model model) {
-        if (error != null) {
-            model.addAttribute("loginError", "아이디 또는 비밀번호가 일치하지 않습니다");
+    public String login(HttpSession session, Model model) {
+        String loginError = (String) session.getAttribute("loginError");
+        if (loginError != null) {
+            model.addAttribute("loginError", loginError);
+            session.removeAttribute("loginError");
         }
         return "domain/auth/login";
     }

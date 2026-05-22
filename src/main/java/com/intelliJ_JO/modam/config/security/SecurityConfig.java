@@ -17,6 +17,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
+    private final CustomAuthenticationSuccessHandler successHandler;
+    private final CustomAuthenticationFailureHandler failureHandler;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -43,7 +45,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/", "/login", "/signup", "/signup/**", "/terms",
+                    "/", "/signup/**", "/terms",
                     "/members/join",
                     "/css/**", "/js/**", "/images/**",
                     "/swagger-ui/**", "/swagger-ui.html",
@@ -55,8 +57,8 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/dashboard", false)
-                .failureUrl("/login?error")
+                .successHandler(successHandler)
+                .failureHandler(failureHandler)
                 .usernameParameter("userId")
                 .passwordParameter("password")
                 .permitAll()
