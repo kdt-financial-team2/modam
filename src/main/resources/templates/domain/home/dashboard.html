@@ -11,7 +11,7 @@
 <body class="min-h-screen flex flex-col bg-white">
 
   <!-- ===== 상단 네비게이션 헤더 ===== -->
-  <th:block th:replace="~{layout/header-dashboard :: nav}"></th:block>
+  <th:block th:replace="~{common/layout/header-dashboard :: nav}"></th:block>
 
   <!-- ===== 포인트 적립 토스트 ===== -->
   <div id="pointToast"
@@ -348,7 +348,7 @@
   </main>
 
   <!-- ===== 푸터 ===== -->
-  <th:block th:replace="~{layout/footer :: footer}"></th:block>
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
 
   <script th:inline="javascript">
     lucide.createIcons();
@@ -464,6 +464,6 @@
     }
 
   </script>
-  <th:block th:replace="~{layout/header-dashboard :: scripts}"></th:block>
+  <th:block th:replace="~{common/layout/header-dashboard :: scripts}"></th:block>
 </body>
 </html>

@@ -10,7 +10,7 @@
 <body class="min-h-screen bg-[#FAFAFA] flex flex-col">
 
   <!-- ===== 헤더 ===== -->
-  <th:block th:replace="~{layout/header :: nav}"></th:block>
+  <th:block th:replace="~{common/layout/header :: nav}"></th:block>
 
   <!-- ===== 메인 레이아웃 ===== -->
   <div class="flex flex-1">
@@ -941,7 +941,7 @@
   </div>
 
   <!-- ===== 푸터 ===== -->
-  <th:block th:replace="~{layout/footer :: footer}"></th:block>
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
 
   <script th:inline="javascript">
     // ===== 서버 데이터 =====
@@ -1333,6 +1333,6 @@
       lucide.createIcons();
     });
   </script>
-  <th:block th:replace="~{layout/header :: scripts}"></th:block>
+  <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
 </body>
 </html>

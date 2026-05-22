@@ -1,36 +1,53 @@
 package com.intelliJ_JO.modam.global.view;
 
-import com.intelliJ_JO.modam.config.security.CustomUserDetails;
-import com.intelliJ_JO.modam.domain.member.service.MyPageService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-@RequiredArgsConstructor
 public class MypageViewController {
-
-    private final MyPageService myPageService;
 
     @GetMapping("/mypage")
     public String mypage() {
         return "domain/mypage/mypage";
     }
 
-    @GetMapping("/theme-settings")
-    public String themeSettings(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        model.addAttribute("currentTheme", myPageService.getTheme(userDetails.getMember().getId()));
-        return "domain/mypage/theme-settings";
+    @GetMapping("/mypage/card/step1")
+    public String cardStep1() {
+        return "domain/mypage/card-step1";
     }
 
-    @PostMapping("/theme-settings")
-    public String saveTheme(@RequestParam String theme,
-                            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        myPageService.updateTheme(userDetails.getMember().getId(), theme);
-        return "redirect:/theme-settings";
+    @GetMapping("/mypage/card/step2")
+    public String cardStep2() {
+        return "domain/mypage/card-step2";
+    }
+
+    @GetMapping("/mypage/card/step3")
+    public String cardStep3() {
+        return "domain/mypage/card-step3";
+    }
+
+    @GetMapping("/mypage/card/step4")
+    public String cardStep4() {
+        return "domain/mypage/card-step4";
+    }
+
+    @GetMapping("/mypage/card/step5")
+    public String cardStep5() {
+        return "domain/mypage/card-step5";
+    }
+
+    @GetMapping("/mypage/card/step6")
+    public String cardStep6() {
+        return "domain/mypage/card-step6";
+    }
+
+    @GetMapping("/mypage/card/step7")
+    public String cardStep7() {
+        return "domain/mypage/card-step7";
+    }
+
+    @GetMapping("/mypage/card/step8")
+    public String cardStep8() {
+        return "domain/mypage/card-step8";
     }
 }
