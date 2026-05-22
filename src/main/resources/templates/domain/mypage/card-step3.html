@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카드 발급 - 타입 선택 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FCE8E3] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
+    <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+      <a th:href="@{/dashboard}" href="/dashboard" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
+            <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+          </div>
+          <span class="text-2xl font-bold text-gray-900">모담</span>
+        </div>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
+    <div class="w-full max-w-3xl">
+
+      <!-- 진행 인디케이터 -->
+      <div class="flex items-center justify-center gap-3 mb-12">
+        <div class="w-12 h-12 rounded-full bg-[#F5A5A5] flex items-center justify-center shadow-md">
+          <span class="text-white">✓</span>
+        </div>
+        <div class="w-16 h-0.5 bg-[#F5A5A5]"></div>
+        <div class="w-12 h-12 rounded-full bg-[#F5A5A5] flex items-center justify-center shadow-md">
+          <span class="text-white">✓</span>
+        </div>
+        <div class="w-16 h-0.5 bg-[#F5A5A5]"></div>
+        <div class="w-12 h-12 rounded-full bg-[#F5A5A5] flex items-center justify-center shadow-md">
+          <span class="text-white font-bold">3</span>
+        </div>
+      </div>
+
+      <!-- 타이틀 -->
+      <div class="text-center mb-10">
+        <h1 class="text-4xl text-gray-800 mb-3">카드 타입 선택</h1>
+        <p class="text-gray-600 text-lg">사용하실 카드 타입을 선택해주세요</p>
+      </div>
+
+      <!-- 타입 선택 -->
+      <div class="grid grid-cols-2 gap-6 mb-8">
+
+        <!-- 국내전용 -->
+        <button id="type-domestic" onclick="selectType('domestic')"
+                class="type-card bg-white rounded-3xl p-8 transition-all hover:shadow-xl shadow-lg">
+          <div class="flex flex-col items-center text-center">
+            <div id="icon-domestic"
+                 class="w-20 h-20 rounded-full flex items-center justify-center mb-4 transition-colors bg-[#FCE8E3]">
+              <i data-lucide="map-pin" class="w-10 h-10 text-[#F5A5A5]"></i>
+            </div>
+            <h3 class="text-2xl text-gray-800 mb-2">국내전용</h3>
+            <p class="text-gray-600 mb-4">대한민국 내에서만 사용 가능</p>
+            <div class="bg-[#F0F9FF] border border-[#BAE6FD] rounded-xl p-3 text-sm text-gray-700">
+              ✓ 연회비 무료<br/>✓ 국내 가맹점 사용
+            </div>
+            <div id="check-domestic" class="hidden mt-4 flex items-center gap-2 text-[#F5A5A5]">
+              <i data-lucide="check-circle" class="w-5 h-5"></i><span>선택됨</span>
+            </div>
+          </div>
+        </button>
+
+        <!-- 마스터카드 -->
+        <button id="type-global" onclick="selectType('global')"
+                class="type-card bg-white rounded-3xl p-8 transition-all hover:shadow-xl shadow-lg">
+          <div class="flex flex-col items-center text-center">
+            <div id="icon-global"
+                 class="w-20 h-20 rounded-full flex items-center justify-center mb-4 transition-colors bg-[#FCE8E3]">
+              <i data-lucide="globe" class="w-10 h-10 text-[#F5A5A5]"></i>
+            </div>
+            <h3 class="text-2xl text-gray-800 mb-2">마스터카드</h3>
+            <p class="text-gray-600 mb-4">전 세계 어디서나 사용 가능</p>
+            <div class="bg-[#F0F9FF] border border-[#BAE6FD] rounded-xl p-3 text-sm text-gray-700">
+              ✓ 해외 결제 가능<br/>✓ MasterCard 제휴
+            </div>
+            <div id="check-global" class="hidden mt-4 flex items-center gap-2 text-[#F5A5A5]">
+              <i data-lucide="check-circle" class="w-5 h-5"></i><span>선택됨</span>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <!-- 버튼 -->
+      <div class="flex gap-4">
+        <a th:href="@{/card-step2}" href="card-step2.html"
+           class="flex-1 py-4 bg-white border-2 border-gray-300 text-gray-700 text-lg rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i><span>이전</span>
+        </a>
+        <button id="nextBtn" onclick="goNext()" disabled
+                class="flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed">
+          <span>다음</span><i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+  <script>
+    let selectedType = '';
+
+    function selectType(type) {
+      ['domestic','global'].forEach(t => {
+        const card = document.getElementById('type-' + t);
+        const icon = document.getElementById('icon-' + t);
+        const check = document.getElementById('check-' + t);
+        card.classList.remove('ring-4', 'ring-[#F5A5A5]', 'shadow-xl', 'scale-105');
+        icon.classList.remove('bg-gradient-to-br', 'from-[#F5A5A5]', 'to-[#FFB8B8]');
+        icon.classList.add('bg-[#FCE8E3]');
+        icon.querySelector('i').classList.remove('text-white');
+        icon.querySelector('i').classList.add('text-[#F5A5A5]');
+        check.classList.add('hidden');
+      });
+
+      const card  = document.getElementById('type-' + type);
+      const icon  = document.getElementById('icon-' + type);
+      const check = document.getElementById('check-' + type);
+      card.classList.add('ring-4', 'ring-[#F5A5A5]', 'shadow-xl', 'scale-105');
+      icon.classList.remove('bg-[#FCE8E3]');
+      icon.classList.add('bg-gradient-to-br', 'from-[#F5A5A5]', 'to-[#FFB8B8]');
+      icon.querySelector('i').classList.remove('text-[#F5A5A5]');
+      icon.querySelector('i').classList.add('text-white');
+      check.classList.remove('hidden');
+      selectedType = type;
+
+      const btn = document.getElementById('nextBtn');
+      btn.disabled = false;
+      btn.className = 'flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-[#F5A5A5] text-white hover:bg-[#F28B8B] shadow-md';
+    }
+
+    function goNext() {
+      if (selectedType) {
+        localStorage.setItem('selectedCardType', selectedType);
+        window.location.href = 'card-step4.html';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

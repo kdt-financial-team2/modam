@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카드 발급 완료 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <style>
+    @keyframes zoomIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim-zoom  { animation: zoomIn  0.5s ease both; }
+    .anim-slide { animation: slideUp 0.7s ease both; }
+    .delay-100  { animation-delay: 0.1s; }
+    .delay-200  { animation-delay: 0.2s; }
+    .delay-300  { animation-delay: 0.3s; }
+    .delay-400  { animation-delay: 0.4s; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
+    <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+      <a th:href="@{/dashboard}" href="/dashboard" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
+            <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+          </div>
+          <span class="text-2xl font-bold text-gray-900">모담</span>
+        </div>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
+    <div class="w-full max-w-2xl text-center">
+
+      <!-- 성공 아이콘 -->
+      <div class="mb-8 anim-zoom">
+        <div class="w-32 h-32 bg-gradient-to-br from-[#F5A5A5] to-[#FFB8B8] rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+          <i data-lucide="heart" class="w-16 h-16 text-white"></i>
+        </div>
+      </div>
+
+      <!-- 타이틀 -->
+      <h1 class="text-5xl text-gray-800 mb-4 anim-slide">카드 발급 완료!</h1>
+      <p class="text-xl text-gray-600 mb-12 anim-slide delay-100">
+        축하합니다! 모담 카드 발급이 성공적으로 완료되었습니다
+      </p>
+
+      <!-- 카드 디스플레이 -->
+      <div class="mb-12 anim-zoom delay-200 inline-block">
+        <div id="cardDisplay"
+             class="bg-gradient-to-br from-[#FFB6C1] to-[#FF8FA3] rounded-3xl shadow-2xl p-10 w-96 mx-auto flex flex-col justify-between"
+             style="aspect-ratio:3/2; transform: rotateY(-5deg) rotateX(5deg);">
+          <div class="flex justify-end">
+            <i data-lucide="heart" class="w-12 h-12 text-white"></i>
+          </div>
+          <div class="text-left">
+            <p class="text-white text-sm mb-3 opacity-80">MODAM CARD</p>
+            <p class="text-white text-xl mb-6 tracking-wider">**** **** **** 1234</p>
+            <div class="flex justify-between items-end">
+              <div>
+                <p class="text-white text-xs opacity-80 mb-1">CARD HOLDER</p>
+                <p id="cardHolderName" class="text-white text-lg">USER</p>
+              </div>
+              <div class="text-right">
+                <p class="text-white text-xs opacity-80">VALID THRU</p>
+                <p class="text-white">12/29</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 안내 카드 -->
+      <div class="bg-white/90 backdrop-blur rounded-3xl shadow-lg p-8 mb-8 anim-slide delay-300 text-left">
+        <div class="space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 bg-[#F5A5A5] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-white text-sm">✓</span>
+            </div>
+            <div>
+              <p class="text-gray-800 mb-1">카드는 3-5 영업일 내에 등록하신 주소로 배송됩니다</p>
+              <p id="deliveryAddress" class="text-sm text-gray-600"></p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 bg-[#F5A5A5] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-white text-sm">✓</span>
+            </div>
+            <p class="text-gray-800">카드 수령 후 앱에서 활성화하시면 바로 사용 가능합니다</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 bg-[#F5A5A5] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-white text-sm">✓</span>
+            </div>
+            <p class="text-gray-800">설정하신 비밀번호는 안전하게 암호화되어 보관됩니다</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 홈 버튼 -->
+      <a th:href="@{/dashboard}" href="/dashboard"
+         class="px-12 py-4 bg-[#F5A5A5] text-white text-lg rounded-2xl hover:bg-[#F28B8B] transition-all shadow-lg hover:shadow-xl inline-flex items-center justify-center gap-3 anim-slide delay-400">
+        <i data-lucide="home" class="w-6 h-6"></i>
+        <span>홈으로 돌아가기</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+  <script th:inline="javascript">
+    const serverCardDesign = /*[[${cardDesign}]]*/ null;
+    const serverUserName   = /*[[${user != null ? user.name : null}]]*/ null;
+    const serverAddress    = /*[[${cardAddress}]]*/ null;
+
+    const cardColors = {
+      mint:   ['from-[#A8E6CF]', 'to-[#7FD4B5]'],
+      pink:   ['from-[#FFB6C1]', 'to-[#FF8FA3]'],
+      yellow: ['from-[#FFE5A0]', 'to-[#FFD580]'],
+      purple: ['from-[#D4A5E8]', 'to-[#B57EDC]'],
+    };
+
+    function launchConfetti() {
+      const colors = ['#F5A5A5', '#FFB8B8', '#FCE8E3', '#FFE4E8'];
+      const end    = Date.now() + 3000;
+      const frame  = () => {
+        confetti({ particleCount: 3, angle: 60,  spread: 55, origin: { x: 0 }, colors });
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      // 카드 디자인
+      const design  = serverCardDesign || localStorage.getItem('selectedCardDesign') || 'pink';
+      const colors  = cardColors[design] || cardColors.pink;
+      const card    = document.getElementById('cardDisplay');
+      card.classList.remove('from-[#FFB6C1]', 'to-[#FF8FA3]');
+      card.classList.add(...colors);
+
+      // 카드 홀더 이름
+      const name = serverUserName || localStorage.getItem('userName') || 'USER';
+      document.getElementById('cardHolderName').textContent = name;
+
+      // 배송 주소
+      const addr = serverAddress || localStorage.getItem('cardAddress') || '';
+      if (addr) document.getElementById('deliveryAddress').textContent = '배송 주소: ' + addr;
+
+      // 카드 발급 완료 표시
+      localStorage.setItem('cardIssued', 'true');
+
+      lucide.createIcons();
+      launchConfetti();
+    });
+  </script>
+</body>
+</html>

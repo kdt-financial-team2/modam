@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>구매 확인 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{common/layout/header :: nav}"></th:block>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1">
+    <div class="max-w-[800px] mx-auto px-8 py-12">
+
+      <!-- 뒤로 가기 -->
+      <a th:href="@{/point-shop}" href="/point-shop"
+         class="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-8 w-fit">
+        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        <span>포인트 상점으로 돌아가기</span>
+      </a>
+
+      <!-- 타이틀 -->
+      <div class="text-center mb-10">
+        <h1 class="text-4xl text-gray-800 mb-3">구매 확인</h1>
+        <p class="text-gray-600 text-lg">구매하실 상품을 확인해주세요</p>
+      </div>
+
+      <!-- 구매 폼 -->
+      <form th:action="@{/point-shop/purchase/{id}(id=${product.id})}"
+            action="/point-shop/purchase/1" method="post"
+            id="purchaseForm" onsubmit="return handlePurchase(event)">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" th:name="productId" th:value="${product.id}" name="productId" value="1">
+
+        <!-- 주문 상품 카드 -->
+        <div class="bg-white rounded-3xl shadow-sm p-8 mb-6">
+          <h2 class="text-xl text-gray-800 mb-6">주문 상품</h2>
+
+          <div class="flex items-center gap-6 p-6 bg-[#FAFAFA] rounded-2xl mb-6">
+            <div class="w-24 h-24 bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-2xl flex items-center justify-center text-5xl">
+              <span th:text="${product.image}" id="productImage">🌸</span>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl text-gray-800 mb-2"
+                  th:text="${product.name}" id="productName">봄날의 벚꽃 핑크</h3>
+              <p class="text-2xl text-[#F5A5A5]">
+                <span th:text="${#numbers.formatInteger(product.price, 0, 'COMMA')}"
+                      id="productPrice">1,500</span>P
+              </p>
+            </div>
+          </div>
+
+          <!-- 포인트 계산 -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-center p-4 bg-[#FAFAFA] rounded-2xl">
+              <span class="text-gray-600">현재 포인트</span>
+              <span class="text-xl text-gray-800">
+                <span th:text="${#numbers.formatInteger(userPoints, 0, 'COMMA')}"
+                      id="currentPoints">12,450</span>P
+              </span>
+            </div>
+            <div class="flex justify-between items-center p-4 bg-[#FAFAFA] rounded-2xl">
+              <span class="text-gray-600">사용 포인트</span>
+              <span class="text-xl text-red-500">
+                -<span th:text="${#numbers.formatInteger(product.price, 0, 'COMMA')}"
+                       id="usePoints">1,500</span>P
+              </span>
+            </div>
+            <div class="flex justify-between items-center p-4 bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-2xl">
+              <span class="text-gray-800">구매 후 잔액</span>
+              <span class="text-2xl text-[#F5A5A5]">
+                <span th:text="${#numbers.formatInteger(userPoints - product.price, 0, 'COMMA')}"
+                      id="remainPoints">10,950</span>P
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 구매 안내 동의 -->
+        <div class="bg-white rounded-3xl shadow-sm p-8 mb-6">
+          <label class="flex items-start gap-4 cursor-pointer">
+            <input type="checkbox" id="agreeCheck" onchange="togglePurchaseBtn(this)"
+                   class="w-5 h-5 rounded accent-[#F5A5A5] mt-1 flex-shrink-0">
+            <div>
+              <p class="text-gray-800 mb-2">구매 안내 및 환불 정책에 동의합니다</p>
+              <p class="text-sm text-gray-600 leading-relaxed">
+                • 구매 후 즉시 사용 가능하며, 환불은 불가능합니다<br>
+                • 유효기간은 구매일로부터 30일입니다<br>
+                • 사용하지 않은 상품은 유효기간 만료 후 자동 소멸됩니다
+              </p>
+            </div>
+          </label>
+        </div>
+
+        <!-- 버튼 -->
+        <div class="flex gap-4">
+          <a th:href="@{/point-shop}" href="/point-shop"
+             class="flex-1 py-4 bg-white border-2 border-gray-300 text-gray-700 text-lg rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center">
+            취소
+          </a>
+          <button type="submit" id="purchaseBtn" disabled
+                  class="flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span>구매 확정</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </main>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+  <script th:inline="javascript">
+    const serverProduct = /*[[${product}]]*/ null;
+    const serverPoints  = /*[[${userPoints}]]*/ 12450;
+
+    // 서버 데이터 없을 때 기본 상품 1번으로 표시
+    const defaultProduct = { id:1, name:'봄날의 벚꽃 핑크', price:1500, category:'theme', image:'🌸' };
+
+    function togglePurchaseBtn(checkbox) {
+      const btn = document.getElementById('purchaseBtn');
+      if (checkbox.checked) {
+        btn.disabled = false;
+        btn.className = 'flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-[#F5A5A5] text-white hover:bg-[#F28B8B] shadow-md cursor-pointer';
+      } else {
+        btn.disabled = true;
+        btn.className = 'flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed';
+      }
+    }
+
+    function handlePurchase(e) {
+      if (!document.getElementById('agreeCheck').checked) {
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      // 서버 데이터 없으면 기본 상품 표시
+      if (serverProduct === null) {
+        const p = defaultProduct;
+        const pts = serverPoints;
+        document.getElementById('productImage').textContent  = p.image;
+        document.getElementById('productName').textContent   = p.name;
+        document.getElementById('productPrice').textContent  = p.price.toLocaleString();
+        document.getElementById('currentPoints').textContent = pts.toLocaleString();
+        document.getElementById('usePoints').textContent     = p.price.toLocaleString();
+        document.getElementById('remainPoints').textContent  = (pts - p.price).toLocaleString();
+      }
+      lucide.createIcons();
+    });
+  </script>
+  <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+</body>
+</html>

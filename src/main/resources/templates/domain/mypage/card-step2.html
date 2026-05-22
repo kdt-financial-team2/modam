@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카드 발급 - 디자인 선택 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FCE8E3] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
+    <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+      <a th:href="@{/dashboard}" href="/dashboard" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
+            <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+          </div>
+          <span class="text-2xl font-bold text-gray-900">모담</span>
+        </div>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
+    <div class="w-full max-w-4xl">
+
+      <!-- 진행 인디케이터 -->
+      <div class="flex items-center justify-center gap-3 mb-12">
+        <div class="w-12 h-12 rounded-full bg-[#F5A5A5] flex items-center justify-center shadow-md">
+          <span class="text-white">✓</span>
+        </div>
+        <div class="w-16 h-0.5 bg-[#F5A5A5]"></div>
+        <div class="w-12 h-12 rounded-full bg-[#F5A5A5] flex items-center justify-center shadow-md">
+          <span class="text-white font-bold">2</span>
+        </div>
+        <div class="w-16 h-0.5 bg-gray-300"></div>
+        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-md">
+          <span class="text-gray-400 font-bold">3</span>
+        </div>
+      </div>
+
+      <!-- 타이틀 -->
+      <div class="text-center mb-10">
+        <h1 class="text-4xl text-gray-800 mb-3">카드 디자인 선택</h1>
+        <p class="text-gray-600 text-lg">마음에 드는 카드 디자인을 선택해주세요</p>
+      </div>
+
+      <!-- 디자인 선택 -->
+      <div class="grid grid-cols-4 gap-6 mb-8">
+
+        <!-- 민트 -->
+        <div id="design-mint" onclick="selectDesign('mint')"
+             class="design-card bg-white rounded-3xl p-6 shadow-lg cursor-pointer transition-all hover:shadow-xl relative">
+          <div class="w-full aspect-[3/5] bg-gradient-to-b from-[#A8E6CF] to-[#7FD4B5] rounded-2xl mb-4 flex flex-col justify-between p-4">
+            <div class="flex justify-end">
+              <i data-lucide="heart" class="w-8 h-8 text-white fill-white"></i>
+            </div>
+            <div>
+              <p class="text-white text-xs opacity-80 mb-1">MODAM CARD</p>
+              <p class="text-white text-sm">**** 1234</p>
+            </div>
+          </div>
+          <div class="selected-badge hidden absolute top-3 left-3 w-7 h-7 bg-[#F5A5A5] rounded-full flex items-center justify-center">
+            <i data-lucide="check" class="w-4 h-4 text-white"></i>
+          </div>
+          <p class="text-center text-gray-800 font-medium">민트 그린</p>
+        </div>
+
+        <!-- 핑크 -->
+        <div id="design-pink" onclick="selectDesign('pink')"
+             class="design-card bg-white rounded-3xl p-6 shadow-lg cursor-pointer transition-all hover:shadow-xl relative">
+          <div class="w-full aspect-[3/5] bg-gradient-to-b from-[#FFB6C1] to-[#FF8FA3] rounded-2xl mb-4 flex flex-col justify-between p-4">
+            <div class="flex justify-end">
+              <i data-lucide="heart" class="w-8 h-8 text-white fill-white"></i>
+            </div>
+            <div>
+              <p class="text-white text-xs opacity-80 mb-1">MODAM CARD</p>
+              <p class="text-white text-sm">**** 1234</p>
+            </div>
+          </div>
+          <div class="selected-badge hidden absolute top-3 left-3 w-7 h-7 bg-[#F5A5A5] rounded-full flex items-center justify-center">
+            <i data-lucide="check" class="w-4 h-4 text-white"></i>
+          </div>
+          <p class="text-center text-gray-800 font-medium">코랄 핑크</p>
+        </div>
+
+        <!-- 옐로우 -->
+        <div id="design-yellow" onclick="selectDesign('yellow')"
+             class="design-card bg-white rounded-3xl p-6 shadow-lg cursor-pointer transition-all hover:shadow-xl relative">
+          <div class="w-full aspect-[3/5] bg-gradient-to-b from-[#FFE5A0] to-[#FFD580] rounded-2xl mb-4 flex flex-col justify-between p-4">
+            <div class="flex justify-end">
+              <i data-lucide="heart" class="w-8 h-8 text-white fill-white"></i>
+            </div>
+            <div>
+              <p class="text-white text-xs opacity-80 mb-1">MODAM CARD</p>
+              <p class="text-white text-sm">**** 1234</p>
+            </div>
+          </div>
+          <div class="selected-badge hidden absolute top-3 left-3 w-7 h-7 bg-[#F5A5A5] rounded-full flex items-center justify-center">
+            <i data-lucide="check" class="w-4 h-4 text-white"></i>
+          </div>
+          <p class="text-center text-gray-800 font-medium">선샤인 옐로우</p>
+        </div>
+
+        <!-- 퍼플 -->
+        <div id="design-purple" onclick="selectDesign('purple')"
+             class="design-card bg-white rounded-3xl p-6 shadow-lg cursor-pointer transition-all hover:shadow-xl relative">
+          <div class="w-full aspect-[3/5] bg-gradient-to-b from-[#D4A5E8] to-[#B57EDC] rounded-2xl mb-4 flex flex-col justify-between p-4">
+            <div class="flex justify-end">
+              <i data-lucide="heart" class="w-8 h-8 text-white fill-white"></i>
+            </div>
+            <div>
+              <p class="text-white text-xs opacity-80 mb-1">MODAM CARD</p>
+              <p class="text-white text-sm">**** 1234</p>
+            </div>
+          </div>
+          <div class="selected-badge hidden absolute top-3 left-3 w-7 h-7 bg-[#F5A5A5] rounded-full flex items-center justify-center">
+            <i data-lucide="check" class="w-4 h-4 text-white"></i>
+          </div>
+          <p class="text-center text-gray-800 font-medium">라벤더 퍼플</p>
+        </div>
+      </div>
+
+      <!-- 버튼 -->
+      <div class="flex gap-4">
+        <a th:href="@{/card-step1}" href="card-step1.html"
+           class="flex-1 py-4 bg-white border-2 border-gray-300 text-gray-700 text-lg rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i><span>이전</span>
+        </a>
+        <button id="nextBtn" onclick="goNext()" disabled
+                class="flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed">
+          <span>다음</span><i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+  <script>
+    let selectedDesign = '';
+
+    function selectDesign(design) {
+      // 이전 선택 해제
+      document.querySelectorAll('.design-card').forEach(el => {
+        el.classList.remove('ring-4', 'ring-[#F5A5A5]', 'ring-offset-2', 'scale-105');
+        el.querySelector('.selected-badge').classList.add('hidden');
+      });
+      // 선택 적용
+      const card = document.getElementById('design-' + design);
+      card.classList.add('ring-4', 'ring-[#F5A5A5]', 'ring-offset-2', 'scale-105');
+      card.querySelector('.selected-badge').classList.remove('hidden');
+      selectedDesign = design;
+      // 버튼 활성화
+      const btn = document.getElementById('nextBtn');
+      btn.disabled = false;
+      btn.className = 'flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-[#F5A5A5] text-white hover:bg-[#F28B8B] shadow-md';
+    }
+
+    function goNext() {
+      if (selectedDesign) {
+        localStorage.setItem('selectedCardDesign', selectedDesign);
+        window.location.href = 'card-step3.html';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

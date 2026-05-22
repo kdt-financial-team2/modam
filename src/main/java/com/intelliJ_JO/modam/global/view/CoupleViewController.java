@@ -4,10 +4,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class AccountViewController {
+public class CoupleViewController {
 
-    @GetMapping("/group-account/new")
-    public String groupAccountNew() {
-        return "domain/account/group-account-new";
+    @GetMapping("/invite")
+    public String invite() {
+        return "domain/couple/invite";
     }
 }

@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>로그인 - 모담</title>
+  <title>로그인 | 모담</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] flex flex-col">
 
   <!-- 헤더 -->
-  <header th:replace="~{common/layout/header :: simple-header}"></header>
+  <header class="px-16 py-1 bg-white border-b border-gray-100 h-24 flex items-center">
+    <a th:href="@{/}" class="hover:opacity-80 transition-opacity">
+      <img th:src="@{/images/logo.png}" alt="모담 로고" class="h-20 w-auto object-contain"/>
+    </a>
+  </header>
 
   <!-- 메인 콘텐츠 -->
   <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
@@ -24,9 +28,9 @@
     <!-- 로그인 카드 -->
     <div class="w-full max-w-md bg-white rounded-3xl p-12 shadow-2xl">
 
-      <!-- 에러 메시지 (서버에서 전달) -->
+      <!-- 서버 에러 메시지 -->
       <div th:if="${loginError}" class="bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-center mb-6">
-        <p class="text-red-600">❌ <span th:text="${loginError}">로그인에 실패했습니다</span></p>
+        <p class="text-red-600">❌ <span th:text="${loginError}">아이디 또는 비밀번호가 일치하지 않습니다</span></p>
       </div>
 
       <form th:action="@{/login}" method="post" class="space-y-6" id="loginForm">
@@ -42,6 +46,7 @@
             th:value="${savedUserId}"
             class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#F5A5A5] transition-colors text-gray-800"
             placeholder="아이디를 입력해주세요"
+            autocomplete="username"
           />
           <p class="text-sm text-red-500 mt-2 hidden" id="userIdError">❌ 아이디를 입력해주세요</p>
         </div>
@@ -56,8 +61,10 @@
               id="password"
               class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#F5A5A5] transition-colors text-gray-800 pr-12"
               placeholder="비밀번호를 입력해주세요"
+              autocomplete="current-password"
             />
-            <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <button type="button" onclick="togglePassword()"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
               <i data-lucide="eye" class="w-5 h-5" id="eyeIcon"></i>
             </button>
           </div>
@@ -75,8 +82,8 @@
         <!-- 로그인 버튼 -->
         <button
           type="submit"
-          class="w-full py-4 bg-[#F5A5A5] hover:bg-[#F28B8B] text-white text-lg rounded-2xl transition-all mt-8 shadow-md hover:shadow-lg"
           id="loginBtn"
+          class="w-full py-4 bg-[#F5A5A5] hover:bg-[#F28B8B] text-white text-lg rounded-2xl transition-all mt-8 shadow-md hover:shadow-lg"
         >
           로그인
         </button>
@@ -87,13 +94,15 @@
     <div class="mt-8 text-center">
       <p class="text-gray-700 text-lg">
         아직 계정이 없으신가요?
-        <a th:href="@{/signup}" class="text-[#F5A5A5] hover:underline font-semibold">회원가입</a>
+        <a th:href="@{/signup/step1}" class="text-[#F5A5A5] hover:underline font-semibold">회원가입</a>
       </p>
     </div>
   </div>
 
   <!-- 푸터 -->
-  <footer th:replace="~{common/layout/footer :: simple-footer}"></footer>
+  <footer class="py-6 bg-white border-t border-gray-200 text-center text-gray-500 text-sm">
+    © 2026 Modam. All rights reserved.
+  </footer>
 
   <script>
     lucide.createIcons();
@@ -101,47 +110,59 @@
     function togglePassword() {
       const input = document.getElementById('password');
       const icon = document.getElementById('eyeIcon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.setAttribute('data-lucide', 'eye-off');
-      } else {
-        input.type = 'password';
-        icon.setAttribute('data-lucide', 'eye');
-      }
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      icon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
       lucide.createIcons();
     }
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      let valid = true;
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
       const userId = document.getElementById('userId');
       const password = document.getElementById('password');
       const userIdError = document.getElementById('userIdError');
       const passwordError = document.getElementById('passwordError');
+      let valid = true;
 
       if (!userId.value.trim()) {
+        userIdError.textContent = '❌ 아이디를 입력해주세요';
         userIdError.classList.remove('hidden');
         userId.classList.add('border-red-500');
+        userId.classList.remove('border-gray-200');
         valid = false;
       } else {
         userIdError.classList.add('hidden');
         userId.classList.remove('border-red-500');
+        userId.classList.add('border-gray-200');
       }
 
       if (!password.value) {
+        passwordError.textContent = '❌ 비밀번호를 입력해주세요';
         passwordError.classList.remove('hidden');
         password.classList.add('border-red-500');
+        password.classList.remove('border-gray-200');
         valid = false;
       } else if (password.value.length < 8) {
         passwordError.textContent = '❌ 8자 이상 입력해주세요';
         passwordError.classList.remove('hidden');
         password.classList.add('border-red-500');
+        password.classList.remove('border-gray-200');
         valid = false;
       } else {
         passwordError.classList.add('hidden');
         password.classList.remove('border-red-500');
+        password.classList.add('border-gray-200');
       }
 
-      if (!valid) e.preventDefault();
+      if (!valid) {
+        e.preventDefault();
+        return;
+      }
+
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.textContent = '로그인 중...';
+      btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+      btn.classList.remove('bg-[#F5A5A5]', 'hover:bg-[#F28B8B]');
     });
   </script>
 </body>
