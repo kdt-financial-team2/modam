@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>저축 목표 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{layout/header :: nav}"></th:block>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1">
+    <div class="w-full max-w-[1440px] mx-auto px-8 py-12">
+
+      <!-- 페이지 헤더 -->
+      <div class="flex items-center justify-between mb-12">
+        <div>
+          <h1 class="text-4xl font-bold text-gray-900 mb-3">💕 저축 목표</h1>
+          <p class="text-gray-600 text-lg"
+             th:text="${userName + '님의 저축 목표를 관리하세요'}">김민수님의 저축 목표를 관리하세요</p>
+        </div>
+        <a th:href="@{/savings-goal-setup}" href="/savings-goal-setup"
+           class="flex items-center gap-2 px-6 py-4 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors shadow-sm font-medium">
+          <i data-lucide="plus" class="w-5 h-5"></i>
+          <span>새 저축 목표</span>
+        </a>
+      </div>
+
+      <!-- 연결 계좌 정보 -->
+      <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-3xl border border-gray-100 shadow-sm p-8 mb-8">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+              <i data-lucide="credit-card" class="w-8 h-8 text-[#F5A5A5]"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 mb-1 font-medium">연결된 계좌</p>
+              <p class="text-xl font-semibold text-gray-900">
+                국민은행 <span th:text="${linkedAccount}">1002-9876-5432</span>
+              </p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm text-gray-600 mb-1 font-medium">계좌 잔액</p>
+            <p class="text-2xl font-bold text-gray-900">
+              ₩<span th:text="${#numbers.formatInteger(accountBalance, 0, 'COMMA')}">15,000,000</span>
+            </p>
+          </div>
+        </div>
+        <div class="mt-4 bg-white/60 backdrop-blur rounded-xl p-4">
+          <p class="text-sm text-gray-700">
+            💡 이 계좌에서 설정한 주기에 따라 자동으로 저축 목표로 이체됩니다
+          </p>
+        </div>
+      </div>
+
+      <!-- 저축 목표 그리드 (서버 렌더링) -->
+      <div id="goalsGrid" class="grid grid-cols-3 gap-6">
+
+        <!-- Thymeleaf: 서버에서 목표 목록 렌더링 -->
+        <div th:each="goal : ${savingsGoals}"
+             class="bg-white rounded-3xl shadow-sm p-6 relative overflow-hidden goal-card"
+             th:attr="data-goal-id=${goal.id}">
+
+          <!-- 완료 배지 (DOM에 항상 존재, 진행률 100% 미만이면 hidden) -->
+          <div th:id="'badge-' + ${goal.id}"
+               th:class="${goal.progressPercent >= 100}
+                 ? 'absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg'
+                 : 'absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg hidden'"
+               class="absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg hidden">
+            <i data-lucide="trophy" class="w-4 h-4"></i>
+            <span class="text-sm">완료!</span>
+          </div>
+
+          <!-- 목표 헤더 -->
+          <div class="flex items-start gap-3 mb-4">
+            <div class="w-12 h-12 bg-[#FCE8E3] rounded-2xl flex items-center justify-center flex-shrink-0">
+              <i th:attr="data-lucide=${goal.iconName}" class="w-6 h-6 text-[#F5A5A5]"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg text-gray-800 mb-1" th:text="${goal.name}">제주도 여행</h3>
+              <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full"
+                    th:text="${goal.typeLabel}">여행</span>
+            </div>
+          </div>
+
+          <!-- 진행률 -->
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-2xl text-[#F5A5A5]">
+                ₩<span th:text="${#numbers.formatInteger(goal.current, 0, 'COMMA')}">2,850,000</span>
+              </span>
+              <span class="text-lg text-gray-600">
+                <span th:text="${goal.progressPercent}">57</span>%
+              </span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+              <div class="bg-gradient-to-r from-[#F5A5A5] to-[#FCE8E3] h-3 rounded-full transition-all duration-500"
+                   th:style="'width: ' + ${goal.progressPercent > 100 ? 100 : goal.progressPercent} + '%'"></div>
+            </div>
+            <div class="flex items-center justify-between text-sm text-gray-600">
+              <span>목표: ₩<span th:text="${#numbers.formatInteger(goal.target, 0, 'COMMA')}">5,000,000</span></span>
+              <span th:if="${goal.progressPercent < 100}">
+                ₩<span th:text="${#numbers.formatInteger(goal.target - goal.current, 0, 'COMMA')}">2,150,000</span> 남음
+              </span>
+            </div>
+          </div>
+
+          <!-- 달성 메시지 (DOM에 항상 존재, 진행률 100% 미만이면 hidden) -->
+          <div th:id="'achieveMsg-' + ${goal.id}"
+               th:class="${goal.progressPercent >= 100}
+                 ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-4 mb-4'
+                 : 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-4 mb-4 hidden'"
+               class="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-4 mb-4 hidden">
+            <p class="text-sm text-gray-700 text-center">🎉 목표 달성! 포인트 보상을 받으세요</p>
+          </div>
+
+          <!-- 자동 이체 섹션 -->
+          <div class="border-t border-gray-200 pt-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-gray-700">자동 이체</span>
+              <button type="button"
+                      th:id="'toggle-' + ${goal.id}"
+                      th:attr="onclick='toggleAutoTransfer(' + ${goal.id} + ')'"
+                      th:class="${goal.autoTransfer.enabled} ? 'relative w-12 h-6 rounded-full transition-colors bg-[#F5A5A5]' : 'relative w-12 h-6 rounded-full transition-colors bg-gray-300'"
+                      class="relative w-12 h-6 rounded-full transition-colors bg-gray-300">
+                <div th:id="'toggleThumb-' + ${goal.id}"
+                     th:class="${goal.autoTransfer.enabled} ? 'absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform translate-x-6' : 'absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform translate-x-0'"
+                     class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform translate-x-0"></div>
+              </button>
+            </div>
+
+            <!-- 자동 이체 활성 시 상세 (DOM에 항상 존재, JS로 show/hide) -->
+            <div th:id="'autoDetails-' + ${goal.id}"
+                 th:classappend="${goal.autoTransfer.enabled} ? '' : ' hidden'"
+                 class="bg-[#F0F9FF] rounded-xl p-3 space-y-2">
+              <div class="flex items-center gap-2 text-xs text-gray-600 mb-2 pb-2 border-b border-gray-200 flex-wrap">
+                <i data-lucide="credit-card" class="w-3 h-3"></i>
+                <span>연결 계좌: <span th:text="${goal.autoTransfer.sourceAccount}">1002-9876-5432</span></span>
+                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                <i data-lucide="piggy-bank" class="w-3 h-3"></i>
+                <span>저축 계좌</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">이체 금액</span>
+                <span class="text-gray-800">
+                  ₩<span th:text="${#numbers.formatInteger(goal.autoTransfer.amount, 0, 'COMMA')}">300,000</span>
+                </span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">주기</span>
+                <span class="text-gray-800" th:text="${goal.autoTransfer.frequencyLabel}">매월</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">다음 이체</span>
+                <span class="text-gray-800" th:text="${goal.autoTransfer.nextDate}">2026.06.01</span>
+              </div>
+              <button type="button"
+                      th:attr="onclick='showAutoTransferModal(' + ${goal.id} + ')'"
+                      class="w-full mt-2 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                설정 변경
+              </button>
+            </div>
+
+            <!-- 자동 이체 비활성 시 버튼 (DOM에 항상 존재, JS로 show/hide) -->
+            <button th:id="'setupBtn-' + ${goal.id}"
+                    type="button"
+                    th:attr="onclick='showAutoTransferModal(' + ${goal.id} + ')'"
+                    th:classappend="${goal.autoTransfer.enabled} ? ' hidden' : ''"
+                    class="w-full mt-2 py-2 bg-[#FCE8E3] text-gray-700 rounded-lg hover:bg-[#FBD5CE] transition-colors text-sm">
+              자동 이체 설정하기
+            </button>
+          </div>
+
+          <!-- 날짜 정보 -->
+          <div class="flex items-center gap-2 text-xs text-gray-500 mt-4">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+            <span th:text="${goal.startDate + ' ~ ' + goal.targetDate}">2026.02.14 ~ 2027.08.15</span>
+          </div>
+        </div>
+
+        <!-- JS 렌더링 영역 (서버 데이터 없을 때) -->
+        <div id="jsGoalCards" class="contents"></div>
+      </div>
+
+      <!-- 저축 목표 없을 때 -->
+      <div id="emptyState" class="hidden text-center py-20">
+        <div class="w-20 h-20 bg-[#FCE8E3] rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="piggy-bank" class="w-10 h-10 text-[#F5A5A5]"></i>
+        </div>
+        <p class="text-gray-500 text-lg mb-4">아직 저축 목표가 없어요</p>
+        <a th:href="@{/savings-goal-setup}" href="/savings-goal-setup"
+           class="inline-flex items-center gap-2 px-6 py-3 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors">
+          <i data-lucide="plus" class="w-5 h-5"></i>
+          <span>첫 저축 목표 만들기</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ===== 자동 이체 설정 모달 ===== -->
+  <div id="autoTransferOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+       onclick="hideAutoTransferModal()"></div>
+  <div id="autoTransferModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[500px] p-8">
+      <h2 class="text-2xl text-gray-800 mb-6">자동 이체 설정</h2>
+      <input type="hidden" id="modalGoalId" value="">
+
+      <!-- 이체 흐름 시각화 -->
+      <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-xl p-4 mb-6">
+        <div class="flex items-center justify-center gap-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="credit-card" class="w-5 h-5 text-gray-700"></i>
+            <div class="text-sm">
+              <p class="text-gray-600">연결 계좌</p>
+              <p class="text-gray-800" id="modalAccountNum">1002-9876-5432</p>
+            </div>
+          </div>
+          <i data-lucide="arrow-right" class="w-6 h-6 text-[#F5A5A5]"></i>
+          <div class="flex items-center gap-2">
+            <i data-lucide="piggy-bank" class="w-5 h-5 text-gray-700"></i>
+            <div class="text-sm">
+              <p class="text-gray-600">저축 계좌</p>
+              <p class="text-gray-800">목표 저축</p>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-600 text-center mt-3">
+          설정한 주기에 따라 연결 계좌에서 자동으로 이체됩니다
+        </p>
+      </div>
+
+      <div class="space-y-4 mb-6">
+        <!-- 이체 금액 -->
+        <div>
+          <label class="block text-gray-700 mb-2">이체 금액</label>
+          <div class="relative">
+            <input type="text" id="modalAutoAmount"
+                   oninput="formatModalAmount(this)"
+                   placeholder="최소 1,000원"
+                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors pr-12">
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">원</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1" id="modalBalanceHint">연결 계좌 잔액: ₩15,000,000</p>
+        </div>
+
+        <!-- 이체 주기 -->
+        <div>
+          <label class="block text-gray-700 mb-2">이체 주기</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="selectFrequency('daily')" id="freqDaily"
+                    class="py-3 rounded-xl border-2 transition-colors border-gray-200 text-gray-600 hover:border-gray-300">
+              매일
+            </button>
+            <button type="button" onclick="selectFrequency('weekly')" id="freqWeekly"
+                    class="py-3 rounded-xl border-2 transition-colors border-gray-200 text-gray-600 hover:border-gray-300">
+              매주
+            </button>
+            <button type="button" onclick="selectFrequency('monthly')" id="freqMonthly"
+                    class="py-3 rounded-xl border-2 transition-colors border-[#F5A5A5] bg-[#FCE8E3] text-gray-800">
+              매월
+            </button>
+          </div>
+        </div>
+
+        <!-- 시작 날짜 -->
+        <div>
+          <label class="block text-gray-700 mb-2">시작 날짜</label>
+          <input type="date" id="modalAutoStartDate"
+                 class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors">
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <button onclick="hideAutoTransferModal()"
+                class="flex-1 py-3.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">
+          취소
+        </button>
+        <form id="autoTransferForm" th:action="@{/savings/auto-transfer}" method="post" class="flex-1">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input type="hidden" name="goalId" id="formGoalId">
+          <input type="hidden" name="amount" id="formAutoAmount">
+          <input type="hidden" name="frequency" id="formFrequency" value="monthly">
+          <input type="hidden" name="startDate" id="formStartDate">
+          <button type="submit"
+                  class="w-full py-3.5 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors">
+            저장
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{layout/footer :: footer}"></th:block>
+
+  <script th:inline="javascript">
+    const serverGoals = /*[[${savingsGoals}]]*/ null;
+    const linkedAccount = /*[[${linkedAccount}]]*/ '1002-9876-5432';
+    const accountBalance = /*[[${accountBalance}]]*/ 15000000;
+
+    // 기본 목표 데이터 (서버 데이터 없을 때 사용)
+    const defaultGoals = [
+      {
+        id: 1, name: '제주도 여행', type: 'travel', typeLabel: '여행',
+        iconName: 'plane', current: 2850000, target: 5000000,
+        startDate: '2026.02.14', targetDate: '2027.08.15',
+        progressPercent: 57,
+        autoTransfer: { enabled: true, amount: 300000, frequencyLabel: '매월', nextDate: '2026.06.01', sourceAccount: linkedAccount }
+      },
+      {
+        id: 2, name: '크리스마스 선물', type: 'gift', typeLabel: '선물',
+        iconName: 'gift', current: 950000, target: 1200000,
+        startDate: '2026.04.01', targetDate: '2026.12.24',
+        progressPercent: 79,
+        autoTransfer: { enabled: false, amount: 0, frequencyLabel: '매월', nextDate: '', sourceAccount: linkedAccount }
+      },
+      {
+        id: 3, name: '비상금', type: 'free', typeLabel: '자유',
+        iconName: 'sparkles', current: 4500000, target: 10000000,
+        startDate: '2026.01.10', targetDate: '2027.12.31',
+        progressPercent: 45,
+        autoTransfer: { enabled: true, amount: 500000, frequencyLabel: '매월', nextDate: '2026.06.01', sourceAccount: linkedAccount }
+      }
+    ];
+
+    let currentFrequency = 'monthly';
+
+    function getGoalIcon(type) {
+      const map = { travel: 'plane', gift: 'gift', automatic: 'zap', free: 'sparkles' };
+      return map[type] || 'piggy-bank';
+    }
+
+    function getFreqLabel(freq) {
+      return { daily: '매일', weekly: '매주', monthly: '매월' }[freq] || '매월';
+    }
+
+    function formatWon(n) {
+      return n.toLocaleString('ko-KR');
+    }
+
+    // JS 렌더링 (서버 데이터 없을 때)
+    function renderGoals(goals) {
+      const grid = document.getElementById('goalsGrid');
+      const jsCards = document.getElementById('jsGoalCards');
+
+      if (!goals || goals.length === 0) {
+        document.getElementById('emptyState').classList.remove('hidden');
+        return;
+      }
+
+      jsCards.innerHTML = goals.map(goal => {
+        const prog = Math.min(goal.progressPercent, 100);
+        const remaining = goal.target - goal.current;
+        const isCompleted = goal.progressPercent >= 100;
+
+        return `
+          <div class="bg-white rounded-3xl shadow-sm p-6 relative overflow-hidden" data-goal-id="${goal.id}">
+            ${isCompleted ? `
+            <div class="absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+              <i data-lucide="trophy" class="w-4 h-4"></i>
+              <span class="text-sm">완료!</span>
+            </div>` : ''}
+
+            <div class="flex items-start gap-3 mb-4">
+              <div class="w-12 h-12 bg-[#FCE8E3] rounded-2xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="${goal.iconName}" class="w-6 h-6 text-[#F5A5A5]"></i>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-lg text-gray-800 mb-1">${goal.name}</h3>
+                <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">${goal.typeLabel}</span>
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-2xl text-[#F5A5A5]">₩${formatWon(goal.current)}</span>
+                <span class="text-lg text-gray-600">${goal.progressPercent}%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                <div class="bg-gradient-to-r from-[#F5A5A5] to-[#FCE8E3] h-3 rounded-full transition-all duration-500"
+                     style="width: ${prog}%"></div>
+              </div>
+              <div class="flex items-center justify-between text-sm text-gray-600">
+                <span>목표: ₩${formatWon(goal.target)}</span>
+                ${!isCompleted ? `<span>₩${formatWon(remaining)} 남음</span>` : ''}
+              </div>
+            </div>
+
+            ${isCompleted ? `
+            <div class="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-4 mb-4">
+              <p class="text-sm text-gray-700 text-center">🎉 목표 달성! 포인트 보상을 받으세요</p>
+            </div>` : ''}
+
+            <div class="border-t border-gray-200 pt-4">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm text-gray-700">자동 이체</span>
+                <button type="button" onclick="toggleAutoTransfer(${goal.id})"
+                        id="toggle-${goal.id}"
+                        class="relative w-12 h-6 rounded-full transition-colors ${goal.autoTransfer.enabled ? 'bg-[#F5A5A5]' : 'bg-gray-300'}">
+                  <div id="toggleThumb-${goal.id}"
+                       class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${goal.autoTransfer.enabled ? 'translate-x-6' : 'translate-x-0'}"></div>
+                </button>
+              </div>
+
+              <div id="autoDetails-${goal.id}"
+                   class="bg-[#F0F9FF] rounded-xl p-3 space-y-2 ${goal.autoTransfer.enabled ? '' : 'hidden'}">
+                <div class="flex items-center gap-2 text-xs text-gray-600 mb-2 pb-2 border-b border-gray-200 flex-wrap">
+                  <i data-lucide="credit-card" class="w-3 h-3"></i>
+                  <span>연결 계좌: ${goal.autoTransfer.sourceAccount}</span>
+                  <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                  <i data-lucide="piggy-bank" class="w-3 h-3"></i>
+                  <span>저축 계좌</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-gray-600">이체 금액</span>
+                  <span class="text-gray-800">₩${formatWon(goal.autoTransfer.amount)}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-gray-600">주기</span>
+                  <span class="text-gray-800">${goal.autoTransfer.frequencyLabel}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-gray-600">다음 이체</span>
+                  <span class="text-gray-800">${goal.autoTransfer.nextDate}</span>
+                </div>
+                <button type="button" onclick="showAutoTransferModal(${goal.id})"
+                        class="w-full mt-2 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                  설정 변경
+                </button>
+              </div>
+              <button type="button" id="setupBtn-${goal.id}" onclick="showAutoTransferModal(${goal.id})"
+                      class="w-full mt-2 py-2 bg-[#FCE8E3] text-gray-700 rounded-lg hover:bg-[#FBD5CE] transition-colors text-sm ${goal.autoTransfer.enabled ? 'hidden' : ''}">
+                자동 이체 설정하기
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs text-gray-500 mt-4">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+              <span>${goal.startDate} ~ ${goal.targetDate}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // 토글 자동 이체 (로컬 UI 상태만 반영 - 실제 저장은 백엔드 처리)
+    function toggleAutoTransfer(goalId) {
+      const toggleBtn  = document.getElementById('toggle-'      + goalId);
+      const toggleThumb = document.getElementById('toggleThumb-' + goalId);
+      const autoDetails = document.getElementById('autoDetails-' + goalId);
+      const setupBtn   = document.getElementById('setupBtn-'    + goalId);
+      if (!toggleBtn) return;
+
+      const isEnabled = toggleBtn.classList.contains('bg-[#F5A5A5]');
+      if (isEnabled) {
+        // 비활성화
+        toggleBtn.classList.remove('bg-[#F5A5A5]');
+        toggleBtn.classList.add('bg-gray-300');
+        if (toggleThumb) {
+          toggleThumb.classList.remove('translate-x-6');
+          toggleThumb.classList.add('translate-x-0');
+        }
+        if (autoDetails) autoDetails.classList.add('hidden');
+        if (setupBtn)    setupBtn.classList.remove('hidden');
+      } else {
+        // 활성화
+        toggleBtn.classList.remove('bg-gray-300');
+        toggleBtn.classList.add('bg-[#F5A5A5]');
+        if (toggleThumb) {
+          toggleThumb.classList.remove('translate-x-0');
+          toggleThumb.classList.add('translate-x-6');
+        }
+        if (autoDetails) autoDetails.classList.remove('hidden');
+        if (setupBtn)    setupBtn.classList.add('hidden');
+      }
+    }
+
+    // 자동 이체 모달
+    function showAutoTransferModal(goalId) {
+      document.getElementById('modalGoalId').value = goalId;
+      document.getElementById('formGoalId').value = goalId;
+      document.getElementById('modalAccountNum').textContent = linkedAccount;
+      document.getElementById('modalBalanceHint').textContent = '연결 계좌 잔액: ₩' + formatWon(accountBalance);
+      selectFrequency('monthly');
+      document.getElementById('autoTransferOverlay').classList.remove('hidden');
+      document.getElementById('autoTransferModal').classList.remove('hidden');
+    }
+
+    function hideAutoTransferModal() {
+      document.getElementById('autoTransferOverlay').classList.add('hidden');
+      document.getElementById('autoTransferModal').classList.add('hidden');
+      document.getElementById('modalAutoAmount').value = '';
+      document.getElementById('modalAutoStartDate').value = '';
+    }
+
+    function selectFrequency(freq) {
+      currentFrequency = freq;
+      ['daily', 'weekly', 'monthly'].forEach(f => {
+        const btn = document.getElementById('freq' + f.charAt(0).toUpperCase() + f.slice(1));
+        if (f === freq) {
+          btn.className = 'py-3 rounded-xl border-2 transition-colors border-[#F5A5A5] bg-[#FCE8E3] text-gray-800';
+        } else {
+          btn.className = 'py-3 rounded-xl border-2 transition-colors border-gray-200 text-gray-600 hover:border-gray-300';
+        }
+      });
+      document.getElementById('formFrequency').value = freq;
+    }
+
+    function formatModalAmount(input) {
+      const raw = input.value.replace(/[^0-9]/g, '');
+      if (raw === '') { input.value = ''; return; }
+      input.value = parseInt(raw).toLocaleString('ko-KR');
+      document.getElementById('formAutoAmount').value = raw;
+    }
+
+    document.getElementById('autoTransferForm').addEventListener('submit', function() {
+      document.getElementById('formStartDate').value = document.getElementById('modalAutoStartDate').value;
+    });
+
+    window.addEventListener('DOMContentLoaded', function() {
+      // serverGoals가 null이면 정적 HTML 모드
+      // th:each로 렌더링된 Thymeleaf 템플릿 카드(onclick 없음)를 제거하고 JS 카드로 교체
+      if (serverGoals === null) {
+        document.querySelectorAll('.goal-card').forEach(el => el.remove());
+        renderGoals(defaultGoals);
+      }
+      lucide.createIcons();
+    });
+  </script>
+  <th:block th:replace="~{layout/header :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카드 발급 - 약관 동의 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FCE8E3] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
+    <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+      <a th:href="@{/dashboard}" href="/dashboard" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
+            <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+          </div>
+          <span class="text-2xl font-bold text-gray-900">모담</span>
+        </div>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
+    <div class="w-full max-w-2xl">
+
+      <!-- 타이틀 -->
+      <div class="text-center mb-10">
+        <h1 class="text-4xl text-gray-800 mb-3">카드 발급 약관 동의</h1>
+        <p class="text-gray-600 text-lg">카드 발급을 위한 약관에 동의해주세요</p>
+      </div>
+
+      <!-- 약관 컨테이너 -->
+      <div class="bg-white rounded-3xl shadow-lg p-8 mb-8">
+
+        <!-- 전체 동의 -->
+        <div class="border-b border-gray-200 pb-6 mb-6">
+          <label class="flex items-center gap-4 cursor-pointer group">
+            <div id="checkAll"
+                 onclick="toggleAll()"
+                 class="w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all group-hover:border-[#F5A5A5]">
+            </div>
+            <span class="text-lg text-gray-800">전체 동의</span>
+          </label>
+        </div>
+
+        <!-- 개별 약관 -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-4 rounded-2xl hover:bg-[#FAFAFA] transition-colors">
+            <label class="flex items-center gap-4 cursor-pointer flex-1">
+              <div id="check-cardService" onclick="toggleTerm('cardService')"
+                   class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all hover:border-[#F5A5A5]"></div>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-800">카드 서비스 이용약관</span>
+                <span class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">필수</span>
+              </div>
+            </label>
+            <button class="text-gray-400 hover:text-gray-600">
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between p-4 rounded-2xl hover:bg-[#FAFAFA] transition-colors">
+            <label class="flex items-center gap-4 cursor-pointer flex-1">
+              <div id="check-personalInfo" onclick="toggleTerm('personalInfo')"
+                   class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all hover:border-[#F5A5A5]"></div>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-800">개인정보 수집 및 이용 동의</span>
+                <span class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">필수</span>
+              </div>
+            </label>
+            <button class="text-gray-400 hover:text-gray-600">
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between p-4 rounded-2xl hover:bg-[#FAFAFA] transition-colors">
+            <label class="flex items-center gap-4 cursor-pointer flex-1">
+              <div id="check-creditInfo" onclick="toggleTerm('creditInfo')"
+                   class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all hover:border-[#F5A5A5]"></div>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-800">신용정보 조회 동의</span>
+                <span class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">필수</span>
+              </div>
+            </label>
+            <button class="text-gray-400 hover:text-gray-600">
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between p-4 rounded-2xl hover:bg-[#FAFAFA] transition-colors">
+            <label class="flex items-center gap-4 cursor-pointer flex-1">
+              <div id="check-marketing" onclick="toggleTerm('marketing')"
+                   class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all hover:border-[#F5A5A5]"></div>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-800">마케팅 정보 수신 동의</span>
+                <span class="px-2 py-0.5 bg-gray-300 text-gray-600 text-xs rounded-full">선택</span>
+              </div>
+            </label>
+            <button class="text-gray-400 hover:text-gray-600">
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 버튼 -->
+      <div class="flex gap-4">
+        <a th:href="@{/card-step3}" href="card-step3.html"
+           class="flex-1 py-4 bg-white border-2 border-gray-300 text-gray-700 text-lg rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i><span>이전</span>
+        </a>
+        <button id="nextBtn" onclick="goNext()" disabled
+                class="flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed">
+          <span>다음</span><i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{layout/footer :: footer}"></th:block>
+
+  <script>
+    const terms = { cardService: false, personalInfo: false, creditInfo: false, marketing: false };
+
+    function setCheckVisual(el, checked) {
+      if (checked) {
+        el.classList.remove('border-gray-300'); el.classList.add('bg-[#F5A5A5]', 'border-[#F5A5A5]');
+        el.innerHTML = '<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+      } else {
+        el.classList.remove('bg-[#F5A5A5]', 'border-[#F5A5A5]'); el.classList.add('border-gray-300');
+        el.innerHTML = '';
+      }
+    }
+
+    function toggleTerm(key) {
+      terms[key] = !terms[key];
+      setCheckVisual(document.getElementById('check-' + key), terms[key]);
+      const allChecked = Object.values(terms).every(v => v);
+      setCheckVisual(document.getElementById('checkAll'), allChecked);
+      updateNextBtn();
+    }
+
+    function toggleAll() {
+      const allChecked = Object.values(terms).every(v => v);
+      const newVal = !allChecked;
+      Object.keys(terms).forEach(k => {
+        terms[k] = newVal;
+        setCheckVisual(document.getElementById('check-' + k), newVal);
+      });
+      setCheckVisual(document.getElementById('checkAll'), newVal);
+      updateNextBtn();
+    }
+
+    function updateNextBtn() {
+      const canProceed = terms.cardService && terms.personalInfo && terms.creditInfo;
+      const btn = document.getElementById('nextBtn');
+      btn.disabled = !canProceed;
+      btn.className = canProceed
+        ? 'flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-[#F5A5A5] text-white hover:bg-[#F28B8B] shadow-md'
+        : 'flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed';
+    }
+
+    function goNext() {
+      if (terms.cardService && terms.personalInfo && terms.creditInfo) {
+        window.location.href = 'card-step5.html';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

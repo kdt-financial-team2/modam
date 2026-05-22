@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>포인트 상점 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-gray-50 flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{layout/header :: nav}"></th:block>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1">
+    <div class="w-full max-w-[1440px] mx-auto px-8 py-12">
+
+      <!-- 페이지 헤더 -->
+      <div class="mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-3">포인트 상점</h1>
+        <p class="text-gray-600 text-lg">모은 포인트로 다양한 상품을 구매하세요</p>
+      </div>
+
+      <!-- 포인트 카드 -->
+      <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-3xl border border-gray-100 shadow-sm p-8 mb-8">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+              <i data-lucide="gift" class="w-8 h-8 text-[#F5A5A5]"></i>
+            </div>
+            <div>
+              <p class="text-gray-600 mb-1">내 포인트</p>
+              <p class="text-4xl text-gray-800">
+                <span id="pointDisplay" th:text="${#numbers.formatInteger(userPoints, 0, 'COMMA')}">12,450</span>P
+              </p>
+            </div>
+          </div>
+          <a th:href="@{/savings}" href="/savings"
+             class="px-6 py-3 bg-white text-gray-800 rounded-2xl hover:bg-gray-50 transition-colors">
+            포인트 적립하기
+          </a>
+        </div>
+      </div>
+
+      <!-- 메인 탭 (상품 / 내역) -->
+      <div class="flex gap-4 mb-8">
+        <button id="tabProducts" onclick="switchMainTab('products')"
+                class="px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]">
+          상품
+        </button>
+        <button id="tabHistory" onclick="switchMainTab('history')"
+                class="px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent">
+          내역
+        </button>
+      </div>
+
+      <!-- ===== 상품 탭 콘텐츠 ===== -->
+      <div id="productsSection">
+        <!-- 카테고리 탭 -->
+        <div class="flex gap-4 mb-8">
+          <button id="catAll" onclick="switchCategory('all')"
+                  class="px-6 py-3 rounded-2xl transition-colors bg-[#F5A5A5] text-white shadow-md">전체</button>
+          <button id="catTheme" onclick="switchCategory('theme')"
+                  class="px-6 py-3 rounded-2xl transition-colors bg-white text-gray-600 hover:bg-gray-50">테마</button>
+          <button id="catEmoticon" onclick="switchCategory('emoticon')"
+                  class="px-6 py-3 rounded-2xl transition-colors bg-white text-gray-600 hover:bg-gray-50">이모티콘</button>
+        </div>
+
+        <!-- 상품 그리드 (서버 렌더링) -->
+        <div id="productsGrid" class="grid grid-cols-4 gap-6 mb-8">
+          <!-- Thymeleaf 서버 렌더링 -->
+          <a th:each="product : ${products}"
+             th:href="@{/point-shop/product/{id}(id=${product.id})}"
+             href="/point-shop/product/1"
+             class="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all overflow-hidden group block server-product-card"
+             th:attr="data-category=${product.category}">
+            <div class="aspect-square bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] flex items-center justify-center text-8xl group-hover:scale-110 transition-transform">
+              <span th:text="${product.image}">🌸</span>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg text-gray-800 mb-2" th:text="${product.name}">봄날의 벚꽃 핑크</h3>
+              <p class="text-2xl text-[#F5A5A5]">
+                <span th:text="${#numbers.formatInteger(product.price, 0, 'COMMA')}">1,500</span>P
+              </p>
+            </div>
+          </a>
+        </div>
+
+        <!-- 상품 페이지네이션 -->
+        <div id="productsPagination" class="flex justify-center gap-2 mb-8"></div>
+      </div>
+
+      <!-- ===== 내역 탭 콘텐츠 ===== -->
+      <div id="historySection" class="hidden">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-8">포인트 적립/사용 내역</h2>
+          <!-- 서버 렌더링 내역 목록 -->
+          <div id="historyList" class="space-y-3">
+            <div th:each="item : ${pointHistory}"
+                 th:class="${item.isSpecial and item.isNew} ? 'flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-[#FFF0F3] to-[#FFE4E8] border border-[#F5A5A5]/20 hover:from-[#FFE4E8] hover:to-[#FFD5DC] server-history-item'
+                          : (${item.isNew} ? 'flex items-center justify-between p-5 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-100 server-history-item'
+                          : 'flex items-center justify-between p-5 rounded-2xl hover:bg-gray-50 server-history-item')">
+              <div class="flex items-center gap-4">
+                <div th:class="${item.isSpecial} ? 'w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B]'
+                              : (${item.type == 'EARN'} ? 'w-12 h-12 rounded-xl flex items-center justify-center bg-green-50'
+                              : 'w-12 h-12 rounded-xl flex items-center justify-center bg-red-50')">
+                  <i th:if="${item.isSpecial}" data-lucide="gift" class="w-6 h-6 text-white"></i>
+                  <i th:if="${!item.isSpecial and item.type == 'EARN'}" data-lucide="plus" class="w-6 h-6 text-green-500"></i>
+                  <i th:if="${!item.isSpecial and item.type == 'USE'}" data-lucide="minus" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <p th:class="${item.isSpecial} ? 'font-medium text-[#F28B8B]' : 'font-medium text-gray-900'"
+                       th:text="${item.descrip}">매일 출석 체크 완료</p>
+                    <span th:if="${item.isNew}"
+                          class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full font-semibold">NEW</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-sm text-gray-500">
+                    <i data-lucide="clock" class="w-4 h-4"></i>
+                    <span th:text="${item.createdAt}">2026.05.14 09:30</span>
+                  </div>
+                </div>
+              </div>
+              <div class="text-right">
+                <p th:class="${item.isSpecial} ? 'text-xl font-bold mb-1 text-[#F5A5A5]'
+                            : (${item.type == 'EARN'} ? 'text-xl font-bold mb-1 text-green-600'
+                            : 'text-xl font-bold mb-1 text-red-600')">
+                  <span th:text="${item.type == 'EARN' ? '+' : '-'}">+</span><span th:text="${#numbers.formatInteger(item.amt, 0, 'COMMA')}">100</span>P
+                </p>
+                <p class="text-sm text-gray-500">
+                  잔액 <span th:text="${#numbers.formatInteger(item.aftBal, 0, 'COMMA')}">12,450</span>P
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 내역 페이지네이션 -->
+        <div id="historyPagination" class="flex justify-center gap-2 mb-8"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{layout/footer :: footer}"></th:block>
+
+  <script th:inline="javascript">
+    const serverProducts   = /*[[${products}]]*/ null;
+    const serverHistory    = /*[[${pointHistory}]]*/ null;
+    const userPoints       = /*[[${userPoints}]]*/ 12450;
+    const serverMainTab    = /*[[${selectedMainTab}]]*/ 'products';
+    const serverCategory   = /*[[${selectedCategory}]]*/ 'all';
+
+    // ===== 기본 데이터 =====
+    const defaultProducts = [
+      { id:1,  name:'봄날의 벚꽃 핑크',    price:1500, category:'theme',    image:'🌸' },
+      { id:2,  name:'잔소리쟁이 멍멍이',    price:800,  category:'emoticon', image:'🐶' },
+      { id:3,  name:'다크 모드 감성',       price:2000, category:'theme',    image:'🌙' },
+      { id:4,  name:'월급날 기분 최고',     price:500,  category:'emoticon', image:'💰' },
+      { id:5,  name:'귀요미 토끼 세트',     price:600,  category:'emoticon', image:'🐰' },
+      { id:6,  name:'시원한 민트 브리즈',   price:1800, category:'theme',    image:'🍃' },
+      { id:7,  name:'행복한 곰돌이 친구들', price:700,  category:'emoticon', image:'🐻' },
+      { id:8,  name:'커플 사랑 표현 팩',    price:900,  category:'emoticon', image:'💕' },
+      { id:9,  name:'오션 블루 테마',       price:1200, category:'theme',    image:'🌊' },
+      { id:10, name:'선셋 오렌지 테마',     price:1800, category:'theme',    image:'🌅' },
+    ];
+    const defaultHistory = [
+      { id:1,  type:'EARN', amt:100,  aftBal:12450, descrip:'매일 출석 체크 완료',          createdAt:'2026.05.14 09:30', isNew:false, isSpecial:false },
+      { id:2,  type:'EARN', amt:500,  aftBal:12350, descrip:'이번 달 소비 리포트 확인',     createdAt:'2026.05.13 18:45', isNew:false, isSpecial:false },
+      { id:3,  type:'USE',  amt:1200, aftBal:11850, descrip:'프리미엄 테마 구매',           createdAt:'2026.05.13 14:20', isNew:false, isSpecial:false },
+      { id:4,  type:'EARN', amt:2000, aftBal:13050, descrip:'공동 저축 목표 50% 달성',     createdAt:'2026.05.12 20:15', isNew:false, isSpecial:false },
+      { id:5,  type:'EARN', amt:150,  aftBal:11050, descrip:'파트너와 함께 소비 내역 등록', createdAt:'2026.05.12 12:30', isNew:false, isSpecial:false },
+      { id:6,  type:'EARN', amt:300,  aftBal:10900, descrip:'주간 절약 챌린지 성공',        createdAt:'2026.05.11 16:00', isNew:false, isSpecial:false },
+      { id:7,  type:'USE',  amt:800,  aftBal:10600, descrip:'커플 이모티콘 팩 구매',        createdAt:'2026.05.10 19:50', isNew:false, isSpecial:false },
+      { id:8,  type:'EARN', amt:1500, aftBal:11400, descrip:'친구 초대 완료',               createdAt:'2026.05.10 11:20', isNew:false, isSpecial:false },
+      { id:9,  type:'EARN', amt:250,  aftBal:9900,  descrip:'데이트 비용 영수증 등록',      createdAt:'2026.05.09 15:35', isNew:false, isSpecial:false },
+      { id:10, type:'USE',  amt:500,  aftBal:9650,  descrip:'계좌 이체 수수료 결제',        createdAt:'2026.05.08 10:05', isNew:false, isSpecial:false },
+    ];
+
+    const ITEMS_PER_PAGE   = 6;
+    const HISTORY_PER_PAGE = 8;
+
+    let currentMainTab   = 'products';
+    let currentCategory  = 'all';
+    let productPage      = 1;
+    let historyPage      = 1;
+    let allProducts      = [];
+    let allHistory       = [];
+
+    // ===== 탭 전환 =====
+    function switchMainTab(tab) {
+      currentMainTab = tab;
+      const isProducts = tab === 'products';
+
+      document.getElementById('tabProducts').className = isProducts
+        ? 'px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]'
+        : 'px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent';
+      document.getElementById('tabHistory').className = !isProducts
+        ? 'px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]'
+        : 'px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent';
+
+      document.getElementById('productsSection').classList.toggle('hidden', !isProducts);
+      document.getElementById('historySection').classList.toggle('hidden', isProducts);
+
+      if (!isProducts) {
+        historyPage = 1;
+        renderHistory();
+      }
+    }
+
+    // ===== 카테고리 전환 =====
+    function switchCategory(cat) {
+      currentCategory = cat;
+      productPage = 1;
+      ['all','theme','emoticon'].forEach(c => {
+        const btn = document.getElementById('cat' + c.charAt(0).toUpperCase() + c.slice(1));
+        btn.className = c === cat
+          ? 'px-6 py-3 rounded-2xl transition-colors bg-[#F5A5A5] text-white shadow-md'
+          : 'px-6 py-3 rounded-2xl transition-colors bg-white text-gray-600 hover:bg-gray-50';
+      });
+      renderProducts();
+    }
+
+    // ===== 상품 렌더링 =====
+    function renderProducts() {
+      const filtered = currentCategory === 'all'
+        ? allProducts
+        : allProducts.filter(p => p.category === currentCategory);
+
+      const total = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+      if (productPage > total) productPage = 1;
+      const slice = filtered.slice((productPage - 1) * ITEMS_PER_PAGE, productPage * ITEMS_PER_PAGE);
+
+      document.getElementById('productsGrid').innerHTML = slice.map(p => `
+        <a href="/point-shop/product/${p.id}"
+           class="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all overflow-hidden group block">
+          <div class="aspect-square bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] flex items-center justify-center text-8xl group-hover:scale-110 transition-transform">
+            ${p.image}
+          </div>
+          <div class="p-5">
+            <h3 class="text-lg text-gray-800 mb-2">${p.name}</h3>
+            <p class="text-2xl text-[#F5A5A5]">${p.price.toLocaleString()}P</p>
+          </div>
+        </a>
+      `).join('');
+
+      renderPagination('productsPagination', productPage, total, (p) => { productPage = p; renderProducts(); });
+    }
+
+    // ===== 내역 렌더링 =====
+    function renderHistory() {
+      const total = Math.ceil(allHistory.length / HISTORY_PER_PAGE);
+      if (historyPage > total) historyPage = 1;
+      const slice = allHistory.slice((historyPage - 1) * HISTORY_PER_PAGE, historyPage * HISTORY_PER_PAGE);
+
+      const iconBg = (item) => item.isSpecial
+        ? 'bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B]'
+        : item.type === 'EARN' ? 'bg-green-50' : 'bg-red-50';
+      const iconEl = (item) => item.isSpecial
+        ? `<i data-lucide="gift" class="w-6 h-6 text-white"></i>`
+        : item.type === 'EARN'
+        ? `<i data-lucide="plus" class="w-6 h-6 text-green-500"></i>`
+        : `<i data-lucide="minus" class="w-6 h-6 text-red-500"></i>`;
+      const rowBg = (item) => item.isSpecial && item.isNew
+        ? 'bg-gradient-to-r from-[#FFF0F3] to-[#FFE4E8] border border-[#F5A5A5]/20 hover:from-[#FFE4E8] hover:to-[#FFD5DC]'
+        : item.isNew ? 'bg-blue-50 hover:bg-blue-100 border border-blue-100' : 'hover:bg-gray-50';
+      const amtColor = (item) => item.isSpecial
+        ? 'text-[#F5A5A5]' : item.type === 'EARN' ? 'text-green-600' : 'text-red-600';
+
+      document.getElementById('historyList').innerHTML = slice.map(item => `
+        <div class="flex items-center justify-between p-5 rounded-2xl transition-colors ${rowBg(item)}">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center ${iconBg(item)}">
+              ${iconEl(item)}
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <p class="font-medium ${item.isSpecial ? 'text-[#F28B8B]' : 'text-gray-900'}">${item.descrip}</p>
+                ${item.isNew ? '<span class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full font-semibold">NEW</span>' : ''}
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-500">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+                <span>${item.createdAt}</span>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-xl font-bold mb-1 ${amtColor(item)}">
+              ${item.type === 'EARN' ? '+' : '-'}${item.amt.toLocaleString()}P
+            </p>
+            <p class="text-sm text-gray-500">잔액 ${item.aftBal.toLocaleString()}P</p>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+      renderPagination('historyPagination', historyPage, total, (p) => { historyPage = p; renderHistory(); });
+    }
+
+    // ===== 페이지네이션 =====
+    function pageRange(cur, total) {
+      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+      const range = [];
+      range.push(1);
+      if (cur > 3) range.push('...');
+      for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) range.push(i);
+      if (cur < total - 2) range.push('...');
+      range.push(total);
+      return range;
+    }
+
+    function renderPagination(containerId, cur, total, onPage) {
+      const el = document.getElementById(containerId);
+      if (total <= 1) { el.innerHTML = ''; return; }
+      el.innerHTML = pageRange(cur, total).map(p => {
+        if (p === '...') return `<span class="px-3 py-2 text-gray-400">...</span>`;
+        const active = p === cur;
+        return `<button onclick="(${onPage.toString()})(${p})"
+          class="w-10 h-10 rounded-xl text-sm font-medium transition-colors ${active ? 'bg-[#F5A5A5] text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'}">
+          ${p}
+        </button>`;
+      }).join('');
+    }
+
+    // ===== 프로필 & 로그아웃 =====
+    // ===== 초기화 =====
+    window.addEventListener('DOMContentLoaded', function() {
+      // 포인트 표시 갱신
+      document.getElementById('pointDisplay').textContent = userPoints.toLocaleString();
+
+      const hasServerProducts = document.querySelectorAll('.server-product-card').length > 0;
+      const hasServerHistory  = document.querySelectorAll('.server-history-item').length > 0;
+
+      if (!hasServerProducts) {
+        allProducts = serverProducts || defaultProducts;
+        renderProducts();
+      } else {
+        // 서버 카드로 페이지네이션만 적용
+        allProducts = serverProducts || defaultProducts;
+        renderPagination('productsPagination', productPage, Math.ceil(allProducts.length / ITEMS_PER_PAGE),
+          (p) => { productPage = p; renderProducts(); });
+      }
+
+      if (!hasServerHistory) {
+        allHistory = serverHistory || defaultHistory;
+      } else {
+        allHistory = serverHistory || defaultHistory;
+      }
+
+      // 서버 데이터 없을 때 완전히 교체
+      if (serverProducts === null) {
+        document.querySelectorAll('.server-product-card').forEach(el => el.remove());
+        renderProducts();
+      }
+      if (serverHistory === null) {
+        document.querySelectorAll('.server-history-item').forEach(el => el.remove());
+      }
+
+      lucide.createIcons();
+    });
+  </script>
+  <th:block th:replace="~{layout/header :: scripts}"></th:block>
+</body>
+</html>

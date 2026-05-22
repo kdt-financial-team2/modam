@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>소비 분석 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{layout/header :: nav}"></th:block>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1">
+    <div class="max-w-[1440px] mx-auto px-8 py-12">
+
+      <!-- 페이지 타이틀 -->
+      <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">소비 분석</h1>
+        <p class="text-lg text-gray-600">우리의 소비 패턴을 한눈에 확인해보세요</p>
+      </div>
+
+      <!-- 필터 섹션 -->
+      <div class="flex items-center justify-between mb-8">
+        <!-- 기간 탭 -->
+        <div class="flex gap-3">
+          <button id="tab이번달" onclick="selectPeriod('이번달')"
+                  class="px-8 py-3 rounded-2xl transition-all text-lg font-medium bg-[#F5A5A5] text-white shadow-md">
+            이번달
+          </button>
+          <button id="tab지난달" onclick="selectPeriod('지난달')"
+                  class="px-8 py-3 rounded-2xl transition-all text-lg font-medium bg-white text-gray-600 hover:bg-gray-50 border border-gray-200">
+            지난달
+          </button>
+        </div>
+
+        <!-- 월 선택 -->
+        <div class="relative">
+          <select id="monthSelect" onchange="selectMonth(this.value)"
+                  class="appearance-none bg-white border border-gray-200 rounded-2xl px-6 py-3 pr-12 text-gray-900 font-medium cursor-pointer hover:bg-gray-50 transition-colors text-lg">
+            <option value="2026-05">2026년 5월</option>
+            <option value="2026-04">2026년 4월</option>
+            <option value="2026-03">2026년 3월</option>
+            <option value="2026-02">2026년 2월</option>
+            <option value="2026-01">2026년 1월</option>
+          </select>
+          <i data-lucide="calendar" class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
+        </div>
+      </div>
+
+      <!-- 요약 카드 4개 -->
+      <div class="grid grid-cols-4 gap-6 mb-8">
+        <!-- 총 소비 -->
+        <div class="bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-3xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-gray-600 font-medium">총 소비</span>
+            <div class="w-10 h-10 bg-white/80 rounded-xl flex items-center justify-center">
+              <i data-lucide="dollar-sign" class="w-5 h-5 text-[#F5A5A5]"></i>
+            </div>
+          </div>
+          <div id="totalSpending" class="text-3xl font-bold text-gray-900">₩1,245,000</div>
+        </div>
+
+        <!-- 일 평균 소비 -->
+        <div class="bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB] rounded-3xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-gray-600 font-medium">평균 소비</span>
+            <div class="w-10 h-10 bg-white/80 rounded-xl flex items-center justify-center">
+              <i data-lucide="trending-up" class="w-5 h-5 text-[#A5C9E8]"></i>
+            </div>
+          </div>
+          <div id="avgSpending" class="text-3xl font-bold text-gray-900">₩41,500</div>
+          <div class="text-xs text-gray-600 mt-1">일 평균</div>
+        </div>
+
+        <!-- 가장 많이 사용 -->
+        <div class="bg-gradient-to-br from-[#FFF9E6] to-[#FFE4B5] rounded-3xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-gray-600 font-medium">가장 많이 사용</span>
+            <div class="w-10 h-10 bg-white/80 rounded-xl flex items-center justify-center">
+              <i data-lucide="pie-chart" class="w-5 h-5 text-[#FFDAB9]"></i>
+            </div>
+          </div>
+          <div id="topCategoryName" class="text-2xl font-bold text-gray-900 mb-1">식비</div>
+          <div id="topCategoryAmount" class="text-sm text-gray-600">₩450,000</div>
+        </div>
+
+        <!-- 전월 대비 -->
+        <div id="changeCard" class="bg-gradient-to-br from-[#FFEBEE] to-[#FFCDD2] rounded-3xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-gray-600 font-medium">전월 대비</span>
+            <div class="w-10 h-10 bg-white/80 rounded-xl flex items-center justify-center">
+              <i id="changeIcon" data-lucide="trending-up" class="w-5 h-5 text-red-500"></i>
+            </div>
+          </div>
+          <div id="changeRate" class="text-3xl font-bold text-red-600">+18.6%</div>
+          <div id="changeLabel" class="text-xs text-gray-600 mt-1">증가</div>
+        </div>
+      </div>
+
+      <!-- 차트 섹션 -->
+      <div class="grid grid-cols-2 gap-6 mb-8">
+        <!-- 월별 소비 추이 (라인 차트) -->
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+          <h2 class="text-xl font-bold text-gray-900 mb-6">월별 소비 추이</h2>
+          <div style="height: 320px;">
+            <canvas id="lineChart"></canvas>
+          </div>
+        </div>
+
+        <!-- 카테고리별 지출 비율 (도넛 차트) -->
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+          <h2 class="text-xl font-bold text-gray-900 mb-6">카테고리별 지출 비율</h2>
+          <div class="flex items-center gap-6" style="height: 320px;">
+            <div style="width: 50%; height: 100%;">
+              <canvas id="donutChart"></canvas>
+            </div>
+            <div id="donutLegend" class="flex-1 flex flex-col gap-3 overflow-y-auto"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 소비 인사이트 -->
+      <div class="bg-gradient-to-br from-[#F3E5F5] to-[#E1BEE7] rounded-3xl p-8 shadow-sm border border-purple-100">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 bg-white/80 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="sparkles" class="w-6 h-6 text-purple-500"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">AI 소비 인사이트</h3>
+            <div id="insightList" class="space-y-3"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{layout/footer :: footer}"></th:block>
+
+  <script th:inline="javascript">
+    /* ===== 서버 데이터 (Spring Boot 연동 시 th:inline="javascript"로 주입) ===== */
+    const serverMonth    = /*[[${selectedMonth}]]*/ '2026-05';
+    const serverData     = /*[[${analysisData}]]*/ null;
+
+    /* ===== 전체 월별 데이터 (클라이언트 폴백) ===== */
+    const allMonthData = {
+      '2026-05': {
+        categories: [
+          { name: '식비',   value: 450000, color: '#F5A5A5' },
+          { name: '데이트', value: 320000, color: '#A5C9E8' },
+          { name: '생활비', value: 275000, color: '#FFDAB9' },
+          { name: '교통비', value: 120000, color: '#B8E6B8' },
+          { name: '기타',   value:  80000, color: '#D8BFD8' }
+        ],
+        previousTotal: 1050000,
+        insights: [
+          { emoji: '💕', title: '이번 달은 데이트 비용이 지난달보다 18% 증가했어요', desc: '함께하는 시간이 많아졌네요! 특별한 날이 있으셨나요?' },
+          { emoji: '🍽️', title: '식비 소비가 전체의 42%를 차지하고 있어요', desc: '외식 빈도가 높은 편이에요. 주 1-2회 집밥 요리로 월 10만원 절약 가능해요!' }
+        ]
+      },
+      '2026-04': {
+        categories: [
+          { name: '식비',   value: 380000, color: '#F5A5A5' },
+          { name: '데이트', value: 270000, color: '#A5C9E8' },
+          { name: '생활비', value: 220000, color: '#FFDAB9' },
+          { name: '교통비', value: 110000, color: '#B8E6B8' },
+          { name: '기타',   value:  70000, color: '#D8BFD8' }
+        ],
+        previousTotal: 780000,
+        insights: [
+          { emoji: '🎬', title: '이번 달은 문화생활 비용이 증가했어요', desc: '영화, 공연 관람이 많았네요. 즐거운 한 달 보내셨나요?' },
+          { emoji: '💰', title: '지난달보다 27만원을 더 사용했어요', desc: '계획적인 소비를 위해 예산을 설정해보는 건 어떨까요?' }
+        ]
+      },
+      '2026-03': {
+        categories: [
+          { name: '식비',   value: 320000, color: '#F5A5A5' },
+          { name: '생활비', value: 210000, color: '#FFDAB9' },
+          { name: '데이트', value: 150000, color: '#A5C9E8' },
+          { name: '교통비', value:  70000, color: '#B8E6B8' },
+          { name: '기타',   value:  30000, color: '#D8BFD8' }
+        ],
+        previousTotal: 920000,
+        insights: [
+          { emoji: '👏', title: '지난달보다 14만원 절약했어요!', desc: '훌륭한 소비 습관이에요. 이 페이스를 유지해보세요!' },
+          { emoji: '🏠', title: '생활비 지출이 안정적이에요', desc: '필수 지출을 잘 관리하고 계시네요.' }
+        ]
+      },
+      '2026-02': {
+        categories: [
+          { name: '식비',   value: 420000, color: '#F5A5A5' },
+          { name: '데이트', value: 280000, color: '#A5C9E8' },
+          { name: '생활비', value: 120000, color: '#FFDAB9' },
+          { name: '교통비', value:  60000, color: '#B8E6B8' },
+          { name: '기타',   value:  40000, color: '#D8BFD8' }
+        ],
+        previousTotal: 850000,
+        insights: [
+          { emoji: '💝', title: '발렌타인데이가 있었던 2월이네요!', desc: '데이트 비용이 평소보다 높았어요. 특별한 추억 만드셨나요?' },
+          { emoji: '📈', title: '전월 대비 7만원 증가했어요', desc: '특별한 날이 많은 달이었네요.' }
+        ]
+      },
+      '2026-01': {
+        categories: [
+          { name: '식비',   value: 350000, color: '#F5A5A5' },
+          { name: '생활비', value: 250000, color: '#FFDAB9' },
+          { name: '데이트', value: 150000, color: '#A5C9E8' },
+          { name: '교통비', value:  70000, color: '#B8E6B8' },
+          { name: '기타',   value:  30000, color: '#D8BFD8' }
+        ],
+        previousTotal: 0,
+        insights: [
+          { emoji: '🎉', title: '모담 사용을 시작하신 첫 달이에요!', desc: '함께 시작하는 금융 관리, 앞으로가 기대되네요!' },
+          { emoji: '✨', title: '새해를 함께 시작하셨네요', desc: '올 한해도 건강한 소비 습관을 만들어가요!' }
+        ]
+      }
+    };
+
+    /* 월별 추이 데이터 (고정) */
+    const trendData = [
+      { month: '1월', amount: 850000 },
+      { month: '2월', amount: 920000 },
+      { month: '3월', amount: 780000 },
+      { month: '4월', amount: 1050000 },
+      { month: '5월', amount: 1245000 }
+    ];
+
+    /* ===== 상태 ===== */
+    let currentMonth = serverMonth || '2026-05';
+    let lineChartInst = null;
+    let donutChartInst = null;
+
+    /* ===== 탭 선택 ===== */
+    function selectPeriod(period) {
+      const map = { '이번달': '2026-05', '지난달': '2026-04' };
+      currentMonth = map[period];
+      document.getElementById('monthSelect').value = currentMonth;
+      setTabActive(period);
+      renderAll();
+    }
+
+    function selectMonth(month) {
+      currentMonth = month;
+      /* 이번달/지난달 탭 비활성화 */
+      setTabActive(null);
+      renderAll();
+    }
+
+    function setTabActive(period) {
+      const tabs = ['이번달', '지난달'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tab' + t);
+        if (t === period) {
+          btn.className = 'px-8 py-3 rounded-2xl transition-all text-lg font-medium bg-[#F5A5A5] text-white shadow-md';
+        } else {
+          btn.className = 'px-8 py-3 rounded-2xl transition-all text-lg font-medium bg-white text-gray-600 hover:bg-gray-50 border border-gray-200';
+        }
+      });
+    }
+
+    /* ===== 화면 전체 갱신 ===== */
+    function renderAll() {
+      /* 서버 데이터 우선, 없으면 클라이언트 폴백 */
+      const data = (serverData && serverData[currentMonth]) || allMonthData[currentMonth];
+      if (!data) return;
+
+      const categories   = data.categories;
+      const totalSpending = categories.reduce((s, c) => s + c.value, 0);
+      const avgSpending   = Math.round(totalSpending / 30);
+      const topCat        = categories[0];
+      const prevTotal     = data.previousTotal;
+      const changeRate    = prevTotal > 0
+        ? ((totalSpending - prevTotal) / prevTotal * 100).toFixed(1)
+        : '0.0';
+      const isIncrease    = totalSpending > prevTotal;
+
+      /* 요약 카드 */
+      document.getElementById('totalSpending').textContent   = '₩' + totalSpending.toLocaleString();
+      document.getElementById('avgSpending').textContent     = '₩' + avgSpending.toLocaleString();
+      document.getElementById('topCategoryName').textContent = topCat.name;
+      document.getElementById('topCategoryAmount').textContent = '₩' + topCat.value.toLocaleString();
+
+      const changeCard  = document.getElementById('changeCard');
+      const changeIcon  = document.getElementById('changeIcon');
+      const changeRateEl = document.getElementById('changeRate');
+      const changeLabelEl = document.getElementById('changeLabel');
+
+      if (isIncrease) {
+        changeCard.className = 'bg-gradient-to-br from-[#FFEBEE] to-[#FFCDD2] rounded-3xl p-6 shadow-sm';
+        changeIcon.setAttribute('data-lucide', 'trending-up');
+        changeIcon.className = 'w-5 h-5 text-red-500';
+        changeRateEl.className = 'text-3xl font-bold text-red-600';
+        changeRateEl.textContent = '+' + changeRate + '%';
+        changeLabelEl.textContent = '증가';
+      } else {
+        changeCard.className = 'bg-gradient-to-br from-[#E8F5E9] to-[#C8E6C9] rounded-3xl p-6 shadow-sm';
+        changeIcon.setAttribute('data-lucide', 'trending-down');
+        changeIcon.className = 'w-5 h-5 text-green-500';
+        changeRateEl.className = 'text-3xl font-bold text-green-600';
+        changeRateEl.textContent = changeRate + '%';
+        changeLabelEl.textContent = '감소';
+      }
+      lucide.createIcons();
+
+      /* 도넛 차트 */
+      renderDonut(categories, totalSpending);
+
+      /* AI 인사이트 */
+      renderInsights(data.insights);
+    }
+
+    /* ===== 라인 차트 (최초 1회 렌더) ===== */
+    function renderLineChart() {
+      const ctx = document.getElementById('lineChart').getContext('2d');
+      lineChartInst = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: trendData.map(d => d.month),
+          datasets: [{
+            label: '소비',
+            data: trendData.map(d => d.amount),
+            borderColor: '#F5A5A5',
+            backgroundColor: 'rgba(245,165,165,0.08)',
+            borderWidth: 3,
+            pointBackgroundColor: '#F5A5A5',
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => '₩' + ctx.parsed.y.toLocaleString()
+              }
+            }
+          },
+          scales: {
+            x: { grid: { color: '#F0F0F0' }, ticks: { color: '#6B7280', font: { size: 14 } } },
+            y: {
+              grid: { color: '#F0F0F0' },
+              ticks: {
+                color: '#6B7280',
+                font: { size: 14 },
+                callback: v => '₩' + (v / 10000).toFixed(0) + '만'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /* ===== 도넛 차트 ===== */
+    function renderDonut(categories, total) {
+      const ctx = document.getElementById('donutChart').getContext('2d');
+
+      if (donutChartInst) donutChartInst.destroy();
+
+      donutChartInst = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: categories.map(c => c.name),
+          datasets: [{
+            data: categories.map(c => c.value),
+            backgroundColor: categories.map(c => c.color),
+            borderWidth: 2,
+            borderColor: '#fff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '60%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ctx.label + ': ₩' + ctx.parsed.toLocaleString()
+              }
+            }
+          }
+        }
+      });
+
+      /* 범례 */
+      const legend = document.getElementById('donutLegend');
+      legend.innerHTML = categories.map(c => `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded flex-shrink-0" style="background:${c.color}"></div>
+            <span class="text-sm text-gray-700">${c.name}</span>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-gray-900">₩${c.value.toLocaleString()}</div>
+            <div class="text-xs text-gray-500">${((c.value / total) * 100).toFixed(0)}%</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ===== AI 인사이트 ===== */
+    function renderInsights(insights) {
+      document.getElementById('insightList').innerHTML = insights.map(ins => `
+        <p class="text-gray-800 leading-relaxed">
+          ${ins.emoji} <strong>${ins.title}</strong><br>
+          <span class="text-sm text-gray-700">${ins.desc}</span>
+        </p>
+      `).join('');
+    }
+
+    /* ===== 초기 렌더 ===== */
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      renderLineChart();
+      /* 초기 탭 상태 맞추기 */
+      if (currentMonth === '2026-05') setTabActive('이번달');
+      else if (currentMonth === '2026-04') setTabActive('지난달');
+      else setTabActive(null);
+      document.getElementById('monthSelect').value = currentMonth;
+      renderAll();
+    });
+  </script>
+  <th:block th:replace="~{layout/header :: scripts}"></th:block>
+</body>
+</html>

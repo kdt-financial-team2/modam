@@ -1,79 +1,348 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>거래 내역 - 모담</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>소비내역 - 모담</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="min-h-screen flex flex-col bg-white">
-  <div th:replace="~{common/layout/header :: nav}"></div>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
 
-  <main class="flex-1 w-full max-w-[1440px] mx-auto bg-gray-50">
-    <div class="px-8 py-12">
-      <h1 class="text-4xl font-bold text-gray-900 mb-3">거래 내역</h1>
-      <p class="text-gray-600 text-lg mb-10">모든 거래 내역을 확인하세요</p>
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{layout/header :: nav}"></th:block>
 
-      <!-- 필터 -->
-      <div class="bg-white rounded-2xl p-6 mb-6 flex flex-wrap gap-4 items-center">
-        <form th:action="@{/transaction-history}" method="get" class="flex flex-wrap gap-4 w-full">
-          <select name="category" th:value="${selectedCategory}" class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F5A5A5] focus:outline-none transition-colors">
-            <option value="">전체 카테고리</option>
-            <option value="식비">식비</option>
-            <option value="생활비">생활비</option>
-            <option value="데이트">데이트</option>
-            <option value="교통비">교통비</option>
-            <option value="쇼핑">쇼핑</option>
-          </select>
-          <input type="month" name="month" th:value="${selectedMonth}"
-                 class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F5A5A5] focus:outline-none transition-colors"/>
-          <button type="submit" class="px-6 py-3 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors">검색</button>
-        </form>
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1">
+    <div class="max-w-[1440px] mx-auto px-8 py-12">
+
+      <!-- 페이지 헤더 -->
+      <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">소비내역</h1>
+        <p class="text-lg text-gray-600">모든 거래 내역을 확인하세요</p>
       </div>
 
-      <!-- 거래 목록 -->
-      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-        <div class="space-y-3">
-          <div th:each="tx : ${transactions}" class="flex items-center justify-between p-5 rounded-2xl hover:bg-gray-50 transition-colors">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-[#FCE8E3] rounded-xl flex items-center justify-center">
-                <i th:attr="data-lucide=${tx.iconName}" class="w-6 h-6 text-[#F5A5A5]"></i>
+      <!-- 필터 영역 -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div class="flex items-center gap-4 flex-wrap">
+
+          <!-- 검색 -->
+          <div class="flex-1 min-w-[300px]">
+            <div class="relative">
+              <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+              <input type="text" id="searchInput" oninput="applyFilters()"
+                     placeholder="거래처 또는 메모 검색"
+                     th:value="${searchQuery}"
+                     class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors" />
+            </div>
+          </div>
+
+          <!-- 날짜 선택 -->
+          <div class="relative">
+            <input type="date" id="dateInput" onchange="applyFilters()"
+                   th:value="${selectedDate}"
+                   class="bg-white border-2 border-gray-200 rounded-2xl px-6 py-3 pr-12 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors" />
+            <i data-lucide="calendar" class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
+          </div>
+
+          <!-- 카테고리 필터 -->
+          <div class="relative">
+            <select id="categorySelect" onchange="applyFilters()"
+                    class="appearance-none bg-white border-2 border-gray-200 rounded-2xl px-5 py-3 pr-10 cursor-pointer hover:border-[#F5A5A5] transition-colors font-medium text-gray-800">
+              <option value="전체">전체</option>
+              <option value="식비">식비</option>
+              <option value="데이트">데이트</option>
+              <option value="생활비">생활비</option>
+              <option value="교통비">교통비</option>
+              <option value="쇼핑">쇼핑</option>
+              <option value="기타">기타</option>
+            </select>
+            <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 요약 카드 -->
+      <div class="grid grid-cols-3 gap-6 mb-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+          <p class="text-sm text-gray-600 mb-2">총 입금</p>
+          <p id="totalDeposit" class="text-3xl font-bold text-blue-600">
+            +₩<span th:text="${#numbers.formatInteger(totalDeposit, 0, 'COMMA')}">3,050,000</span>
+          </p>
+        </div>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+          <p class="text-sm text-gray-600 mb-2">총 출금</p>
+          <p id="totalWithdrawal" class="text-3xl font-bold text-red-600">
+            -₩<span th:text="${#numbers.formatInteger(totalWithdrawal, 0, 'COMMA')}">449,000</span>
+          </p>
+        </div>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+          <p class="text-sm text-gray-600 mb-2">현재 잔액</p>
+          <p class="text-3xl font-bold text-gray-900">
+            ₩<span th:text="${#numbers.formatInteger(currentBalance, 0, 'COMMA')}">1,487,500</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- 거래 내역 테이블 -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+
+        <!-- 테이블 헤더 -->
+        <div class="grid grid-cols-12 gap-4 px-8 py-4 bg-gray-50 border-b border-gray-100 text-sm font-semibold text-gray-600">
+          <div class="col-span-1">날짜/시간</div>
+          <div class="col-span-1">구분</div>
+          <div class="col-span-3">거래처</div>
+          <div class="col-span-2">카드</div>
+          <div class="col-span-2">카테고리</div>
+          <div class="col-span-2 text-right">거래금액</div>
+          <div class="col-span-1 text-right">잔액</div>
+        </div>
+
+        <!-- 서버사이드 렌더링 (Thymeleaf) -->
+        <div id="transactionList">
+          <th:block th:each="group : ${groupedTransactions}">
+            <!-- 날짜 헤더 -->
+            <div class="px-8 py-3 bg-[#FAFAFA] border-b border-gray-100">
+              <p class="text-sm font-semibold text-gray-700" th:text="${group.key}">2026.05.07</p>
+            </div>
+            <!-- 해당 날짜 거래 목록 -->
+            <div th:each="tx : ${group.value}"
+                 class="grid grid-cols-12 gap-4 px-8 py-5 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer items-center"
+                 th:attr="data-merchant=${tx.merchant},data-category=${tx.category},data-date=${tx.date},data-type=${tx.type}">
+
+              <!-- 시간 -->
+              <div class="col-span-1 text-sm text-gray-600" th:text="${tx.time}">14:30</div>
+
+              <!-- 구분 -->
+              <div class="col-span-1">
+                <span th:classappend="${tx.type == 'deposit'} ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-700'"
+                      class="inline-block px-3 py-1 rounded-full text-xs font-medium"
+                      th:text="${tx.type == 'deposit'} ? '입금' : '출금'">출금</span>
               </div>
-              <div>
-                <div class="text-gray-900 font-medium mb-1" th:text="${tx.name}">가게 이름</div>
-                <div class="text-sm text-gray-500">
-                  <span th:text="${tx.date}">날짜</span> · <span th:text="${tx.time}">시간</span> · <span th:text="${tx.category}">카테고리</span>
+
+              <!-- 거래처 -->
+              <div class="col-span-3 flex items-center gap-3">
+                <div class="w-10 h-10 bg-[#FCE8E3] rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i th:attr="data-lucide=${tx.iconName}" class="w-5 h-5 text-[#F5A5A5]"></i>
                 </div>
+                <span class="font-medium text-gray-900" th:text="${tx.merchant}">스타벅스 강남점</span>
               </div>
+
+              <!-- 카드 -->
+              <div class="col-span-2 text-sm text-gray-600" th:text="${tx.cardName}">모담 체크카드</div>
+
+              <!-- 카테고리 -->
+              <div class="col-span-2">
+                <span class="inline-block px-3 py-1 bg-[#FCE8E3] text-[#F5A5A5] rounded-full text-xs font-medium"
+                      th:text="${tx.category}">식비</span>
+              </div>
+
+              <!-- 금액 -->
+              <div class="col-span-2 text-right">
+                <span th:classappend="${tx.type == 'deposit'} ? 'text-blue-600' : 'text-gray-900'"
+                      class="text-lg font-bold">
+                  <th:block th:if="${tx.type == 'deposit'}">+</th:block>
+                  <th:block th:text="${#numbers.formatInteger(tx.amount, 0, 'COMMA')}">-12,500</th:block>원
+                </span>
+              </div>
+
+              <!-- 잔액 -->
+              <div class="col-span-1 text-right text-sm text-gray-500"
+                   th:text="${#numbers.formatInteger(tx.balance, 0, 'COMMA')}">1,487,500</div>
             </div>
-            <div class="text-right">
-              <div class="text-lg font-bold" th:classappend="${tx.amount > 0} ? 'text-blue-600' : 'text-gray-900'"
-                   th:text="${(tx.amount > 0 ? '+' : '') + #numbers.formatInteger(tx.amount, 0, 'COMMA') + '원'}">금액</div>
+          </th:block>
+
+          <!-- 거래 없음 -->
+          <div id="emptyMsg" class="hidden py-20 text-center">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="search-x" class="w-8 h-8 text-gray-400"></i>
             </div>
+            <p class="text-gray-500 text-lg">검색 결과가 없습니다</p>
+            <p class="text-gray-400 text-sm mt-2">다른 조건으로 검색해보세요</p>
           </div>
         </div>
 
-        <!-- 페이지네이션 -->
-        <div class="mt-8 flex justify-center gap-2">
-          <a th:href="@{/transaction-history(page=${currentPage - 1}, category=${selectedCategory}, month=${selectedMonth})}"
-             th:if="${currentPage > 0}"
-             class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">이전</a>
-          <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-            <a th:href="@{/transaction-history(page=${i}, category=${selectedCategory}, month=${selectedMonth})}"
-               th:text="${i + 1}"
-               th:classappend="${i == currentPage} ? 'bg-[#F5A5A5] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-               class="px-4 py-2 rounded-lg transition-colors">1</a>
-          </span>
-          <a th:href="@{/transaction-history(page=${currentPage + 1}, category=${selectedCategory}, month=${selectedMonth})}"
-             th:if="${currentPage < totalPages - 1}"
-             class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">다음</a>
-        </div>
+        <!-- 클라이언트사이드 폴백 (서버 데이터 없을 때 JS로 렌더) -->
+        <div id="jsTransactionList" class="hidden"></div>
+
       </div>
+
+      <!-- 페이지네이션 -->
+      <div id="pagination" class="flex justify-center items-center gap-2 mt-8"></div>
+
     </div>
   </main>
 
-  <div th:replace="~{common/layout/footer :: footer}"></div>
-  <script>lucide.createIcons();</script>
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{layout/footer :: footer}"></th:block>
+
+  <script th:inline="javascript">
+    /* ===== 서버 데이터 주입 ===== */
+    const serverTransactions = /*[[${transactions}]]*/ null;
+
+    /* ===== 클라이언트 폴백 데이터 ===== */
+    const fallbackTransactions = [
+      { id:1,  type:'withdrawal', merchant:'스타벅스 강남점',      amount:-12500,   balance:1487500,  date:'2026.05.07', time:'14:30', category:'식비',   iconName:'coffee',       cardName:'모담 체크카드' },
+      { id:2,  type:'withdrawal', merchant:'홈플러스 광명점',       amount:-85000,   balance:1402500,  date:'2026.05.06', time:'18:45', category:'생활비', iconName:'shopping-bag', cardName:'모담 체크카드' },
+      { id:3,  type:'deposit',    merchant:'김민수',                amount:50000,    balance:1487500,  date:'2026.05.06', time:'10:20', category:'입금',   iconName:'wallet',       cardName:'-' },
+      { id:4,  type:'withdrawal', merchant:'CGV 여의도',            amount:-32000,   balance:1437500,  date:'2026.05.05', time:'19:20', category:'데이트', iconName:'heart',        cardName:'모담 체크카드' },
+      { id:5,  type:'withdrawal', merchant:'GS주유소',              amount:-65000,   balance:1405500,  date:'2026.05.04', time:'09:15', category:'교통비', iconName:'car',          cardName:'모담 체크카드' },
+      { id:6,  type:'withdrawal', merchant:'올리브영 압구정',        amount:-45000,   balance:1470500,  date:'2026.05.03', time:'16:00', category:'쇼핑',   iconName:'shopping-bag', cardName:'모담 체크카드' },
+      { id:7,  type:'withdrawal', merchant:'배달의민족',             amount:-28000,   balance:1515500,  date:'2026.05.02', time:'20:30', category:'식비',   iconName:'utensils',     cardName:'모담 체크카드' },
+      { id:8,  type:'deposit',    merchant:'급여',                  amount:3000000,  balance:1543500,  date:'2026.05.01', time:'09:00', category:'입금',   iconName:'wallet',       cardName:'-' },
+      { id:9,  type:'withdrawal', merchant:'쿠팡',                  amount:-120000,  balance:1456500,  date:'2026.04.30', time:'15:40', category:'쇼핑',   iconName:'shopping-bag', cardName:'모담 체크카드' },
+      { id:10, type:'withdrawal', merchant:'넷플릭스',               amount:-17000,   balance:1336500,  date:'2026.04.30', time:'00:05', category:'생활비', iconName:'home',         cardName:'모담 체크카드' },
+      { id:11, type:'withdrawal', merchant:'스타벅스 역삼점',        amount:-8500,    balance:1319500,  date:'2026.04.29', time:'11:15', category:'식비',   iconName:'coffee',       cardName:'모담 체크카드' },
+      { id:12, type:'withdrawal', merchant:'롯데시네마 월드타워',     amount:-36000,   balance:1311000,  date:'2026.04.28', time:'18:50', category:'데이트', iconName:'heart',        cardName:'모담 체크카드' },
+    ];
+
+    const allTransactions = serverTransactions || fallbackTransactions;
+    const ITEMS_PER_PAGE = 10;
+    let currentPage = 1;
+    let filteredData = [...allTransactions];
+
+    /* ===== 필터 적용 ===== */
+    function applyFilters() {
+      const query    = document.getElementById('searchInput').value.trim().toLowerCase();
+      const dateVal  = document.getElementById('dateInput').value;          // 'yyyy-MM-dd'
+      const category = document.getElementById('categorySelect').value;
+
+      filteredData = allTransactions.filter(tx => {
+        const matchSearch   = !query    || tx.merchant.toLowerCase().includes(query);
+        const matchCategory = category === '전체' || tx.category === category;
+        const txDateNorm    = tx.date.replace(/\./g, '-');                  // '2026.05.07' → '2026-05-07'
+        const matchDate     = !dateVal  || txDateNorm === dateVal;
+        return matchSearch && matchCategory && matchDate;
+      });
+
+      currentPage = 1;
+      renderList();
+    }
+
+    /* ===== 렌더링 ===== */
+    function renderList() {
+      /* 서버 렌더 요소 숨기기 (JS 사용 시) */
+      document.getElementById('transactionList').classList.add('hidden');
+      document.getElementById('jsTransactionList').classList.remove('hidden');
+
+      const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+      const start      = (currentPage - 1) * ITEMS_PER_PAGE;
+      const paged      = filteredData.slice(start, start + ITEMS_PER_PAGE);
+
+      /* 날짜별 그룹핑 */
+      const grouped = {};
+      paged.forEach(tx => {
+        if (!grouped[tx.date]) grouped[tx.date] = [];
+        grouped[tx.date].push(tx);
+      });
+
+      const container = document.getElementById('jsTransactionList');
+
+      if (paged.length === 0) {
+        container.innerHTML = `
+          <div class="py-20 text-center">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="search-x" class="w-8 h-8 text-gray-400"></i>
+            </div>
+            <p class="text-gray-500 text-lg">검색 결과가 없습니다</p>
+            <p class="text-gray-400 text-sm mt-2">다른 조건으로 검색해보세요</p>
+          </div>`;
+        lucide.createIcons();
+        renderPagination(totalPages);
+        return;
+      }
+
+      container.innerHTML = Object.entries(grouped).map(([date, txList]) => `
+        <div class="px-8 py-3 bg-[#FAFAFA] border-b border-gray-100">
+          <p class="text-sm font-semibold text-gray-700">${date}</p>
+        </div>
+        ${txList.map(tx => `
+          <div class="grid grid-cols-12 gap-4 px-8 py-5 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer items-center">
+            <div class="col-span-1 text-sm text-gray-600">${tx.time}</div>
+            <div class="col-span-1">
+              <span class="inline-block px-3 py-1 rounded-full text-xs font-medium ${tx.type === 'deposit' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-700'}">
+                ${tx.type === 'deposit' ? '입금' : '출금'}
+              </span>
+            </div>
+            <div class="col-span-3 flex items-center gap-3">
+              <div class="w-10 h-10 bg-[#FCE8E3] rounded-xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="${tx.iconName}" class="w-5 h-5 text-[#F5A5A5]"></i>
+              </div>
+              <span class="font-medium text-gray-900">${tx.merchant}</span>
+            </div>
+            <div class="col-span-2 text-sm text-gray-600">${tx.cardName}</div>
+            <div class="col-span-2">
+              <span class="inline-block px-3 py-1 bg-[#FCE8E3] text-[#F5A5A5] rounded-full text-xs font-medium">${tx.category}</span>
+            </div>
+            <div class="col-span-2 text-right">
+              <span class="text-lg font-bold ${tx.type === 'deposit' ? 'text-blue-600' : 'text-gray-900'}">
+                ${tx.amount > 0 ? '+' : ''}${tx.amount.toLocaleString()}원
+              </span>
+            </div>
+            <div class="col-span-1 text-right text-sm text-gray-500">${tx.balance.toLocaleString()}</div>
+          </div>
+        `).join('')}
+      `).join('');
+
+      lucide.createIcons();
+      renderPagination(totalPages);
+    }
+
+    /* ===== 페이지네이션 ===== */
+    function renderPagination(totalPages) {
+      const pag = document.getElementById('pagination');
+      if (totalPages <= 1) { pag.innerHTML = ''; return; }
+
+      let html = '';
+      /* 이전 버튼 */
+      html += `<button onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+               class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+               <i data-lucide="chevron-left" class="w-4 h-4 text-gray-600"></i></button>`;
+
+      /* 페이지 번호 */
+      const range = pageRange(currentPage, totalPages);
+      range.forEach(p => {
+        if (p === '...') {
+          html += `<span class="w-10 h-10 flex items-center justify-center text-gray-400">…</span>`;
+        } else {
+          html += `<button onclick="goPage(${p})"
+                   class="w-10 h-10 rounded-xl border transition-colors ${p === currentPage ? 'bg-[#F5A5A5] text-white border-[#F5A5A5] font-bold' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}">
+                   ${p}</button>`;
+        }
+      });
+
+      /* 다음 버튼 */
+      html += `<button onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+               class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+               <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600"></i></button>`;
+
+      pag.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function goPage(p) {
+      const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+      if (p < 1 || p > totalPages) return;
+      currentPage = p;
+      renderList();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function pageRange(cur, total) {
+      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+      if (cur <= 4)  return [1, 2, 3, 4, 5, '...', total];
+      if (cur >= total - 3) return [1, '...', total-4, total-3, total-2, total-1, total];
+      return [1, '...', cur-1, cur, cur+1, '...', total];
+    }
+
+    /* ===== 초기 렌더 ===== */
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      /* 서버 데이터가 없으면 JS 렌더 모드 활성화 */
+      if (!serverTransactions) { renderList(); }
+    });
+  </script>
+  <th:block th:replace="~{layout/header :: scripts}"></th:block>
 </body>
 </html>

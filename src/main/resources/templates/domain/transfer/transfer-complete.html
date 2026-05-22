@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>송금 완료 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{layout/header :: nav}"></th:block>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1">
+    <div class="max-w-[800px] mx-auto px-8 py-12">
+
+      <!-- 성공 아이콘 / 타이틀 -->
+      <div class="text-center mb-12">
+        <div class="w-24 h-24 bg-gradient-to-br from-[#F5A5A5] to-[#FFB8B8] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <i data-lucide="check-circle" class="w-14 h-14 text-white"></i>
+        </div>
+        <h1 class="text-4xl text-gray-800 mb-3">송금 완료</h1>
+        <p class="text-gray-600 text-lg">송금이 성공적으로 완료되었습니다</p>
+      </div>
+
+      <!-- 송금 내역 카드 -->
+      <div class="bg-white rounded-3xl shadow-sm p-10 mb-6">
+        <h2 class="text-2xl text-gray-800 mb-6">송금 내역</h2>
+
+        <div class="space-y-5">
+          <!-- 송금 금액 -->
+          <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-2xl p-6 text-center">
+            <p class="text-sm text-gray-600 mb-2">송금 금액</p>
+            <p class="text-4xl text-gray-800">
+              ₩<span th:text="${#numbers.formatInteger(transfer.amount, 0, 'COMMA')}">50,000</span>
+            </p>
+          </div>
+
+          <!-- 은행 -->
+          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
+            <span class="text-gray-600">은행</span>
+            <span class="text-gray-800 text-lg" th:text="${transfer.bankName}">신한은행</span>
+          </div>
+
+          <!-- 계좌번호 -->
+          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
+            <span class="text-gray-600">계좌번호</span>
+            <span class="text-gray-800 text-lg" th:text="${transfer.accountNumber}">110-1234-5678</span>
+          </div>
+
+          <!-- 송금 일시 -->
+          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
+            <span class="text-gray-600">송금 일시</span>
+            <span class="text-gray-800 text-lg"
+                  th:text="${#temporals.format(transfer.transferredAt, 'yyyy.MM.dd HH:mm')}">2026.05.22 14:30</span>
+          </div>
+
+          <div class="border-t border-gray-200 my-6"></div>
+
+          <!-- 내 잔액 -->
+          <div class="flex items-center justify-between p-5 bg-[#F0F9FF] border border-[#BAE6FD] rounded-2xl">
+            <span class="text-gray-700">내 잔액</span>
+            <span class="text-gray-800 text-2xl">
+              ₩<span th:text="${#numbers.formatInteger(currentBalance, 0, 'COMMA')}">1,245,000</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 액션 버튼 -->
+      <div class="flex gap-4">
+        <a th:href="@{/transfer}" href="/transfer"
+           class="flex-1 py-4 bg-white border-2 border-gray-300 text-gray-700 rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+          <span>추가 송금</span>
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </a>
+        <a th:href="@{/dashboard}" href="/dashboard"
+           class="flex-1 py-4 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors shadow-md flex items-center justify-center">
+          홈으로 돌아가기
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{layout/footer :: footer}"></th:block>
+
+  <script>
+    lucide.createIcons();
+  </script>
+  <th:block th:replace="~{layout/header :: scripts}"></th:block>
+</body>
+</html>

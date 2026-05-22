@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카드 발급 - 비밀번호 설정 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FCE8E3] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
+    <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+      <a th:href="@{/dashboard}" href="/dashboard" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
+            <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+          </div>
+          <span class="text-2xl font-bold text-gray-900">모담</span>
+        </div>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
+    <div class="w-full max-w-md">
+
+      <!-- 타이틀 -->
+      <div class="text-center mb-12">
+        <h1 class="text-4xl text-gray-800 mb-3">카드 비밀번호 설정</h1>
+        <p class="text-gray-600 text-lg">4자리 비밀번호를 입력해주세요</p>
+      </div>
+
+      <!-- PIN 디스플레이 -->
+      <div class="flex justify-center gap-4 mb-12">
+        <div id="dot-0" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
+        <div id="dot-1" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
+        <div id="dot-2" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
+        <div id="dot-3" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
+      </div>
+
+      <!-- 키패드 -->
+      <div class="bg-white rounded-3xl shadow-lg p-6">
+        <div class="grid grid-cols-3 gap-4">
+          <button onclick="pressKey('1')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">1</button>
+          <button onclick="pressKey('2')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">2</button>
+          <button onclick="pressKey('3')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">3</button>
+          <button onclick="pressKey('4')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">4</button>
+          <button onclick="pressKey('5')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">5</button>
+          <button onclick="pressKey('6')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">6</button>
+          <button onclick="pressKey('7')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">7</button>
+          <button onclick="pressKey('8')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">8</button>
+          <button onclick="pressKey('9')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">9</button>
+          <div class="w-full aspect-square"></div>
+          <button onclick="pressKey('0')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">0</button>
+          <button onclick="pressDelete()" class="w-full aspect-square bg-gray-50 hover:bg-red-50 rounded-2xl flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors active:scale-95">
+            <i data-lucide="delete" class="w-6 h-6"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{layout/footer :: footer}"></th:block>
+
+  <script>
+    let pin = '';
+
+    function updateDots() {
+      for (let i = 0; i < 4; i++) {
+        const dot = document.getElementById('dot-' + i);
+        if (i < pin.length) {
+          dot.className = 'w-16 h-16 rounded-full border-2 border-[#F5A5A5] bg-[#F5A5A5] flex items-center justify-center transition-all';
+          dot.innerHTML = '<div class="w-4 h-4 bg-white rounded-full"></div>';
+        } else {
+          dot.className = 'w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all';
+          dot.innerHTML = '';
+        }
+      }
+    }
+
+    function pressKey(num) {
+      if (pin.length < 4) {
+        pin += num;
+        updateDots();
+        if (pin.length === 4) {
+          setTimeout(() => {
+            localStorage.setItem('cardPin', pin);
+            window.location.href = 'card-step6.html';
+          }, 300);
+        }
+      }
+    }
+
+    function pressDelete() {
+      if (pin.length > 0) {
+        pin = pin.slice(0, -1);
+        updateDots();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
