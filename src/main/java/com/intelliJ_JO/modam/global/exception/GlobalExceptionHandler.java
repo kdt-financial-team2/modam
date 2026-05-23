@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Comparator;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -15,6 +17,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public GlobalResponse<?> handleValidation(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors().stream()
+                .sorted(Comparator.comparing(FieldError::getField))
                 .map(FieldError::getDefaultMessage)
                 .findFirst()
                 .orElse("입력값이 올바르지 않습니다.");
