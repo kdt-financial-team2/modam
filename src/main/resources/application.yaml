@@ -26,6 +26,13 @@ spring:
       name: test
       password: 1234
 
+logging:
+  file:
+    name: logs/modam.log
+  level:
+    root: INFO
+    "[com.intelliJ_JO.modam]": DEBUG
+
 springdoc:
   api-docs:
     path: /v3/api-docs

@@ -41,7 +41,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/", "/signup/**", "/terms",
+                    "/", "/auth/login", "/auth/login?*", "/login",
+                    "/signup/**", "/terms",
                     "/members/join",
                     "/css/**", "/js/**", "/images/**",
                     "/swagger-ui/**", "/swagger-ui.html",
@@ -51,7 +52,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
-                .loginPage("/login")
+                .loginPage("/auth/login")
                 .loginProcessingUrl("/login")
                 .successHandler(successHandler)
                 .failureHandler(failureHandler)
@@ -61,7 +62,7 @@ public class SecurityConfig {
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login")
+                .logoutSuccessUrl("/auth/login")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
             );
