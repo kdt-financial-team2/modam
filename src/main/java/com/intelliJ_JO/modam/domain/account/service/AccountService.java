@@ -137,4 +137,14 @@ public class AccountService {
         } while (accountRepository.existsByAccountNumber(candidate));
         return candidate;
     }
+
+    // [추가] 계좌 비밀번호 검증 메서드
+    public void verifyAccountPassword(Long accountId, String rawPassword) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
+
+        if (!passwordEncoder.matches(rawPassword, account.getPasswordHash())) {
+            throw new IllegalArgumentException("계좌 비밀번호가 일치하지 않습니다.");
+        }
+    }
 }
