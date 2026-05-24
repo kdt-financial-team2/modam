@@ -9,109 +9,158 @@
 </head>
 <body class="min-h-screen bg-[#FAFAFA] flex flex-col">
 
-  <!-- ===== 헤더 ===== -->
-  <th:block th:replace="~{common/layout/header :: nav}"></th:block>
+<th:block th:replace="~{common/layout/header :: nav}"></th:block>
 
-  <!-- ===== 메인 콘텐츠 ===== -->
-  <main class="flex-1">
-    <div class="max-w-[1000px] mx-auto px-8 py-12">
+<main class="flex-1">
+  <div class="max-w-[1000px] mx-auto px-8 py-12">
 
-      <!-- 페이지 타이틀 -->
-      <div class="text-center mb-12">
-        <div class="w-24 h-24 bg-gradient-to-br from-[#F5A5A5] to-[#FFB8B8] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-          <i data-lucide="heart" class="w-12 h-12 text-white"></i>
-        </div>
-        <h1 class="text-4xl text-gray-800 mb-3">파트너 초대</h1>
-        <p class="text-gray-600 text-lg">함께 저축하고 소비를 관리할 파트너를 초대하세요</p>
+    <div class="text-center mb-12">
+      <div class="w-24 h-24 bg-gradient-to-br from-[#F5A5A5] to-[#FFB8B8] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+        <i data-lucide="heart" class="w-12 h-12 text-white"></i>
       </div>
-
-      <!-- 초대 카드 -->
-      <div class="bg-white rounded-3xl shadow-lg p-10">
-
-        <!-- 이메일로 초대 -->
-        <div class="mb-8">
-          <h2 class="text-2xl text-gray-800 mb-6">이메일로 초대하기</h2>
-          <form th:action="@{/invite/send}" method="post" onsubmit="handleSendInvite(event)">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <div class="flex gap-4">
-              <input type="email" id="partnerEmail" name="partnerEmail"
-                     oninput="checkEmailBtn()"
-                     class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800"
-                     placeholder="파트너의 이메일을 입력하세요" />
-              <button type="submit" id="sendInviteBtn" disabled
-                      class="px-8 py-4 rounded-2xl transition-all flex items-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed">
-                <i data-lucide="send" class="w-5 h-5"></i>
-                <span>초대 보내기</span>
-              </button>
-            </div>
-          </form>
-
-          <!-- 성공/오류 메시지 (서버: th:classappend / 클라이언트: JS로 hidden 토글) -->
-          <div id="inviteSuccessMsg"
-               class="mt-4 p-4 bg-green-50 border border-green-200 rounded-2xl hidden"
-               th:classappend="${inviteSent} ? ' !block' : ''">
-            <p class="text-green-700 text-sm">💌 초대 이메일이 발송되었습니다!</p>
-          </div>
-          <div id="inviteErrorMsg"
-               class="mt-4 p-4 bg-red-50 border border-red-200 rounded-2xl hidden"
-               th:classappend="${inviteError != null} ? ' !block' : ''">
-            <p id="inviteErrorText" class="text-red-600 text-sm"
-               th:text="${inviteError}">올바른 이메일 형식이 아닙니다.</p>
-          </div>
-        </div>
-
-        <!-- 구분선 -->
-        <div class="flex items-center gap-4 mb-8">
-          <div class="flex-1 h-px bg-gray-200"></div>
-          <span class="text-gray-500">또는</span>
-          <div class="flex-1 h-px bg-gray-200"></div>
-        </div>
-
-        <!-- 초대 코드 공유 -->
-        <div>
-          <h2 class="text-2xl text-gray-800 mb-6">초대 코드 공유하기</h2>
-          <p class="text-gray-600 mb-4">이 코드를 파트너에게 공유하세요</p>
-
-          <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-2xl p-6 mb-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-600 mb-1">초대 코드</p>
-                <p id="inviteCodeDisplay" class="text-3xl text-gray-800 tracking-wider"
-                   th:text="${inviteCode}">MODAM-ABC123</p>
-              </div>
-              <button onclick="copyInviteCode()"
-                      id="copyBtn"
-                      class="bg-white px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
-                <i id="copyIcon" data-lucide="copy" class="w-5 h-5 text-gray-700"></i>
-                <span id="copyLabel" class="text-gray-700">복사하기</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="bg-[#F0F9FF] border border-[#BAE6FD] rounded-2xl p-4">
-            <p class="text-sm text-gray-700">
-              💡 파트너가 앱에서 이 코드를 입력하면 자동으로 연결됩니다
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 이전화면 버튼 -->
-      <a th:href="@{/dashboard}" href="/dashboard"
-         class="w-full mt-6 py-4 bg-white border-2 border-gray-300 text-gray-700 rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center">
-        이전화면으로
-      </a>
-
+      <h1 class="text-4xl text-gray-800 mb-3">파트너 초대</h1>
+      <p class="text-gray-600 text-lg">함께 저축하고 소비를 관리할 파트너를 초대하세요</p>
     </div>
-  </main>
 
-  <!-- ===== 푸터 ===== -->
-  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+    <div class="bg-white rounded-3xl shadow-lg p-10">
 
-  <script>
-    lucide.createIcons();
+      <div class="mb-8">
+        <h2 class="text-2xl text-gray-800 mb-6">이메일로 초대하기</h2>
+        <form th:action="@{/invite/send}" method="post" onsubmit="handleSendInvite(event)">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <div class="flex gap-4">
+            <input type="email" id="partnerEmail" name="partnerEmail"
+                   oninput="checkEmailBtn()"
+                   class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800"
+                   placeholder="파트너의 이메일을 입력하세요" />
+            <button type="submit" id="sendInviteBtn" disabled
+                    class="px-8 py-4 rounded-2xl transition-all flex items-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed">
+              <i data-lucide="send" class="w-5 h-5"></i>
+              <span>초대 보내기</span>
+            </button>
+          </div>
+        </form>
 
-    /* ---- 드롭다운 ---- */  </script>
-  <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+        <div id="inviteSuccessMsg"
+             class="mt-4 p-4 bg-green-50 border border-green-200 rounded-2xl hidden"
+             th:classappend="${inviteSent} ? ' !block' : ''">
+          <p class="text-green-700 text-sm">💌 초대 이메일이 발송되었습니다!</p>
+        </div>
+        <div id="inviteErrorMsg"
+             class="mt-4 p-4 bg-red-50 border border-red-200 rounded-2xl hidden"
+             th:classappend="${inviteError != null} ? ' !block' : ''">
+          <p id="inviteErrorText" class="text-red-600 text-sm"
+             th:text="${inviteError}">올바른 이메일 형식이 아닙니다.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 mb-8">
+        <div class="flex-1 h-px bg-gray-200"></div>
+        <span class="text-gray-500">또는</span>
+        <div class="flex-1 h-px bg-gray-200"></div>
+      </div>
+
+      <div>
+        <h2 class="text-2xl text-gray-800 mb-6">초대 코드 공유하기</h2>
+        <p class="text-gray-600 mb-4">이 코드를 파트너에게 공유하세요</p>
+
+        <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-2xl p-6 mb-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 mb-1">초대 코드</p>
+              <p id="inviteCodeDisplay" class="text-3xl text-gray-800 tracking-wider font-bold"
+                 th:text="${inviteCode}">MODAM-ABC123</p>
+            </div>
+            <button onclick="copyInviteCode()" type="button"
+                    id="copyBtn"
+                    class="bg-white px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
+              <i id="copyIcon" data-lucide="copy" class="w-5 h-5 text-gray-700"></i>
+              <span id="copyLabel" class="text-gray-700 font-medium">복사하기</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-[#F0F9FF] border border-[#BAE6FD] rounded-2xl p-4">
+          <p class="text-sm text-gray-700">
+            💡 파트너가 앱에서 이 코드를 입력하면 자동으로 연결됩니다
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <a th:href="@{/dashboard}" href="/dashboard"
+       class="w-full mt-6 py-4 bg-white border-2 border-gray-300 text-gray-700 rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center font-medium">
+      이전화면으로
+    </a>
+
+  </div>
+</main>
+
+<th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+<script>
+  lucide.createIcons();
+
+  /* ---- 드롭다운 ---- */
+
+  // ===== [추가] 폼 유효성 및 동작 제어 스크립트 =====
+
+  // 1. 이메일 유효성 검사 및 버튼 활성화 로직
+  function checkEmailBtn() {
+    const email = document.getElementById('partnerEmail').value;
+    const btn = document.getElementById('sendInviteBtn');
+    // 기본적인 이메일 정규식 패턴
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (emailRegex.test(email)) {
+      btn.disabled = false;
+      btn.classList.remove('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+      btn.classList.add('bg-[#F5A5A5]', 'text-white', 'hover:bg-[#F28B8B]', 'shadow-md');
+    } else {
+      btn.disabled = true;
+      btn.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+      btn.classList.remove('bg-[#F5A5A5]', 'text-white', 'hover:bg-[#F28B8B]', 'shadow-md');
+    }
+  }
+
+  // 2. 이메일 폼 제출 처리
+  function handleSendInvite(event) {
+    // 필요한 경우 여기서 추가적인 클라이언트 검증 진행
+  }
+
+  // 3. 초대 코드 클립보드 복사 로직
+  function copyInviteCode() {
+    const codeText = document.getElementById('inviteCodeDisplay').innerText;
+
+    navigator.clipboard.writeText(codeText).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const icon = document.getElementById('copyIcon');
+      const label = document.getElementById('copyLabel');
+
+      // 성공 시 초록/핑크 톤으로 변경
+      icon.setAttribute('data-lucide', 'check-circle');
+      icon.classList.replace('text-gray-700', 'text-[#F5A5A5]');
+      label.innerText = '복사 완료!';
+      label.classList.replace('text-gray-700', 'text-[#F5A5A5]');
+      btn.classList.add('bg-[#FCE8E3]');
+
+      lucide.createIcons(); // 아이콘 리렌더링
+
+      // 2초 뒤 원상 복구
+      setTimeout(() => {
+        icon.setAttribute('data-lucide', 'copy');
+        icon.classList.replace('text-[#F5A5A5]', 'text-gray-700');
+        label.innerText = '복사하기';
+        label.classList.replace('text-[#F5A5A5]', 'text-gray-700');
+        btn.classList.remove('bg-[#FCE8E3]');
+        lucide.createIcons();
+      }, 2000);
+
+    }).catch(err => {
+      alert('복사에 실패했습니다. 텍스트를 직접 선택해서 복사해 주세요.');
+    });
+  }
+</script>
+<th:block th:replace="~{common/layout/header :: scripts}"></th:block>
 </body>
 </html>
