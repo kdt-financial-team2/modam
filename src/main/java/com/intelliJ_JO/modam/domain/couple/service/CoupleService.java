@@ -2,6 +2,7 @@ package com.intelliJ_JO.modam.domain.couple.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.couple.entity.Couple;
@@ -38,10 +39,27 @@ public class CoupleService {
 
         Account account = couple.getAccount();
 
-        // [방어 로직] REJECT된 이력이 있는 회원은 재초대 허용, 그 외 중복 연결 방지
+        // ====================================================================
+        // 🔥 원석님이 짚어주신 핵심 방어 로직 추가! 🔥
+        // ====================================================================
+
+        // [방어 로직 1] GROUP 계좌에만 연결 가능
+        if (account.getAccountType() != AccountType.GROUP) {
+            throw new IllegalStateException("개인 계좌에는 파트너를 연결할 수 없습니다.");
+        }
+
+        // [방어 로직 2] 인원수 체크 (최대 2명) - REJECT 상태는 제외하고 카운트
+        long activeCount = accountMemberRepository.countByAccountIdAndInviteStatusNot(account.getId(), InviteStatus.REJECT);
+        if (activeCount >= 2) {
+            throw new IllegalStateException("모임 통장에는 최대 2명까지 참여할 수 있습니다.");
+        }
+
+        // [방어 로직 3] 중복 가입 방지 (이미 수락했거나 대기 중인 경우)
         accountMemberRepository.findByAccountIdAndMemberId(account.getId(), inviteeMemberId)
                 .filter(am -> am.getInviteStatus() != InviteStatus.REJECT)
                 .ifPresent(am -> { throw new IllegalStateException("이미 연결된 계좌이거나 대기 중인 상태입니다."); });
+
+        // ====================================================================
 
         // 3. 모임 통장 멤버로 추가 및 ACCEPT 상태 변경
         AccountMember newMember = AccountMember.builder()
@@ -53,9 +71,6 @@ public class CoupleService {
 
         // 4. 축하 포인트 지급
         PointSaveRequest pointRequest = new PointSaveRequest();
-
-        // 🔥 Enum으로 처리! (PointReason.java에 정의된 이벤트/초대 관련 상수 확인 필요)
-        // 만약 INVITE라는 상수가 없다면 PointReason.EVENT 등으로 변경해주세요.
         pointRequest.setReason(PointReason.INVITE_SUCCESS);
         pointRequest.setAmt(1000);
         pointRequest.setDescrip("초대 코드를 통해 파트너와 성공적으로 연결되었습니다!");
