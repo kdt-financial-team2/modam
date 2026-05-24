@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime; // [추가됨] 시간 처리를 위한 임포트
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,6 +69,7 @@ public class TransferViewController {
             transferData.put("bankName", getKoreanBankName(bankName));
             transferData.put("accountNumber", accountNumber);
             transferData.put("amount", amount);
+            transferData.put("transferredAt", LocalDateTime.now()); // [추가됨] 성공 시간
             redirectAttributes.addFlashAttribute("transfer", transferData);
 
             return "redirect:/transfer/complete";
@@ -80,6 +82,16 @@ public class TransferViewController {
             failedData.put("amount", amount);
             failedData.put("currentBalance", account.getAvailableBalance());
             redirectAttributes.addFlashAttribute("failedTransfer", failedData);
+
+            // =====================================================================
+            // [추가됨] HTML에서 transfer.amount와 transferredAt을 참조하므로, 시도했던 이체 정보(transferData)를 같이 담아줍니다!
+            Map<String, Object> transferData = new HashMap<>();
+            transferData.put("bankName", getKoreanBankName(bankName));
+            transferData.put("accountNumber", accountNumber);
+            transferData.put("amount", amount);
+            transferData.put("transferredAt", LocalDateTime.now()); // [추가됨] 에러 발생 시간 담기!
+            redirectAttributes.addFlashAttribute("transfer", transferData);
+            // =====================================================================
 
             return "redirect:/transfer/failed";
         }
