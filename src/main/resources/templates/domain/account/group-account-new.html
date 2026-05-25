@@ -192,6 +192,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">휴대폰 번호</label>
               <div class="flex gap-3">
                 <input type="tel" id="phoneNum" placeholder="010-0000-0000" maxlength="13"
+                       th:value="${userPhone}"
                        oninput="formatPhone(this)"
                        class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors"/>
                 <button id="sendCodeBtn" onclick="sendVerificationCode()"
@@ -354,8 +355,7 @@
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-600">계좌번호</span>
-                <span class="font-mono font-semibold text-gray-800"
-                      th:text="${newAccountNumber}">1002-1234-5678</span>
+                <span id="summaryAccountNumber" class="font-mono font-semibold text-gray-800">1002-1234-5678</span>
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-600">잔액</span>
@@ -624,7 +624,8 @@
       const front = document.getElementById('idFront').value;
       const back  = document.getElementById('idBack').value;
       const phone = document.getElementById('phoneNum').value.replace(/\D/g,'');
-      const ok = name && front.length === 6 && back.length === 7 && phone.length >= 10 && codeVerified;
+      // 인증번호 확인 완료 여부만으로 다음 버튼 활성화
+      const ok = codeVerified;
       const btn = document.getElementById('step2Btn');
       if (ok) {
         btn.disabled = false;
@@ -690,18 +691,54 @@
       const raw     = document.getElementById('initialDeposit').value.replace(/,/g,'');
       const deposit = raw ? parseInt(raw) : 0;
 
-      /* 완료 화면 정보 채우기 */
-      document.getElementById('summaryAlias').textContent   = alias;
-      document.getElementById('summaryBalance').textContent = '₩' + deposit.toLocaleString();
-      document.getElementById('summaryDate').textContent    =
-        new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' })
-                  .replace(/\. /g,'.').replace('.','.').slice(0,-1);
+      // PIN 4자리 조합
+      const pins = [...document.querySelectorAll('.pin-input')].map(el => el.value);
+      const password = pins.join('');
 
-      closeConfirmModal();
-      goStep(4);
+      // CSRF 토큰 (Spring Security 세션 기반)
+      const csrfToken = document.querySelector('input[name="_csrf"]').value;
 
-      /* 서버 제출 (Spring Boot 연동 시 활성화) */
-      // document.getElementById('openForm').submit();
+      const requestBody = {
+        accountType   : 'GROUP',
+        acctAlias     : alias,
+        initialDeposit: deposit,
+        password      : password,
+        agreeService  : termState[1],
+        agreeFinance  : termState[2],
+        agreePrivacy  : termState[3],
+        agreeMarketing: termState[4]
+      };
+
+      fetch('/api/accounts', {
+        method : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN' : csrfToken
+        },
+        body: JSON.stringify(requestBody)
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw err; });
+        return res.json();
+      })
+      .then(data => {
+        // 서버 응답값으로 완료 화면 채우기
+        document.getElementById('summaryAlias').textContent   = data.data.acctAlias || alias;
+        document.getElementById('summaryBalance').textContent = '₩' + deposit.toLocaleString();
+        document.getElementById('summaryDate').textContent    =
+          new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' })
+                    .replace(/\. /g,'.').replace('.','.').slice(0,-1);
+
+        // 서버에서 발급된 실제 계좌번호 표시
+        document.getElementById('summaryAccountNumber').textContent = data.data.accountNumber;
+
+        closeConfirmModal();
+        goStep(4);
+      })
+      .catch(err => {
+        console.error('계좌 개설 실패:', err);
+        alert(err.message || '계좌 개설 중 오류가 발생했습니다.');
+      });
     }
 
     /* ========== 약관 모달 ========== */
@@ -718,6 +755,8 @@
     /* 초기화 */
     window.addEventListener('DOMContentLoaded', function() {
       lucide.createIcons();
+      // 서버에서 pre-fill된 필드(이름·전화번호)가 있을 경우 버튼 상태를 즉시 반영
+      checkStep2();
     });
   </script>
 </body>
