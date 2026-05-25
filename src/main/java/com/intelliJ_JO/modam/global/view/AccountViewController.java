@@ -11,6 +11,11 @@ public class AccountViewController {
 
     @GetMapping("/group-account/new")
     public String groupAccountNew(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        // 비로그인 사용자는 로그인 페이지로 리다이렉트
+        if (userDetails == null) {
+            return "redirect:/auth/login";
+        }
+
         // 로그인된 사용자의 이름과 전화번호를 폼에 pre-fill
         if (userDetails != null) {
             model.addAttribute("userName", userDetails.getMember().getName());

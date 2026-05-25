@@ -12,6 +12,8 @@ import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
+import com.intelliJ_JO.modam.domain.couple.entity.Couple;
+import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,6 +31,7 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMemberRepository accountMemberRepository;
+    private final CoupleRepository coupleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     // 계좌 개설 — 세션의 인증된 사용자를 개설자로 등록
@@ -64,6 +67,14 @@ public class AccountService {
                 .member(member)
                 .inviteStatus(InviteStatus.ACCEPT)
                 .build());
+
+        // GROUP 계좌이면 Couple 레코드도 함께 생성 (초대코드 포함)
+        if (saved.getAccountType() == AccountType.GROUP) {
+            coupleRepository.save(Couple.builder()
+                    .account(saved)
+                    .inviteCode(UUID.randomUUID().toString())
+                    .build());
+        }
 
         return new AccountResponseDto(saved);
     }

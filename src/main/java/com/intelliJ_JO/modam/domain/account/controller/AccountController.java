@@ -31,6 +31,10 @@ public class AccountController {
     public GlobalResponse<AccountResponseDto> createAccount(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody AccountCreateRequestDto request) {
+        // 세션 만료 등으로 비로그인 상태에서 요청된 경우 명확한 오류 반환
+        if (userDetails == null) {
+            throw new IllegalStateException("로그인이 필요합니다. 다시 로그인해 주세요.");
+        }
         return GlobalResponse.ok(accountService.createAccount(request, userDetails.getMember()));
     }
 

@@ -153,10 +153,10 @@
         <!-- ===== 오른쪽 컬럼 (30%) ===== -->
         <div class="col-span-3 space-y-8">
 
-          <!-- 커플 정보 카드: 온보딩 상태 -->
+          <!-- 커플 정보 카드: 온보딩 상태 (정보 미저장 시에만 렌더링) -->
           <div id="coupleOnboarding"
-               class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8"
-               th:classappend="${isCoupleInfoSaved} ? ' hidden' : ''">
+               th:if="${!isCoupleInfoSaved}"
+               class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
             <div class="text-center mb-6">
               <div class="w-16 h-16 bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-full flex items-center justify-center mx-auto mb-4">
                 <i data-lucide="heart" class="w-8 h-8 text-[#F5A5A5]"></i>
@@ -217,10 +217,10 @@
             </form>
           </div>
 
-          <!-- 커플 정보 카드: 저장된 상태 (저장하기 후 표시) -->
+          <!-- 커플 정보 카드: 저장된 상태 (정보 저장 후에만 렌더링) -->
           <div id="coupleSaved"
-               class="hidden bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-3xl shadow-sm border border-gray-100 p-6"
-               th:classappend="${isCoupleInfoSaved} ? ' !block' : ''">
+               th:if="${isCoupleInfoSaved}"
+               class="bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-3xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-bold text-gray-900">커플 정보</h3>
               <a th:href="@{/couple-info/edit}" class="p-2 hover:bg-white/50 rounded-xl transition-colors">
@@ -391,30 +391,20 @@
       }
     });
 
-    /* ---- 커플 정보 저장: 온보딩 숨기고 저장 카드 표시 ---- */
+    /* ---- 커플 정보 저장: 서버에 폼 제출 후 대시보드 리다이렉트 ---- */
     function saveCoupleInfo(e) {
       e.preventDefault();
       const dateVal  = document.getElementById('coupleDate').value;
       const aliasVal = document.getElementById('acctAlias').value.trim();
       if (!dateVal || !aliasVal) return;
 
-      // 날짜 포맷: 2026-04-30 → 2026.04.30
-      document.getElementById('savedDateDisplay').textContent = dateVal.replace(/-/g, '.');
+      // 저장 버튼 로딩 상태로 변경
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = '저장 중...';
 
-      // 함께한 일 수 계산
-      const days = Math.ceil(Math.abs(new Date() - new Date(dateVal)) / (1000 * 60 * 60 * 24));
-      document.getElementById('savedDaysDisplay').textContent = days;
-
-      // 계좌 애칭
-      document.getElementById('savedAliasDisplay').textContent = aliasVal;
-
-      // 카드 전환
-      document.getElementById('coupleOnboarding').classList.add('hidden');
-      document.getElementById('coupleSaved').classList.remove('hidden');
-      lucide.createIcons();
-
-      /* 서버 제출 (Spring Boot 연동 시 주석 해제) */
-      // document.getElementById('coupleInfoForm').submit();
+      // 서버에 실제 제출 → POST /dashboard/couple-info → redirect:/dashboard
+      document.getElementById('coupleInfoForm').submit();
     }
 
     /* ---- 저장하기 버튼 활성화 검사 ---- */

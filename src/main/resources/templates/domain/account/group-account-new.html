@@ -737,7 +737,13 @@
       })
       .catch(err => {
         console.error('계좌 개설 실패:', err);
-        alert(err.message || '계좌 개설 중 오류가 발생했습니다.');
+        // 세션 만료 등 로그인 필요 오류면 로그인 페이지로 이동
+        if (err.message && err.message.includes('로그인이 필요합니다')) {
+          alert('세션이 만료되었습니다. 다시 로그인해 주세요.');
+          window.location.href = '/auth/login';
+        } else {
+          alert(err.message || '계좌 개설 중 오류가 발생했습니다.');
+        }
       });
     }
 
