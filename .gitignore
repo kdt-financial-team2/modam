@@ -44,3 +44,7 @@ data/*.trace.db
 ### Claude
 
 .claude/
+
+
+### logs
+logs
