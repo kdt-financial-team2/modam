@@ -2,6 +2,7 @@ package com.intelliJ_JO.modam.domain.couple.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
  * - 대시보드 온보딩 폼에서 POST /dashboard/couple-info 로 전송
  */
 @Getter
+@Setter
 @NoArgsConstructor
 public class CoupleInfoRequestDto {
 

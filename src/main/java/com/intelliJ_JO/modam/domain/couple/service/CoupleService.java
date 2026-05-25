@@ -27,6 +27,21 @@ public class CoupleService {
     private final CoupleRepository coupleRepository;
 
     /**
+     * 멤버의 커플 정보 조회 — 수정 폼 초기값 표시에 사용
+     */
+    @Transactional(readOnly = true)
+    public Couple getCoupleByMember(Member member) {
+        List<AccountMember> memberships = accountMemberRepository.findByMemberId(member.getId());
+        AccountMember myMembership = memberships.stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("모임 통장이 없습니다."));
+        return coupleRepository.findByAccountId(myMembership.getAccount().getId())
+                .orElseThrow(() -> new IllegalStateException("커플 정보가 없습니다."));
+    }
+
+    /**
      * 커플 시작일 및 계좌 애칭 저장/수정
      * - 멤버의 승인된 GROUP 계좌를 찾아 Couple 레코드를 업데이트하거나 없으면 신규 생성
      */
