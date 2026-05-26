@@ -11,6 +11,7 @@ import com.intelliJ_JO.modam.domain.point.entity.PointReason;
 import com.intelliJ_JO.modam.domain.point.service.PointService;
 import com.intelliJ_JO.modam.domain.savings.dto.SavingsCreateRequestDto;
 import com.intelliJ_JO.modam.domain.savings.dto.SavingsResponseDto;
+import com.intelliJ_JO.modam.domain.savings.entity.AutoCycle;
 import com.intelliJ_JO.modam.domain.savings.entity.Savings;
 import com.intelliJ_JO.modam.domain.savings.repository.SavingsRepository;
 import com.intelliJ_JO.modam.domain.transaction.dto.TransactionRequestDto;
@@ -35,9 +36,6 @@ public class SavingsService {
     private final NotificationService notificationService;
     private final PointService pointService;
 
-    /**
-     * 1. 새로운 저축 목표 생성
-     */
     @Transactional
     public void createSavings(SavingsCreateRequestDto requestDto) {
         Account account = accountRepository.findById(requestDto.getAccountId())
@@ -45,6 +43,7 @@ public class SavingsService {
 
         Savings savings = Savings.builder()
                 .account(account)
+                .goalName(requestDto.getGoalName())
                 .saveType(requestDto.getSaveType())
                 .targetAmount(requestDto.getTargetAmount())
                 .targetDate(requestDto.getTargetDate())
@@ -56,20 +55,14 @@ public class SavingsService {
         savingsRepository.save(savings);
     }
 
-    /**
-     * 2. 특정 계좌의 저축 목표 목록 조회
-     */
     public List<SavingsResponseDto> getSavingsByAccountId(Long accountId) {
         return savingsRepository.findByAccountId(accountId).stream()
                 .map(SavingsResponseDto::new)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 3. 저축 목표에 금액 납입 (Update) 및 내역 기록
-     */
     @Transactional
-    public void depositToSavings(Long savingsId, Long amount, Long memberId) { // 🔥 memberId 파라미터 추가
+    public void depositToSavings(Long savingsId, Long amount, Long memberId) {
         if (amount == null || amount <= 0) {
             throw new IllegalArgumentException("납입 금액은 0원보다 커야 합니다.");
         }
@@ -79,35 +72,36 @@ public class SavingsService {
 
         Account account = savings.getAccount();
 
-        // 1. 출금 전 모임 통장 잔액 검증
         if (account.getAvailableBalance() < amount) {
             throw new IllegalStateException("모임 통장의 잔액이 부족하여 저축할 수 없습니다.");
         }
 
-        // 2. 💡 Transaction 내역 생성 및 모임 통장 잔액 차감 (TransactionService로 위임!)
-        // 기본 생성자로 빈 객체를 만든 뒤, Setter를 통해 값을 하나씩 주입합니다.
         TransactionRequestDto txRequest = new TransactionRequestDto();
         txRequest.setAccountId(account.getId());
         txRequest.setMemberId(memberId);
-        // cardId는 없으므로 굳이 set 하지 않으면 기본값 null로 들어갑니다.
         txRequest.setTxType(TransactionType.WITHDRAW);
         txRequest.setAmount(amount);
         txRequest.setMerchantName("모담 저축");
         txRequest.setCategory("저축 납입");
 
-        // 이 메서드 내부에서 account.updateBalance(-amount)가 실행되어 안전하게 잔액이 차감됩니다.
         transactionService.createTransaction(txRequest);
-
-        // 3. 저축 목표에 금액 추가
         savings.addAmount(amount);
-
-        // 4. 포인트 달성 여부 체크 (memberId 전달)
         checkAndAwardPoints(savings, memberId);
     }
 
-    /**
-     * ✨ 내부 비즈니스 로직: 목표 달성 여부 체크 및 포인트 지급 플래그 처리
-     */
+    // 🔥 [추가됨] 프론트엔드의 모달창 데이터를 DB에 실제로 저장하는 로직
+    @Transactional
+    public void updateAutoTransfer(Long goalId, Long amount, String frequency, String startDate) {
+        Savings savings = savingsRepository.findById(goalId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 저축 목표입니다."));
+
+        // HTML에서 넘어온 'monthly', 'weekly', 'daily'를 대문자로 변환하여 Enum과 매핑
+        AutoCycle cycle = AutoCycle.valueOf(frequency.toUpperCase());
+
+        // 엔티티 값 업데이트 (Dirty Checking으로 자동 DB UPDATE 쿼리 발생)
+        savings.updateAutoTransfer(amount, cycle);
+    }
+
     private void checkAndAwardPoints(Savings savings, Long memberId) {
         long current = savings.getCurrentAmount();
         long target = savings.getTargetAmount();
