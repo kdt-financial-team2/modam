@@ -1,0 +1,129 @@
+2026-05-26T20:58:55.901+09:00  INFO 89891 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : Starting ModamApplication using Java 17.0.12 with PID 89891 (/Users/kbh/Documents/KDT-finance-folder/modam/build/classes/java/main started by kbh in /Users/kbh/Documents/KDT-finance-folder/modam)
+2026-05-26T20:58:55.902+09:00 DEBUG 89891 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : Running with Spring Boot v3.5.13, Spring v6.2.17
+2026-05-26T20:58:55.903+09:00  INFO 89891 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-05-26T20:58:56.258+09:00  INFO 89891 --- [modam] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-26T20:58:56.292+09:00  INFO 89891 --- [modam] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 31 ms. Found 15 JPA repository interfaces.
+2026-05-26T20:58:56.528+09:00  INFO 89891 --- [modam] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-05-26T20:58:56.534+09:00  INFO 89891 --- [modam] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-05-26T20:58:56.535+09:00  INFO 89891 --- [modam] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.53]
+2026-05-26T20:58:56.557+09:00  INFO 89891 --- [modam] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-05-26T20:58:56.557+09:00  INFO 89891 --- [modam] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 637 ms
+2026-05-26T20:58:56.644+09:00  INFO 89891 --- [modam] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-26T20:58:56.668+09:00  INFO 89891 --- [modam] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.45.Final
+2026-05-26T20:58:56.680+09:00  INFO 89891 --- [modam] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-05-26T20:58:56.766+09:00  INFO 89891 --- [modam] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-26T20:58:56.777+09:00  INFO 89891 --- [modam] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-05-26T20:58:56.882+09:00  INFO 89891 --- [modam] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:./data/modamdb user=TEST
+2026-05-26T20:58:56.882+09:00  INFO 89891 --- [modam] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-05-26T20:58:56.907+09:00  INFO 89891 --- [modam] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-26T20:58:57.280+09:00  INFO 89891 --- [modam] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-26T20:58:57.309+09:00  INFO 89891 --- [modam] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-26T20:58:57.454+09:00  INFO 89891 --- [modam] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-26T20:58:57.889+09:00  INFO 89891 --- [modam] [main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-05-26T20:58:57.890+09:00  WARN 89891 --- [modam] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-05-26T20:58:57.922+09:00  WARN 89891 --- [modam] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-26T20:58:58.127+09:00  INFO 89891 --- [modam] [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/modamdb'
+2026-05-26T20:58:58.169+09:00  INFO 89891 --- [modam] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-05-26T20:58:58.174+09:00  INFO 89891 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : Started ModamApplication in 2.442 seconds (process running for 2.637)
+2026-05-26T20:58:58.221+09:00  INFO 89891 --- [modam] [main] c.i.modam.global.init.DataInitializer    : [DataInitializer] 더미 데이터가 이미 존재합니다. 건너뜁니다.
+2026-05-26T20:59:01.478+09:00  INFO 89891 --- [modam] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-26T20:59:01.478+09:00  INFO 89891 --- [modam] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-26T20:59:01.479+09:00  INFO 89891 --- [modam] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-05-26T20:59:57.925+09:00  INFO 89891 --- [modam] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-05-26T20:59:57.930+09:00  INFO 89891 --- [modam] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-05-26T20:59:57.940+09:00  INFO 89891 --- [modam] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-26T20:59:57.945+09:00  INFO 89891 --- [modam] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-05-26T20:59:57.946+09:00  INFO 89891 --- [modam] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-05-26T21:00:00.569+09:00  INFO 91191 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : Starting ModamApplication using Java 17.0.12 with PID 91191 (/Users/kbh/Documents/KDT-finance-folder/modam/build/classes/java/main started by kbh in /Users/kbh/Documents/KDT-finance-folder/modam)
+2026-05-26T21:00:00.570+09:00 DEBUG 91191 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : Running with Spring Boot v3.5.13, Spring v6.2.17
+2026-05-26T21:00:00.571+09:00  INFO 91191 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-05-26T21:00:00.908+09:00  INFO 91191 --- [modam] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-26T21:00:00.941+09:00  INFO 91191 --- [modam] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 30 ms. Found 15 JPA repository interfaces.
+2026-05-26T21:00:01.163+09:00  INFO 91191 --- [modam] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-05-26T21:00:01.168+09:00  INFO 91191 --- [modam] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-05-26T21:00:01.168+09:00  INFO 91191 --- [modam] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.53]
+2026-05-26T21:00:01.186+09:00  INFO 91191 --- [modam] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-05-26T21:00:01.186+09:00  INFO 91191 --- [modam] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 599 ms
+2026-05-26T21:00:01.254+09:00  INFO 91191 --- [modam] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-26T21:00:01.272+09:00  INFO 91191 --- [modam] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.45.Final
+2026-05-26T21:00:01.284+09:00  INFO 91191 --- [modam] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-05-26T21:00:01.372+09:00  INFO 91191 --- [modam] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-26T21:00:01.383+09:00  INFO 91191 --- [modam] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-05-26T21:00:01.488+09:00  INFO 91191 --- [modam] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:./data/modamdb user=TEST
+2026-05-26T21:00:01.488+09:00  INFO 91191 --- [modam] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-05-26T21:00:01.511+09:00  INFO 91191 --- [modam] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-26T21:00:01.888+09:00  INFO 91191 --- [modam] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-26T21:00:01.915+09:00  INFO 91191 --- [modam] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-26T21:00:02.054+09:00  INFO 91191 --- [modam] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-26T21:00:02.491+09:00  INFO 91191 --- [modam] [main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-05-26T21:00:02.492+09:00  WARN 91191 --- [modam] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-05-26T21:00:02.525+09:00  WARN 91191 --- [modam] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-26T21:00:02.738+09:00  INFO 91191 --- [modam] [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/modamdb'
+2026-05-26T21:00:02.766+09:00  INFO 91191 --- [modam] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-05-26T21:00:02.771+09:00  INFO 91191 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : Started ModamApplication in 2.36 seconds (process running for 2.554)
+2026-05-26T21:00:02.812+09:00  INFO 91191 --- [modam] [main] c.i.modam.global.init.DataInitializer    : [DataInitializer] 더미 데이터가 이미 존재합니다. 건너뜁니다.
+2026-05-26T21:00:07.820+09:00  INFO 91191 --- [modam] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-26T21:00:07.820+09:00  INFO 91191 --- [modam] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-26T21:00:07.821+09:00  INFO 91191 --- [modam] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-05-26T21:00:18.953+09:00  INFO 91191 --- [modam] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-05-26T21:00:18.960+09:00  INFO 91191 --- [modam] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-05-26T21:00:18.968+09:00  INFO 91191 --- [modam] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-26T21:00:18.969+09:00  INFO 91191 --- [modam] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-05-26T21:00:18.970+09:00  INFO 91191 --- [modam] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-05-26T21:00:25.553+09:00  INFO 91861 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : Starting ModamApplication using Java 17.0.12 with PID 91861 (/Users/kbh/Documents/KDT-finance-folder/modam/build/classes/java/main started by kbh in /Users/kbh/Documents/KDT-finance-folder/modam)
+2026-05-26T21:00:25.554+09:00 DEBUG 91861 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : Running with Spring Boot v3.5.13, Spring v6.2.17
+2026-05-26T21:00:25.555+09:00  INFO 91861 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-05-26T21:00:25.904+09:00  INFO 91861 --- [modam] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-26T21:00:25.941+09:00  INFO 91861 --- [modam] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 33 ms. Found 15 JPA repository interfaces.
+2026-05-26T21:00:26.201+09:00  INFO 91861 --- [modam] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-05-26T21:00:26.206+09:00  INFO 91861 --- [modam] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-05-26T21:00:26.206+09:00  INFO 91861 --- [modam] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.53]
+2026-05-26T21:00:26.226+09:00  INFO 91861 --- [modam] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-05-26T21:00:26.227+09:00  INFO 91861 --- [modam] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 655 ms
+2026-05-26T21:00:26.319+09:00  INFO 91861 --- [modam] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-26T21:00:26.343+09:00  INFO 91861 --- [modam] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.45.Final
+2026-05-26T21:00:26.355+09:00  INFO 91861 --- [modam] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-05-26T21:00:26.449+09:00  INFO 91861 --- [modam] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-26T21:00:26.459+09:00  INFO 91861 --- [modam] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-05-26T21:00:26.567+09:00  INFO 91861 --- [modam] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:./data/modamdb user=TEST
+2026-05-26T21:00:26.568+09:00  INFO 91861 --- [modam] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-05-26T21:00:26.591+09:00  INFO 91861 --- [modam] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-26T21:00:26.989+09:00  INFO 91861 --- [modam] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-26T21:00:27.033+09:00  INFO 91861 --- [modam] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-26T21:00:27.175+09:00  INFO 91861 --- [modam] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-26T21:00:27.500+09:00  INFO 91861 --- [modam] [main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-05-26T21:00:27.501+09:00  WARN 91861 --- [modam] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-05-26T21:00:27.535+09:00  WARN 91861 --- [modam] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-26T21:00:27.750+09:00  INFO 91861 --- [modam] [main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/modamdb'
+2026-05-26T21:00:27.779+09:00  INFO 91861 --- [modam] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-05-26T21:00:27.783+09:00  INFO 91861 --- [modam] [main] com.intelliJ_JO.modam.ModamApplication   : Started ModamApplication in 2.404 seconds (process running for 2.596)
+2026-05-26T21:00:27.835+09:00  INFO 91861 --- [modam] [main] c.i.modam.global.init.DataInitializer    : [DataInitializer] 더미 데이터가 이미 존재합니다. 건너뜁니다.
+2026-05-26T21:00:31.159+09:00  INFO 91861 --- [modam] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-26T21:00:31.159+09:00  INFO 91861 --- [modam] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-26T21:00:31.160+09:00  INFO 91861 --- [modam] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-05-26T21:07:08.074+09:00  INFO 91861 --- [modam] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-05-26T21:07:08.080+09:00  INFO 91861 --- [modam] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-05-26T21:07:08.091+09:00  INFO 91861 --- [modam] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-26T21:07:08.092+09:00  INFO 91861 --- [modam] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-05-26T21:07:08.094+09:00  INFO 91861 --- [modam] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
