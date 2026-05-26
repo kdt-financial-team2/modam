@@ -3,6 +3,7 @@ package com.intelliJ_JO.modam.domain.spendinglimit.service;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.spendinglimit.dto.SpendingLimitDto;
+import com.intelliJ_JO.modam.domain.spendinglimit.dto.SpendingLimitSaveRequest;
 import com.intelliJ_JO.modam.domain.spendinglimit.entity.SpendingLimit;
 import com.intelliJ_JO.modam.domain.spendinglimit.repository.SpendingLimitRepository;
 import com.intelliJ_JO.modam.domain.transaction.entity.TransactionType;
@@ -23,52 +24,137 @@ import java.util.stream.Collectors;
 public class SpendingLimitService {
 
     private static final List<String[]> CATEGORIES = List.of(
-            new String[]{"식비",    "utensils"},
-            new String[]{"교통",    "car"},
-            new String[]{"쇼핑",    "shopping-bag"},
-            new String[]{"의료",    "heart-pulse"},
+            new String[]{"식비", "utensils"},
+            new String[]{"교통", "car"},
+            new String[]{"쇼핑", "shopping-bag"},
+            new String[]{"의료", "heart-pulse"},
             new String[]{"문화/여가", "film"},
-            new String[]{"기타",    "circle-ellipsis"}
+            new String[]{"기타", "circle-ellipsis"}
     );
 
     private final SpendingLimitRepository spendingLimitRepository;
     private final TransactionRepository transactionRepository;
     private final MemberRepository memberRepository;
 
+    // =========================
+    // 소비 제한 조회
+    // =========================
     public List<SpendingLimitDto> getSpendingLimits(Long memberId) {
-        LocalDateTime start = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+
+        LocalDateTime start =
+                LocalDate.now()
+                        .withDayOfMonth(1)
+                        .atStartOfDay();
+
         LocalDateTime end = start.plusMonths(1);
 
-        List<Object[]> rows = transactionRepository.sumSpendGroupByCategoryAndMember(
-                memberId, List.of(TransactionType.WITHDRAW, TransactionType.PAYMENT), start, end);
+        List<Object[]> rows =
+                transactionRepository.sumSpendGroupByCategoryAndMember(
+                        memberId,
+                        List.of(
+                                TransactionType.WITHDRAW,
+                                TransactionType.PAYMENT
+                        ),
+                        start,
+                        end
+                );
 
-        Map<String, Long> spentMap = rows.stream()
-                .collect(Collectors.toMap(r -> (String) r[0], r -> ((Number) r[1]).longValue()));
+        Map<String, Long> spentMap =
+                rows.stream()
+                        .collect(Collectors.toMap(
+                                r -> (String) r[0],
+                                r -> ((Number) r[1]).longValue()
+                        ));
 
-        Map<String, Long> budgetMap = spendingLimitRepository.findByMemberId(memberId).stream()
-                .collect(Collectors.toMap(SpendingLimit::getCategory, SpendingLimit::getBudgetAmount));
+        Map<String, Long> budgetMap =
+                spendingLimitRepository.findByMemberId(memberId)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                SpendingLimit::getCategory,
+                                SpendingLimit::getBudgetAmount
+                        ));
 
         return CATEGORIES.stream().map(cat -> {
+
             String name = cat[0];
             String icon = cat[1];
-            long spent = spentMap.getOrDefault(name, 0L);
-            long budget = budgetMap.getOrDefault(name, 0L);
-            int percentage = budget > 0 ? (int) (spent * 100 / budget) : 0;
-            return new SpendingLimitDto(name, icon, spent, budget, percentage);
+
+            long spent =
+                    spentMap.getOrDefault(name, 0L);
+
+            long budget =
+                    budgetMap.getOrDefault(name, 0L);
+
+            int percentage =
+                    budget > 0
+                            ? (int) (spent * 100 / budget)
+                            : 0;
+
+            return new SpendingLimitDto(
+                    name,
+                    icon,
+                    spent,
+                    budget,
+                    percentage
+            );
+
         }).collect(Collectors.toList());
     }
 
+    // =========================
+    // 소비 제한 저장
+    // =========================
     @Transactional
-    public void saveSpendingLimits(Long memberId, Map<String, Long> limits) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+    public void saveSpendingLimits(
+            Long memberId,
+            SpendingLimitSaveRequest request
+    ) {
 
-        limits.forEach((category, budgetAmount) -> {
-            SpendingLimit limit = spendingLimitRepository
-                    .findByMemberIdAndCategory(memberId, category)
-                    .orElse(SpendingLimit.builder().member(member).category(category).build());
-            limit.updateBudget(budgetAmount);
-            spendingLimitRepository.save(limit);
-        });
+        Member member =
+                memberRepository.findById(memberId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "존재하지 않는 회원입니다."
+                                ));
+
+        // 선택 카테고리 합치기
+        String joinedCategories;
+        // 카테고리 선택 안 하면 전체 소비
+        if (request.getCategories() == null
+                || request.getCategories().isEmpty()) {
+
+            joinedCategories = "전체";
+
+        } else {
+
+            joinedCategories =
+                    String.join(",", request.getCategories());
+        }
+
+        SpendingLimit limit =
+                SpendingLimit.builder()
+                        .member(member)
+                        .category(joinedCategories)
+                        .budgetAmount(request.getBudgetAmount())
+                        .build();
+
+        // 알림 설정 저장
+        limit.updateSettings(
+
+                request.isAlertAt80(),
+                request.isAlertAt100(),
+
+                request.isEveryTransaction(),
+                request.isDailyLimit(),
+                request.isWeeklyLimit(),
+                request.isLargeAmount(),
+
+                request.isPushAlert(),
+                request.isEmailAlert(),
+                request.isSmsAlert(),
+                request.isKakaoAlert()
+        );
+
+        spendingLimitRepository.save(limit);
     }
 }
