@@ -16,6 +16,6 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
         request.getSession().setAttribute("loginError", "아이디 또는 비밀번호가 일치하지 않습니다");
-        response.sendRedirect(request.getContextPath() + "/login?error");
+        response.sendRedirect(request.getContextPath() + "/auth/login?error");
     }
 }
