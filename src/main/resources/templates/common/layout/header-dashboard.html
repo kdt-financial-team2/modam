@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head></head>
+<body>
+
+<!--
+  대시보드 전용 헤더 fragment (로고 이미지, 알림 전체 패널, 현재 페이지 active 상태)
+  사용법: <th:block th:replace="~{layout/header-dashboard :: nav}"></th:block>
+  스크립트: <th:block th:replace="~{layout/header-dashboard :: scripts}"></th:block>
+-->
+
+<th:block th:fragment="nav">
+
+  <!-- ===== 상단 네비게이션 헤더 ===== -->
+  <nav class="sticky top-0 z-30 bg-white border-b border-gray-100">
+    <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+
+      <!-- 로고 -->
+      <a th:href="@{/}" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+        <img th:src="@{/images/icons/logo.png}" alt="모담 로고" class="h-20 w-auto object-contain"/>
+      </a>
+
+      <!-- 오른쪽 메뉴 -->
+      <div class="flex items-center gap-10">
+
+        <!-- 소비기록 -->
+        <a th:href="@{/consumption-history}"
+           th:classappend="${currentPage == 'consumption'} ? 'text-gray-900 font-medium border-b-2 border-[#F5A5A5]' : 'text-gray-600'"
+           class="text-[15px] hover:text-[#F5A5A5] transition-colors py-2">
+          소비기록
+        </a>
+
+        <!-- 목표저축 -->
+        <a th:href="@{/savings}"
+           th:classappend="${currentPage == 'savings'} ? 'text-gray-900 font-medium border-b-2 border-[#F5A5A5]' : 'text-gray-600'"
+           class="text-[15px] hover:text-[#F5A5A5] transition-colors py-2">
+          목표저축
+        </a>
+
+        <!-- 포인트 -->
+        <a th:href="@{/point-shop}"
+           th:classappend="${currentPage == 'point'} ? 'text-gray-900 font-medium border-b-2 border-[#F5A5A5]' : 'text-gray-600'"
+           class="text-[15px] hover:text-[#F5A5A5] transition-colors py-2 flex items-center gap-2">
+          <span>포인트</span>
+          <span class="text-[#F5A5A5] font-semibold text-sm"
+                th:text="${#numbers.formatInteger(couplePoints, 1, 'COMMA') + 'P'}">12,450P</span>
+        </a>
+
+        <!-- 알림 버튼 -->
+        <div class="relative ml-2">
+          <button onclick="toggleNotifications()"
+                  class="w-11 h-11 rounded-full bg-[#FCE8E3] flex items-center justify-center hover:bg-[#FBD5CE] transition-colors relative">
+            <i data-lucide="bell" class="w-5 h-5 text-gray-700"></i>
+            <div th:if="${unreadCount > 0}"
+                 class="absolute -top-1 -right-1 w-5 h-5 bg-[#F5A5A5] rounded-full flex items-center justify-center">
+              <span class="text-white text-xs font-bold" th:text="${unreadCount}">2</span>
+            </div>
+          </button>
+
+          <!-- 알림 드롭다운 -->
+          <div id="notificationPanel"
+               class="hidden absolute right-0 mt-3 w-[360px] bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h3 class="text-[17px] font-bold text-gray-900">알림</h3>
+              <button onclick="markAllRead()" class="text-sm text-[#F5A5A5] hover:text-[#F28B8B] font-medium">전체 읽음</button>
+            </div>
+            <div class="max-h-[420px] overflow-y-auto">
+              <div class="p-2" th:if="${notifications != null and !notifications.empty}">
+                <div th:each="noti : ${notifications}"
+                     th:id="'noti-' + ${noti.id}"
+                     onclick="markRead(this)"
+                     th:classappend="${!noti.read} ? 'bg-[#FFF7F5] hover:bg-[#FFE4E8]' : 'hover:bg-gray-50'"
+                     class="w-full text-left px-4 py-3 rounded-xl mb-1 transition-colors relative cursor-pointer">
+                  <div th:if="${!noti.read}"
+                       class="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-[#F5A5A5] rounded-full"></div>
+                  <div th:classappend="${!noti.read} ? 'ml-3' : ''" class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-[#FCE8E3] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <i th:attr="data-lucide=${noti.icon}" class="w-5 h-5 text-[#F5A5A5]"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-800 mb-0.5" th:text="${noti.title}">알림 제목</p>
+                      <p class="text-xs text-gray-500 mb-1" th:text="${noti.description}">알림 내용</p>
+                      <p class="text-xs text-gray-400" th:text="${noti.time}">방금 전</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div th:if="${notifications == null or notifications.empty}" class="text-center py-12 px-6">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i data-lucide="bell" class="w-8 h-8 text-gray-400"></i>
+                </div>
+                <p class="text-gray-500 text-sm">알림이 없습니다</p>
+              </div>
+            </div>
+            <div class="border-t border-gray-100">
+              <a th:href="@{/notifications}" class="block w-full py-3 text-sm text-center text-gray-600 hover:bg-gray-50 transition-colors">
+                전체 알림 보기
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 프로필 버튼 -->
+        <div class="relative">
+          <button onclick="toggleProfile()"
+                  class="w-11 h-11 rounded-full bg-[#FCE8E3] flex items-center justify-center hover:bg-[#FBD5CE] transition-colors">
+            <i data-lucide="user" class="w-5 h-5 text-gray-700"></i>
+          </button>
+
+          <!-- 프로필 드롭다운 -->
+          <div id="profileDropdown"
+               class="hidden absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden">
+            <a th:href="@{/mypage}"
+               class="flex items-center gap-3 px-5 py-3 text-gray-800 hover:bg-[#FFF7F5] transition-colors">
+              <i data-lucide="user" class="w-5 h-5"></i>
+              <span>마이페이지</span>
+            </a>
+            <button onclick="showLogoutModal()"
+                    class="w-full flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-[#FFF7F5] transition-colors">
+              <i data-lucide="log-out" class="w-5 h-5"></i>
+              <span>로그아웃</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== 로그아웃 확인 모달 ===== -->
+  <div id="logoutOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+       onclick="hideLogoutModal()"></div>
+  <div id="logoutModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[440px] p-8">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-[#FCE8E3] rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="log-out" class="w-8 h-8 text-[#F5A5A5]"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">로그아웃 하시겠습니까?</h2>
+        <p class="text-gray-600">다시 로그인하면 언제든지 사용하실 수 있습니다</p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="hideLogoutModal()"
+                class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">
+          취소
+        </button>
+        <form th:action="@{/logout}" method="post" class="flex-1">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <button type="submit"
+                  class="w-full py-4 bg-[#FCE8E3] text-gray-900 rounded-xl hover:bg-[#FBD5CE] transition-colors font-medium">
+            로그아웃
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</th:block>
+
+
+<th:block th:fragment="scripts">
+  <script>
+    function toggleNotifications() {
+      const panel = document.getElementById('notificationPanel');
+      const dropdown = document.getElementById('profileDropdown');
+      dropdown.classList.add('hidden');
+      panel.classList.toggle('hidden');
+    }
+    function toggleProfile() {
+      const dropdown = document.getElementById('profileDropdown');
+      const panel = document.getElementById('notificationPanel');
+      panel.classList.add('hidden');
+      dropdown.classList.toggle('hidden');
+    }
+    function markAllRead() {
+      document.querySelectorAll('[id^="noti-"]').forEach(el => {
+        el.classList.remove('bg-[#FFF7F5]', 'hover:bg-[#FFE4E8]');
+        el.classList.add('hover:bg-gray-50');
+        const dot = el.querySelector('.w-2.h-2.bg-\\[\\#F5A5A5\\]');
+        if (dot) dot.remove();
+      });
+    }
+    function markRead(el) {
+      el.classList.remove('bg-[#FFF7F5]', 'hover:bg-[#FFE4E8]');
+      el.classList.add('hover:bg-gray-50');
+    }
+    function showLogoutModal() {
+      document.getElementById('profileDropdown').classList.add('hidden');
+      document.getElementById('logoutOverlay').classList.remove('hidden');
+      document.getElementById('logoutModal').classList.remove('hidden');
+    }
+    function hideLogoutModal() {
+      document.getElementById('logoutOverlay').classList.add('hidden');
+      document.getElementById('logoutModal').classList.add('hidden');
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#notificationPanel') && !e.target.closest('button[onclick="toggleNotifications()"]')) {
+        document.getElementById('notificationPanel').classList.add('hidden');
+      }
+      if (!e.target.closest('#profileDropdown') && !e.target.closest('button[onclick="toggleProfile()"]')) {
+        document.getElementById('profileDropdown').classList.add('hidden');
+      }
+    });
+  </script>
+</th:block>
+
+</body>
+</html>

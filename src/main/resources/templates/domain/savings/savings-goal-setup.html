@@ -1,195 +1,357 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>저축 목표 설정 - 모담</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="min-h-screen flex flex-col bg-white">
-  <div th:replace="~{common/layout/header :: nav}"></div>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
 
-  <main class="flex-1 w-full max-w-[1440px] mx-auto bg-[#FAFAFA]">
-    <div class="max-w-[700px] mx-auto px-8 py-12">
-      <div class="mb-8">
-        <h1 class="text-3xl text-gray-800">💕 새 저축 목표 만들기</h1>
-        <p class="text-gray-600 mt-2">함께 이루고 싶은 목표를 설정해보세요</p>
-      </div>
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{common/layout/header :: nav}"></th:block>
 
-      <form th:action="@{/savings-goal-setup}" method="post" class="bg-white rounded-3xl shadow-sm p-10">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-        <!-- 연결 계좌 정보 -->
-        <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-xl p-5 mb-6">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <i data-lucide="credit-card" class="w-6 h-6 text-[#F5A5A5]"></i>
-              <div>
-                <p class="text-sm text-gray-600">연결된 계좌</p>
-                <p class="text-lg text-gray-800" th:text="${linkedBank + ' ' + linkedAccount}">계좌 정보</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <p class="text-sm text-gray-600">잔액</p>
-              <p class="text-xl text-gray-800">₩<span th:text="${#numbers.formatInteger(accountBalance, 0, 'COMMA')}">0</span></p>
-            </div>
-          </div>
-        </div>
-
-        <div class="space-y-6">
-          <!-- 목표 이름 -->
-          <div>
-            <label class="block text-gray-700 mb-2">목표 이름</label>
-            <input type="text" name="goalName" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors" placeholder="예: 제주도 여행, 결혼 자금"/>
-          </div>
-
-          <!-- 저축 유형 -->
-          <div>
-            <label class="block text-gray-700 mb-2">저축 유형</label>
-            <div class="grid grid-cols-5 gap-2" id="goalTypeGroup">
-              <button type="button" data-value="free" onclick="selectGoalType(this)"
-                      class="goal-type-btn flex flex-col items-center gap-2 p-3 rounded-xl border-2 border-gray-200 transition-colors hover:border-gray-300">
-                <i data-lucide="sparkles" class="w-5 h-5 text-gray-700"></i>
-                <span class="text-xs text-gray-700">자유</span>
-              </button>
-              <button type="button" data-value="goal" onclick="selectGoalType(this)"
-                      class="goal-type-btn flex flex-col items-center gap-2 p-3 rounded-xl border-2 border-[#F5A5A5] bg-[#FCE8E3] transition-colors">
-                <i data-lucide="piggy-bank" class="w-5 h-5 text-gray-700"></i>
-                <span class="text-xs text-gray-700">목표</span>
-              </button>
-              <button type="button" data-value="travel" onclick="selectGoalType(this)"
-                      class="goal-type-btn flex flex-col items-center gap-2 p-3 rounded-xl border-2 border-gray-200 transition-colors hover:border-gray-300">
-                <i data-lucide="plane" class="w-5 h-5 text-gray-700"></i>
-                <span class="text-xs text-gray-700">여행</span>
-              </button>
-              <button type="button" data-value="gift" onclick="selectGoalType(this)"
-                      class="goal-type-btn flex flex-col items-center gap-2 p-3 rounded-xl border-2 border-gray-200 transition-colors hover:border-gray-300">
-                <i data-lucide="gift" class="w-5 h-5 text-gray-700"></i>
-                <span class="text-xs text-gray-700">선물</span>
-              </button>
-              <button type="button" data-value="automatic" onclick="selectGoalType(this)"
-                      class="goal-type-btn flex flex-col items-center gap-2 p-3 rounded-xl border-2 border-gray-200 transition-colors hover:border-gray-300">
-                <i data-lucide="zap" class="w-5 h-5 text-gray-700"></i>
-                <span class="text-xs text-gray-700">자동</span>
-              </button>
-            </div>
-            <input type="hidden" name="goalType" id="goalTypeInput" value="goal"/>
-          </div>
-
-          <!-- 목표 금액 & 날짜 -->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-gray-700 mb-2">목표 금액</label>
-              <div class="relative">
-                <input type="text" name="targetAmount" oninput="formatNumber(this)"
-                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors pr-10"
-                       placeholder="10,000,000"/>
-                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">원</span>
-              </div>
-            </div>
-            <div>
-              <label class="block text-gray-700 mb-2">목표 날짜</label>
-              <input type="date" name="targetDate" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors"/>
-            </div>
-          </div>
-
-          <!-- 자동 이체 설정 -->
-          <div class="border-t border-gray-200 pt-5">
-            <div class="flex items-center justify-between mb-4">
-              <label class="text-gray-700">⚡ 자동 이체 설정</label>
-              <button type="button" onclick="toggleAutoTransfer()" id="autoTransferToggle"
-                      class="relative w-14 h-7 rounded-full bg-[#F5A5A5] transition-colors">
-                <div id="autoTransferDot" class="absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform translate-x-7"></div>
-              </button>
-            </div>
-            <input type="hidden" name="autoTransferEnabled" id="autoTransferEnabled" value="true"/>
-
-            <div id="autoTransferSection" class="space-y-4">
-              <div>
-                <label class="block text-sm text-gray-600 mb-2">이체 금액</label>
-                <div class="relative">
-                  <input type="text" name="autoAmount" oninput="formatNumber(this)"
-                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors pr-10"
-                         placeholder="최소 1,000원"/>
-                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">원</span>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm text-gray-600 mb-2">이체 주기</label>
-                  <div class="grid grid-cols-3 gap-2">
-                    <button type="button" data-value="daily" onclick="selectFrequency(this)"
-                            class="freq-btn py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 text-sm hover:border-gray-300 transition-colors">매일</button>
-                    <button type="button" data-value="weekly" onclick="selectFrequency(this)"
-                            class="freq-btn py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 text-sm hover:border-gray-300 transition-colors">매주</button>
-                    <button type="button" data-value="monthly" onclick="selectFrequency(this)"
-                            class="freq-btn py-2.5 rounded-xl border-2 border-[#F5A5A5] bg-[#FCE8E3] text-gray-800 text-sm transition-colors">매월</button>
-                  </div>
-                  <input type="hidden" name="autoFrequency" id="autoFrequencyInput" value="monthly"/>
-                </div>
-
-                <div>
-                  <label class="block text-sm text-gray-600 mb-2">시작 날짜</label>
-                  <input type="date" name="autoStartDate" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors"/>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex gap-4 mt-8">
-          <a th:href="@{/savings}" class="flex-1 py-3.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors text-center font-medium">취소</a>
-          <button type="submit" class="flex-1 py-3.5 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors font-medium">목표 만들기</button>
-        </div>
-      </form>
+  <!-- ===== 서브 헤더 ===== -->
+  <div class="px-8 py-6 border-b border-gray-200 bg-white">
+    <div class="w-full max-w-[1440px] mx-auto">
+      <h1 class="text-2xl text-gray-800">💕 우리 둘만의 저축 목표</h1>
+      <p class="text-gray-600 mt-2">함께 꿈꾸는 미래를 위해 차곡차곡 모아봐요</p>
     </div>
+  </div>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1">
+    <form th:action="@{/savings-goal-setup}" action="/savings-goal-setup" method="post"
+          id="setupForm" onsubmit="return handleSubmit(event)">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+      <div class="w-full max-w-[1440px] mx-auto px-8 py-8">
+        <div class="grid grid-cols-10 gap-6">
+
+          <!-- ===== 왼쪽 (70%) ===== -->
+          <div class="col-span-7 space-y-6">
+
+            <!-- 목표 저축 설정 내용 -->
+            <div class="bg-white rounded-3xl shadow-sm p-8">
+              <h2 class="text-xl text-gray-800 mb-6">목표 저축 설정 내용</h2>
+
+              <div class="space-y-6">
+                <!-- 목표 이름 -->
+                <div>
+                  <label class="block text-gray-700 mb-2">목표 이름</label>
+                  <input type="text" id="goalName" name="goalName"
+                         oninput="updateSummary()"
+                         placeholder="예: 제주도 여행, 결혼 자금"
+                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors">
+                </div>
+
+                <!-- 목표 금액 -->
+                <div>
+                  <label class="block text-gray-700 mb-2">목표 금액</label>
+                  <div class="relative">
+                    <input type="text" id="targetAmountDisplay"
+                           oninput="handleTargetAmount(this)"
+                           placeholder="10,000,000"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors pr-12">
+                    <input type="hidden" id="targetAmount" name="targetAmount">
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">원</span>
+                  </div>
+                </div>
+
+                <!-- 목표 날짜 -->
+                <div>
+                  <label class="block text-gray-700 mb-2">목표 날짜</label>
+                  <div class="relative">
+                    <input type="date" id="targetDate" name="targetDate"
+                           oninput="updateSummary(); updateGauge()"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors">
+                    <i data-lucide="calendar" class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 개인 저축 금액 설정 -->
+            <div class="bg-white rounded-3xl shadow-sm p-8">
+              <h2 class="text-xl text-gray-800 mb-6">개인 저축 금액 설정</h2>
+
+              <div class="space-y-4">
+                <!-- 참여자 1 (나) -->
+                <div class="flex items-center gap-4">
+                  <div class="w-32">
+                    <label class="block text-sm text-gray-600 mb-2">참여자</label>
+                    <div class="px-4 py-3 bg-gray-100 rounded-xl text-gray-700"
+                         th:text="${userName}">김민수</div>
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-sm text-gray-600 mb-2">월 저축 금액</label>
+                    <div class="relative">
+                      <input type="text" id="contrib0Display"
+                             oninput="handleContrib(0, this)"
+                             placeholder="500,000"
+                             class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors pr-16">
+                      <input type="hidden" id="contrib0" name="myContribution">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">원/월</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 참여자 2 (파트너) -->
+                <div class="flex items-center gap-4">
+                  <div class="w-32">
+                    <label class="block text-sm text-gray-600 mb-2">참여자</label>
+                    <div class="px-4 py-3 bg-gray-100 rounded-xl text-gray-700"
+                         th:text="${partnerName}">이서연</div>
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-sm text-gray-600 mb-2">월 저축 금액</label>
+                    <div class="relative">
+                      <input type="text" id="contrib1Display"
+                             oninput="handleContrib(1, this)"
+                             placeholder="500,000"
+                             class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors pr-16">
+                      <input type="hidden" id="contrib1" name="partnerContribution">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">원/월</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 합계 -->
+              <div class="mt-6 pt-6 border-t border-gray-200">
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-700">월 총 저축액</span>
+                  <span id="totalContribDisplay" class="text-2xl font-bold text-[#F5A5A5]">₩0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 오른쪽 (30%) ===== -->
+          <div class="col-span-3 space-y-6">
+
+            <!-- 목표 요약 카드 -->
+            <div class="bg-white rounded-3xl shadow-sm p-6">
+              <h3 class="text-lg font-bold text-gray-800 mb-4">목표 요약</h3>
+              <div class="space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">목표 이름</span>
+                  <span id="summaryName" class="font-bold text-gray-800">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">목표 금액</span>
+                  <span id="summaryTarget" class="font-bold text-gray-800">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">목표 날짜</span>
+                  <span id="summaryDate" class="font-bold text-gray-800">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">참여 인원</span>
+                  <span class="font-bold text-gray-800">2명</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 월별 기여도 카드 -->
+            <div class="bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-3xl shadow-sm p-6">
+              <h3 class="text-lg font-bold text-gray-800 mb-4">월별 기여도</h3>
+              <div class="space-y-3">
+                <!-- 참여자 1 -->
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm text-gray-700" th:text="${userName}">김민수</span>
+                    <span id="pct0" class="text-sm font-bold text-gray-800">0.0%</span>
+                  </div>
+                  <div class="w-full bg-white rounded-full h-2">
+                    <div id="bar0" class="bg-[#F5A5A5] h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                  </div>
+                </div>
+                <!-- 참여자 2 -->
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm text-gray-700" th:text="${partnerName}">이서연</span>
+                    <span id="pct1" class="text-sm font-bold text-gray-800">0.0%</span>
+                  </div>
+                  <div class="w-full bg-white rounded-full h-2">
+                    <div id="bar1" class="bg-[#F5A5A5] h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 하단 게이지 + 제출 버튼 ===== -->
+        <div class="mt-6">
+          <div class="bg-white rounded-3xl shadow-sm p-8">
+            <div class="grid grid-cols-10 gap-8 items-center">
+              <div class="col-span-7">
+                <h3 class="text-xl font-bold text-gray-800 mb-2">목표 달성 게이지바</h3>
+                <p id="estimatedDateMsg" class="text-sm text-gray-600 mb-4">목표 금액과 날짜를 설정해주세요</p>
+                <div class="relative">
+                  <div class="w-full bg-gray-200 rounded-full h-8">
+                    <div id="progressBar"
+                         class="bg-gradient-to-r from-[#F5A5A5] to-[#FCE8E3] h-8 rounded-full transition-all duration-300 flex items-center justify-end pr-4"
+                         style="width: 0%">
+                      <span id="progressLabelInner" class="text-sm font-bold text-white hidden">0%</span>
+                    </div>
+                  </div>
+                  <span id="progressLabelOuter" class="hidden absolute right-0 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-600 ml-2"></span>
+                </div>
+                <div class="flex justify-between mt-2 text-sm text-gray-500">
+                  <span>시작</span>
+                  <span>목표 달성</span>
+                </div>
+              </div>
+              <div class="col-span-3">
+                <button type="submit"
+                        class="w-full py-4 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors shadow-lg text-lg">
+                  저축 시작하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /max-w -->
+    </form>
   </main>
 
-  <div th:replace="~{common/layout/footer :: footer}"></div>
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
 
   <script>
-    lucide.createIcons();
+    // 참여자별 기여 금액 (숫자)
+    const contribs = [0, 0];
 
-    function selectGoalType(btn) {
-      document.querySelectorAll('.goal-type-btn').forEach(b => {
-        b.classList.remove('border-[#F5A5A5]', 'bg-[#FCE8E3]');
-        b.classList.add('border-gray-200');
-      });
-      btn.classList.add('border-[#F5A5A5]', 'bg-[#FCE8E3]');
-      btn.classList.remove('border-gray-200');
-      document.getElementById('goalTypeInput').value = btn.dataset.value;
+    function formatNum(value) {
+      const raw = value.replace(/[^0-9]/g, '');
+      if (raw === '') return '';
+      return parseInt(raw).toLocaleString('ko-KR');
     }
 
-    function selectFrequency(btn) {
-      document.querySelectorAll('.freq-btn').forEach(b => {
-        b.classList.remove('border-[#F5A5A5]', 'bg-[#FCE8E3]');
-        b.classList.add('border-gray-200', 'text-gray-600');
-      });
-      btn.classList.add('border-[#F5A5A5]', 'bg-[#FCE8E3]', 'text-gray-800');
-      btn.classList.remove('border-gray-200', 'text-gray-600');
-      document.getElementById('autoFrequencyInput').value = btn.dataset.value;
+    function parseNum(str) {
+      return parseInt(str.replace(/[^0-9]/g, '')) || 0;
     }
 
-    let autoEnabled = true;
-    function toggleAutoTransfer() {
-      autoEnabled = !autoEnabled;
-      const toggle = document.getElementById('autoTransferToggle');
-      const dot = document.getElementById('autoTransferDot');
-      const section = document.getElementById('autoTransferSection');
-      const input = document.getElementById('autoTransferEnabled');
-      toggle.className = 'relative w-14 h-7 rounded-full transition-colors ' + (autoEnabled ? 'bg-[#F5A5A5]' : 'bg-gray-300');
-      dot.style.transform = autoEnabled ? 'translateX(1.75rem)' : 'translateX(0)';
-      section.classList.toggle('hidden', !autoEnabled);
-      input.value = autoEnabled;
-    }
-
-    function formatNumber(input) {
+    function handleTargetAmount(input) {
       const raw = input.value.replace(/[^0-9]/g, '');
-      if (raw) input.value = parseInt(raw).toLocaleString();
-      else input.value = '';
+      if (raw === '') {
+        input.value = '';
+        document.getElementById('targetAmount').value = '';
+      } else {
+        input.value = parseInt(raw).toLocaleString('ko-KR');
+        document.getElementById('targetAmount').value = raw;
+      }
+      updateSummary();
+      updateGauge();
     }
+
+    function handleContrib(idx, input) {
+      const raw = input.value.replace(/[^0-9]/g, '');
+      if (raw === '') {
+        input.value = '';
+        contribs[idx] = 0;
+      } else {
+        input.value = parseInt(raw).toLocaleString('ko-KR');
+        contribs[idx] = parseInt(raw);
+      }
+      document.getElementById('contrib' + idx).value = raw;
+      updateContribDisplay();
+      updateGauge();
+    }
+
+    function updateContribDisplay() {
+      const total = contribs[0] + contribs[1];
+      document.getElementById('totalContribDisplay').textContent = '₩' + total.toLocaleString('ko-KR');
+
+      contribs.forEach((c, i) => {
+        const pct = total > 0 ? (c / total) * 100 : 0;
+        document.getElementById('pct' + i).textContent = pct.toFixed(1) + '%';
+        document.getElementById('bar' + i).style.width = pct + '%';
+      });
+    }
+
+    function updateSummary() {
+      const name = document.getElementById('goalName').value || '-';
+      const targetRaw = document.getElementById('targetAmount').value;
+      const date = document.getElementById('targetDate').value;
+
+      document.getElementById('summaryName').textContent = name;
+      document.getElementById('summaryTarget').textContent =
+        targetRaw ? '₩' + parseInt(targetRaw).toLocaleString('ko-KR') : '-';
+      document.getElementById('summaryDate').textContent = date || '-';
+    }
+
+    function updateGauge() {
+      const targetRaw = document.getElementById('targetAmount').value;
+      const dateVal = document.getElementById('targetDate').value;
+      const totalMonthly = contribs[0] + contribs[1];
+      const targetAmt = parseInt(targetRaw) || 0;
+
+      const bar = document.getElementById('progressBar');
+      const innerLabel = document.getElementById('progressLabelInner');
+      const outerLabel = document.getElementById('progressLabelOuter');
+      const msg = document.getElementById('estimatedDateMsg');
+
+      if (!targetAmt || !dateVal || totalMonthly === 0) {
+        bar.style.width = '0%';
+        innerLabel.classList.add('hidden');
+        outerLabel.classList.add('hidden');
+        msg.textContent = '목표 금액과 날짜를 설정해주세요';
+        return;
+      }
+
+      // 월 기여로 남은 금액 채우는 데 걸리는 개월 수 계산
+      const monthsNeeded = Math.ceil(targetAmt / totalMonthly);
+      const estimated = new Date();
+      estimated.setMonth(estimated.getMonth() + monthsNeeded);
+      const fmt = estimated.getFullYear() + '.' +
+        String(estimated.getMonth() + 1).padStart(2, '0') + '.' +
+        String(estimated.getDate()).padStart(2, '0');
+      msg.textContent = '지금 시작하면 ' + fmt + '에 목표 달성 가능해요!';
+
+      // 게이지: 첫 달 기여 / 목표 비율로 표시
+      const progress = Math.min((totalMonthly / targetAmt) * 100, 100);
+      bar.style.width = progress + '%';
+
+      const pctText = progress.toFixed(1) + '%';
+      if (progress > 10) {
+        innerLabel.textContent = pctText;
+        innerLabel.classList.remove('hidden');
+        outerLabel.classList.add('hidden');
+      } else if (progress > 0) {
+        outerLabel.textContent = pctText;
+        outerLabel.classList.remove('hidden');
+        innerLabel.classList.add('hidden');
+      }
+    }
+
+    function handleSubmit(e) {
+      const goalName = document.getElementById('goalName').value.trim();
+      const targetAmount = document.getElementById('targetAmount').value;
+      const targetDate = document.getElementById('targetDate').value;
+      const totalContrib = contribs[0] + contribs[1];
+
+      if (!goalName || !targetAmount || !targetDate) {
+        alert('모든 필수 항목을 입력해주세요.');
+        e.preventDefault();
+        return false;
+      }
+      if (totalContrib === 0) {
+        alert('각 참여자의 기여 금액을 입력해주세요.');
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      lucide.createIcons();
+    });
   </script>
+  <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
 </body>
 </html>

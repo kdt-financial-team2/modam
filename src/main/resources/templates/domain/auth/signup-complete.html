@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>회원가입 완료 | 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA]">
+
+  <!-- 헤더 -->
+  <header class="bg-white border-b border-gray-100 px-16 py-1 h-24 flex items-center">
+    <a th:href="@{/}" class="hover:opacity-80 transition-opacity">
+      <img th:src="@{/images/icons/logo.png}" alt="모담 로고" class="h-20 w-auto object-contain"/>
+    </a>
+  </header>
+
+  <!-- 메인 콘텐츠 -->
+  <div class="max-w-[800px] mx-auto px-8 py-12">
+
+    <!-- 스텝 인디케이터 -->
+    <div class="mb-12">
+      <div class="flex items-start justify-center">
+        <!-- Step 1: 약관동의 (완료) -->
+        <div class="flex items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-[#F5A5A5] text-white">
+              <i data-lucide="check" class="w-6 h-6"></i>
+            </div>
+            <span class="text-xs mt-2 whitespace-nowrap text-gray-500">약관동의</span>
+          </div>
+          <div class="h-1 w-24 mx-4 mt-6 bg-[#F5A5A5]"></div>
+        </div>
+        <!-- Step 2: 정보입력 (완료) -->
+        <div class="flex items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-[#F5A5A5] text-white">
+              <i data-lucide="check" class="w-6 h-6"></i>
+            </div>
+            <span class="text-xs mt-2 whitespace-nowrap text-gray-500">정보입력</span>
+          </div>
+          <div class="h-1 w-24 mx-4 mt-6 bg-[#F5A5A5]"></div>
+        </div>
+        <!-- Step 3: 계좌연결 (완료) -->
+        <div class="flex items-start">
+          <div class="flex flex-col items-center">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center bg-[#F5A5A5] text-white">
+              <i data-lucide="check" class="w-6 h-6"></i>
+            </div>
+            <span class="text-xs mt-2 whitespace-nowrap text-gray-500">계좌연결</span>
+          </div>
+          <div class="h-1 w-24 mx-4 mt-6 bg-[#F5A5A5]"></div>
+        </div>
+        <!-- Step 4: 가입완료 (현재) -->
+        <div class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center bg-[#FCE8E3] text-gray-800 ring-4 ring-[#FCE8E3]/30">
+            <span class="text-lg">4</span>
+          </div>
+          <span class="text-xs mt-2 whitespace-nowrap text-gray-800 font-semibold">가입완료</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 스텝 콘텐츠 -->
+    <div class="bg-white rounded-3xl shadow-sm p-10 text-center py-16">
+      <div class="w-24 h-24 bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-full flex items-center justify-center mx-auto mb-6">
+        <i data-lucide="sparkles" class="w-12 h-12 text-[#F5A5A5]"></i>
+      </div>
+
+      <h2 class="text-4xl text-gray-800 mb-4">회원가입이 완료되었습니다!</h2>
+      <p class="text-xl text-gray-600 mb-8">이제 모담과 함께 따뜻한 자산 관리를 시작해보세요</p>
+
+      <div class="bg-[#FCE8E3] rounded-2xl p-8 mb-8 text-left">
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <i data-lucide="check" class="w-6 h-6 text-[#F5A5A5]"></i>
+            <span class="text-gray-800">공동 예산 관리</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <i data-lucide="check" class="w-6 h-6 text-[#F5A5A5]"></i>
+            <span class="text-gray-800">실시간 지출 추적</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <i data-lucide="check" class="w-6 h-6 text-[#F5A5A5]"></i>
+            <span class="text-gray-800">목표 저축 달성</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <i data-lucide="check" class="w-6 h-6 text-[#F5A5A5]"></i>
+            <span class="text-gray-800">커플 포인트 적립</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 모임통장 개설 여부 선택 -->
+      <div class="mb-6">
+        <p class="text-lg text-gray-700 mb-4">모임통장을 지금 바로 개설하시겠어요?</p>
+        <div class="grid grid-cols-2 gap-4">
+          <a th:href="@{/group-account/new}"
+             class="flex flex-col items-center gap-2 py-5 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors shadow-lg">
+            <i data-lucide="heart" class="w-7 h-7"></i>
+            <span class="text-lg">지금 개설하기</span>
+          </a>
+          <a th:href="@{/login}"
+             class="flex flex-col items-center gap-2 py-5 bg-gray-100 text-gray-600 rounded-2xl hover:bg-gray-200 transition-colors">
+            <i data-lucide="clock" class="w-7 h-7"></i>
+            <span class="text-lg">나중에 할게요</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 푸터 -->
+  <footer class="mt-12 py-6 border-t border-gray-200 text-center text-gray-500 text-sm">
+    © 2026 Modam. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

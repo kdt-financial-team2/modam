@@ -13,6 +13,7 @@ public class SignupForm implements Serializable {
     private boolean agreePrivacy;
     private boolean agreeFinance;
     private boolean agreeMarketing;
+    private boolean agreeThirdParty;
 
     // Step 2 - 개인 정보
     private String userId;

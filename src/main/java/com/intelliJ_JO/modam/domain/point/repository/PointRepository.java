@@ -4,6 +4,7 @@ import com.intelliJ_JO.modam.domain.point.entity.PointHistory;
 import com.intelliJ_JO.modam.domain.point.entity.PointReason;
 import com.intelliJ_JO.modam.domain.point.entity.PointType;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -136,4 +137,9 @@ public interface PointRepository extends JpaRepository<PointHistory, Long> {
     // =========================================
     List<PointHistory>
     findByDescripContaining(String keyword);
+
+    // =========================================
+    // 회원별 포인트 전체 내역 페이지 조회 (포인트 상점 내역 탭)
+    // =========================================
+    Page<PointHistory> findByMemberIdOrderByCreatedAtDesc(Long memberId, Pageable pageable);
 }

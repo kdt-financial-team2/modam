@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>상품 상세 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{common/layout/header :: nav}"></th:block>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1">
+    <div class="max-w-[1200px] mx-auto px-8 py-8">
+
+      <!-- 뒤로 가기 -->
+      <a th:href="@{/point-shop}" href="/point-shop"
+         class="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-8 w-fit">
+        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        <span>상점으로 돌아가기</span>
+      </a>
+
+      <!-- 상품 상세 2단 레이아웃 -->
+      <div class="grid grid-cols-2 gap-12">
+
+        <!-- 왼쪽: 상품 이미지 -->
+        <div class="bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-3xl shadow-lg flex items-center justify-center aspect-square">
+          <div class="text-[12rem] leading-none select-none"
+               th:text="${product.image}" id="productImage">🌸</div>
+        </div>
+
+        <!-- 오른쪽: 상품 정보 -->
+        <div class="flex flex-col justify-center">
+
+          <!-- 이름 & 가격 & 설명 -->
+          <div class="mb-8">
+            <h1 class="text-4xl text-gray-800 mb-4"
+                th:text="${product.name}" id="productName">봄날의 벚꽃 핑크</h1>
+            <p class="text-5xl text-[#F5A5A5] mb-6">
+              <span th:text="${#numbers.formatInteger(product.price, 0, 'COMMA')}"
+                    id="productPrice">1,500</span>P
+            </p>
+            <p class="text-gray-600 text-lg leading-relaxed"
+               th:text="${product.description}" id="productDesc">
+              따뜻한 봄날의 벚꽃을 담은 핑크 테마입니다. 부드럽고 로맨틱한 분위기를 연출하며,
+              사랑스러운 감성으로 앱을 꾸밀 수 있습니다.
+            </p>
+          </div>
+
+          <!-- 상품 정보 카드 -->
+          <div class="bg-white rounded-3xl shadow-sm p-6 mb-8">
+            <h2 class="text-lg text-gray-800 mb-4">상품 정보</h2>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">카테고리</span>
+                <span class="text-gray-800"
+                      th:text="${product.category == 'theme'} ? '테마' : (${product.category == 'emoticon'} ? '이모티콘' : '기프트 카드')"
+                      id="productCategory">테마</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">유효기간</span>
+                <span class="text-gray-800">구매일로부터 30일</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">사용 가능 여부</span>
+                <span class="text-green-600">즉시 사용 가능</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 포인트 요약 카드 -->
+          <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-3xl p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-gray-700">내 포인트</span>
+              <span class="text-2xl text-gray-800">
+                <span th:text="${#numbers.formatInteger(userPoints, 0, 'COMMA')}"
+                      id="myPoints">12,450</span>P
+              </span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-700">구매 후 잔액</span>
+              <span class="text-2xl text-[#F5A5A5]">
+                <span th:text="${#numbers.formatInteger(userPoints - product.price, 0, 'COMMA')}"
+                      id="afterPoints">10,950</span>P
+              </span>
+            </div>
+          </div>
+
+          <!-- 구매 버튼 -->
+          <!-- 포인트 충분 -->
+          <a th:if="${userPoints >= product.price}"
+             th:href="@{/point-shop/purchase/{id}(id=${product.id})}"
+             href="/point-shop/purchase/1"
+             id="purchaseBtn"
+             class="w-full py-4 rounded-2xl text-lg transition-all flex items-center justify-center gap-2 bg-[#F5A5A5] text-white hover:bg-[#F28B8B] shadow-md">
+            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+            <span>구매하기</span>
+          </a>
+          <!-- 포인트 부족 -->
+          <button th:unless="${userPoints >= product.price}"
+                  id="purchaseBtnDisabled"
+                  disabled
+                  class="w-full py-4 rounded-2xl text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center gap-2">
+            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+            <span>포인트가 부족합니다</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+  <script th:inline="javascript">
+    const serverProduct = /*[[${product}]]*/ null;
+    const serverPoints  = /*[[${userPoints}]]*/ 12450;
+
+    const defaultProducts = {
+      1:  { id:1,  name:'봄날의 벚꽃 핑크',    price:1500, category:'theme',    image:'🌸', description:'따뜻한 봄날의 벚꽃을 담은 핑크 테마입니다. 부드럽고 로맨틱한 분위기를 연출하며, 사랑스러운 감성으로 앱을 꾸밀 수 있습니다.' },
+      2:  { id:2,  name:'잔소리쟁이 멍멍이',    price:800,  category:'emoticon', image:'🐶', description:'귀엽지만 때로는 잔소리도 하는 멍멍이 이모티콘 팩입니다. 다양한 상황에서 사용할 수 있는 40개의 이모티콘이 포함되어 있습니다.' },
+      3:  { id:3,  name:'다크 모드 감성',       price:2000, category:'theme',    image:'🌙', description:'세련된 다크 모드 테마로 눈의 피로를 줄이고 고급스러운 분위기를 연출합니다. 야간 사용에 최적화된 디자인입니다.' },
+      4:  { id:4,  name:'월급날 기분 최고',     price:500,  category:'emoticon', image:'💰', description:'월급날의 기쁨을 표현하는 재미있는 이모티콘 팩입니다. 돈과 관련된 다양한 감정을 표현할 수 있습니다.' },
+      5:  { id:5,  name:'귀요미 토끼 세트',     price:600,  category:'emoticon', image:'🐰', description:'깜찍하고 사랑스러운 토끼 캐릭터 이모티콘입니다. 일상 대화에서 감정을 귀엽게 표현할 수 있습니다.' },
+      6:  { id:6,  name:'시원한 민트 브리즈',   price:1800, category:'theme',    image:'🍃', description:'상쾌한 민트 컬러로 싱그러운 분위기를 연출합니다. 깨끗하고 시원한 느낌의 테마를 원하신다면 추천합니다.' },
+      7:  { id:7,  name:'행복한 곰돌이 친구들', price:700,  category:'emoticon', image:'🐻', description:'귀여운 곰돌이와 친구들의 이모티콘 세트입니다. 따뜻하고 행복한 감정을 전달하기 좋습니다.' },
+      8:  { id:8,  name:'커플 사랑 표현 팩',    price:900,  category:'emoticon', image:'💕', description:'커플들을 위한 특별한 사랑 표현 이모티콘입니다. 애정을 전달하고 싶을 때 사용하기 좋습니다.' },
+      9:  { id:9,  name:'오션 블루 테마',       price:1200, category:'theme',    image:'🌊', description:'시원한 바다를 연상시키는 블루 테마입니다. 차분하고 깔끔한 느낌으로 집중력을 높여줍니다.' },
+      10: { id:10, name:'선셋 오렌지 테마',     price:1800, category:'theme',    image:'🌅', description:'따뜻한 일몰을 담은 오렌지 테마입니다. 활기차고 따뜻한 느낌으로 하루를 마무리하기 좋습니다.' },
+    };
+
+    // URL에서 productId 파싱 (/point-shop/product/3 → 3)
+    function getProductIdFromUrl() {
+      const parts = window.location.pathname.split('/');
+      const idx   = parts.indexOf('product');
+      return idx !== -1 ? parseInt(parts[idx + 1]) || 1 : 1;
+    }
+
+    function categoryLabel(cat) {
+      return cat === 'theme' ? '테마' : cat === 'emoticon' ? '이모티콘' : '기프트 카드';
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      // 서버 데이터 없으면 URL 기반으로 기본 상품 표시
+      if (serverProduct === null) {
+        const id  = getProductIdFromUrl();
+        const p   = defaultProducts[id] || defaultProducts[1];
+        const pts = serverPoints;
+
+        document.getElementById('productImage').textContent    = p.image;
+        document.getElementById('productName').textContent     = p.name;
+        document.getElementById('productPrice').textContent    = p.price.toLocaleString();
+        document.getElementById('productDesc').textContent     = p.description;
+        document.getElementById('productCategory').textContent = categoryLabel(p.category);
+        document.getElementById('myPoints').textContent        = pts.toLocaleString();
+        document.getElementById('afterPoints').textContent     = (pts - p.price).toLocaleString();
+
+        // 구매 버튼 링크 및 활성화 상태 설정
+        const purchaseBtn         = document.getElementById('purchaseBtn');
+        const purchaseBtnDisabled = document.getElementById('purchaseBtnDisabled');
+
+        if (pts >= p.price) {
+          if (purchaseBtn) {
+            purchaseBtn.href = `/point-shop/purchase/${p.id}`;
+            purchaseBtn.classList.remove('hidden');
+          }
+          if (purchaseBtnDisabled) purchaseBtnDisabled.classList.add('hidden');
+        } else {
+          if (purchaseBtn) purchaseBtn.classList.add('hidden');
+          if (purchaseBtnDisabled) purchaseBtnDisabled.classList.remove('hidden');
+        }
+      }
+
+      lucide.createIcons();
+    });
+  </script>
+  <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+</body>
+</html>

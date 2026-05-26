@@ -1,7 +1,7 @@
 package com.intelliJ_JO.modam.domain.comment.entity;
 
 import com.intelliJ_JO.modam.domain.member.entity.Member;
-import com.intelliJ_JO.modam.domain.spend.entity.SpendRecord;
+import com.intelliJ_JO.modam.domain.spendrecord.entity.SpendRecord;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

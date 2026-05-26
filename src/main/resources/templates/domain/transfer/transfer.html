@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>간편 이체 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{common/layout/header :: nav}"></th:block>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1">
+    <div class="max-w-[800px] mx-auto px-8 py-12">
+
+      <div class="mb-8">
+        <h1 class="text-3xl text-gray-800">간편 이체</h1>
+        <p class="text-gray-600 mt-2">빠르고 안전하게 송금하세요</p>
+      </div>
+
+      <!-- 이체 폼 카드 -->
+      <form th:action="@{/transfer}" method="post" onsubmit="handleTransfer(event)">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" id="amountHidden" name="amount"/>
+
+        <div class="bg-white rounded-3xl shadow-sm p-10">
+          <div class="space-y-6">
+
+            <!-- 은행 선택 -->
+            <div>
+              <label class="block text-gray-800 mb-2 text-lg">은행</label>
+              <select name="bankName" id="bankSelect" onchange="checkForm()"
+                      class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800">
+                <option value="">은행을 선택하세요</option>
+                <option value="국민은행">국민은행</option>
+                <option value="신한은행">신한은행</option>
+                <option value="우리은행">우리은행</option>
+                <option value="하나은행">하나은행</option>
+                <option value="농협은행">농협은행</option>
+                <option value="카카오뱅크">카카오뱅크</option>
+                <option value="토스뱅크">토스뱅크</option>
+              </select>
+            </div>
+
+            <!-- 계좌번호 -->
+            <div>
+              <label class="block text-gray-800 mb-2 text-lg">계좌번호</label>
+              <input type="text" id="accountNumber" name="accountNumber"
+                     oninput="checkForm()"
+                     class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800"
+                     placeholder="계좌번호를 입력하세요 (- 제외)" />
+            </div>
+
+            <!-- 금액 -->
+            <div>
+              <label class="block text-gray-800 mb-2 text-lg">금액</label>
+              <div class="relative">
+                <input type="text" id="amountDisplay"
+                       oninput="handleAmountInput(this)"
+                       class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800"
+                       placeholder="송금할 금액을 입력하세요" />
+                <span class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600">원</span>
+              </div>
+              <p id="amountFormatted" class="text-sm text-gray-500 mt-2 hidden"></p>
+            </div>
+
+            <!-- 빠른 금액 버튼 -->
+            <div class="grid grid-cols-4 gap-3">
+              <button type="button" onclick="addAmount(10000)"
+                      class="py-3 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors">
+                +1만
+              </button>
+              <button type="button" onclick="addAmount(30000)"
+                      class="py-3 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors">
+                +3만
+              </button>
+              <button type="button" onclick="addAmount(50000)"
+                      class="py-3 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors">
+                +5만
+              </button>
+              <button type="button" onclick="addAmount(100000)"
+                      class="py-3 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors">
+                +10만
+              </button>
+            </div>
+
+            <!-- 안내 -->
+            <div class="bg-[#FCE8E3] rounded-2xl p-5">
+              <p class="text-sm text-gray-700">
+                💡 1일 이체 한도는 500만원입니다. 이체 후 취소가 불가능하니 신중하게 확인해주세요.
+              </p>
+            </div>
+          </div>
+
+          <!-- 송금 버튼 -->
+          <button type="submit" id="transferBtn" disabled
+                  class="w-full py-4 rounded-2xl mt-8 transition-all bg-gray-200 text-gray-400 cursor-not-allowed">
+            송금하기
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </main>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+  <script>
+    lucide.createIcons();
+
+    /* ---- 드롭다운 / 모달 ---- */  </script>
+  <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+</body>
+</html>
