@@ -11,11 +11,14 @@ public class AccountViewController {
 
     @GetMapping("/group-account/new")
     public String groupAccountNew(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        // 로그인된 사용자의 이름과 전화번호를 폼에 pre-fill
-        if (userDetails != null) {
-            model.addAttribute("userName", userDetails.getMember().getName());
+        // 비로그인 사용자는 로그인 페이지로 리다이렉트
+        if (userDetails == null) {
+            return "redirect:/auth/login";
+        }
 
-            // 전화번호를 010-XXXX-XXXX 형식으로 변환해서 전달
+        // 로그인된 사용자 정보를 본인 정보 확인 화면에 pre-fill
+        if (userDetails != null) {
+            // 휴대폰 번호 (010-XXXX-XXXX 형식)
             String rawPhone = userDetails.getMember().getPhoneNo();
             if (rawPhone != null) {
                 String digits = rawPhone.replaceAll("\\D", "");
@@ -27,6 +30,16 @@ public class AccountViewController {
                 }
                 model.addAttribute("userPhone", formatted);
             }
+
+            // 이메일
+            model.addAttribute("userEmail", userDetails.getMember().getEmail());
+
+            // 주소 (기본주소 + 상세주소)
+            String address = userDetails.getMember().getAddress();
+            String detail  = userDetails.getMember().getAddressDetail();
+            String full    = address != null ? address : "";
+            if (detail != null && !detail.isBlank()) full = full + " " + detail;
+            model.addAttribute("userAddress", full);
         }
         return "domain/account/group-account-new";
     }
