@@ -29,4 +29,8 @@ public class TransactionRequestDto {
 
     private String merchantName; // 가맹점명 (결제 시)
     private String category;     // 카테고리 (식비, 교통 등)
+
+    // [추가] 계좌 비밀번호
+    @jakarta.validation.constraints.NotBlank(message = "계좌 비밀번호는 필수입니다.")
+    private String accountPassword;
 }
