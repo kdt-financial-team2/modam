@@ -76,6 +76,23 @@ public class Account {
     @Column(name = "fund_src", length = 100)
     private String fundSource;
 
+    // 계좌 애칭 (NULL 허용)
+    @Column(name = "acct_alias", length = 30)
+    private String acctAlias;
+
+    // 공동 계좌 약관 동의 (개인 계좌는 NULL 허용)
+    @Column(name = "agree_service")
+    private Boolean agreeService;       // [필수] 모담 서비스 이용약관
+
+    @Column(name = "agree_finance")
+    private Boolean agreeFinance;       // [필수] 전자금융거래 이용약관
+
+    @Column(name = "agree_privacy")
+    private Boolean agreePrivacy;       // [필수] 개인정보 수집·이용 동의
+
+    @Column(name = "agree_marketing")
+    private Boolean agreeMarketing;     // [선택] 마케팅 정보 수신 동의
+
     // 생성 일시
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)

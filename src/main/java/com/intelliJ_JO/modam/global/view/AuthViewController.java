@@ -18,7 +18,7 @@ public class AuthViewController {
     private final MemberService memberService;
     private static final String SESSION_SIGNUP = "signupForm";
 
-    @GetMapping("/login")
+    @GetMapping("/auth/login")
     public String login(HttpSession session, Model model) {
         String loginError = (String) session.getAttribute("loginError");
         if (loginError != null) {

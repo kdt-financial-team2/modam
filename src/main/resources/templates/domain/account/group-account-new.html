@@ -9,189 +9,159 @@
 </head>
 <body class="min-h-screen bg-[#FCE8E3] flex flex-col">
 
-  <!-- ===== 헤더 ===== -->
-  <nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
-    <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
-      <a th:href="@{/}" href="/" class="hover:opacity-80 transition-opacity">
-        <img th:src="@{/images/icons/logo.png}" alt="모담 로고" class="h-20 w-auto object-contain"/>
-      </a>
-      <span class="text-sm text-gray-500">공동 계좌 개설</span>
+<nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
+  <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+    <a th:href="@{/}" href="/" class="hover:opacity-80 transition-opacity">
+      <img th:src="@{/images/icons/logo.png}" alt="모담 로고" class="h-20 w-auto object-contain"/>
+    </a>
+    <span class="text-sm text-gray-500">공동 계좌 개설</span>
+  </div>
+</nav>
+
+<div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
+  <div class="w-full max-w-2xl">
+
+    <div class="flex items-center justify-center mb-12">
+
+      <div class="flex flex-col items-center">
+        <div id="stepCircle1" class="w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-[#F5A5A5] text-white">
+          <span id="stepIcon1">1</span>
+        </div>
+        <span id="stepLabel1" class="text-xs mt-2 whitespace-nowrap font-semibold text-gray-700">약관 동의</span>
+      </div>
+
+      <div id="line1" class="h-1 w-16 mx-3 mb-6 rounded bg-gray-300 transition-all"></div>
+
+      <div class="flex flex-col items-center">
+        <div id="stepCircle2" class="w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-white text-gray-400">
+          <span id="stepIcon2">2</span>
+        </div>
+        <span id="stepLabel2" class="text-xs mt-2 whitespace-nowrap text-gray-400">본인 인증</span>
+      </div>
+
+      <div id="line2" class="h-1 w-16 mx-3 mb-6 rounded bg-gray-300 transition-all"></div>
+
+      <div class="flex flex-col items-center">
+        <div id="stepCircle3" class="w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-white text-gray-400">
+          <span id="stepIcon3">3</span>
+        </div>
+        <span id="stepLabel3" class="text-xs mt-2 whitespace-nowrap text-gray-400">계좌 설정</span>
+      </div>
+
+      <div id="line3" class="h-1 w-16 mx-3 mb-6 rounded bg-gray-300 transition-all"></div>
+
+      <div class="flex flex-col items-center">
+        <div id="stepCircle4" class="w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-white text-gray-400">
+          <span id="stepIcon4">4</span>
+        </div>
+        <span id="stepLabel4" class="text-xs mt-2 whitespace-nowrap text-gray-400">개설 완료</span>
+      </div>
+
     </div>
-  </nav>
 
-  <!-- ===== 메인 콘텐츠 ===== -->
-  <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
-    <div class="w-full max-w-2xl">
-
-      <!-- 스텝 인디케이터 -->
-      <div class="flex items-center justify-center mb-12">
-
-        <!-- Step 1 -->
-        <div class="flex flex-col items-center">
-          <div id="stepCircle1" class="w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-[#F5A5A5] text-white">
-            <span id="stepIcon1">1</span>
-          </div>
-          <span id="stepLabel1" class="text-xs mt-2 whitespace-nowrap font-semibold text-gray-700">약관 동의</span>
-        </div>
-
-        <div id="line1" class="h-1 w-16 mx-3 mb-6 rounded bg-gray-300 transition-all"></div>
-
-        <!-- Step 2 -->
-        <div class="flex flex-col items-center">
-          <div id="stepCircle2" class="w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-white text-gray-400">
-            <span id="stepIcon2">2</span>
-          </div>
-          <span id="stepLabel2" class="text-xs mt-2 whitespace-nowrap text-gray-400">본인 인증</span>
-        </div>
-
-        <div id="line2" class="h-1 w-16 mx-3 mb-6 rounded bg-gray-300 transition-all"></div>
-
-        <!-- Step 3 -->
-        <div class="flex flex-col items-center">
-          <div id="stepCircle3" class="w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-white text-gray-400">
-            <span id="stepIcon3">3</span>
-          </div>
-          <span id="stepLabel3" class="text-xs mt-2 whitespace-nowrap text-gray-400">계좌 설정</span>
-        </div>
-
-        <div id="line3" class="h-1 w-16 mx-3 mb-6 rounded bg-gray-300 transition-all"></div>
-
-        <!-- Step 4 -->
-        <div class="flex flex-col items-center">
-          <div id="stepCircle4" class="w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-white text-gray-400">
-            <span id="stepIcon4">4</span>
-          </div>
-          <span id="stepLabel4" class="text-xs mt-2 whitespace-nowrap text-gray-400">개설 완료</span>
-        </div>
-
+    <div id="step1">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl text-gray-800 mb-2">서비스 약관 동의</h1>
+        <p class="text-gray-600">모담 공동 계좌 개설을 위한 약관에 동의해 주세요</p>
       </div>
 
-      <!-- ===== Step 1: 약관 동의 ===== -->
-      <div id="step1">
-        <div class="text-center mb-8">
-          <h1 class="text-3xl text-gray-800 mb-2">서비스 약관 동의</h1>
-          <p class="text-gray-600">모담 공동 계좌 개설을 위한 약관에 동의해 주세요</p>
-        </div>
+      <div class="bg-white rounded-3xl shadow-lg p-8">
 
-        <div class="bg-white rounded-3xl shadow-lg p-8">
-
-          <!-- 전체 동의 -->
-          <label class="flex items-center gap-4 p-5 bg-[#FCE8E3] rounded-2xl cursor-pointer mb-6"
-                 onclick="toggleAll()">
-            <div id="allCheck"
-                 class="w-6 h-6 rounded-full border-2 border-[#F5A5A5] flex items-center justify-center flex-shrink-0 transition-all">
-            </div>
-            <span class="text-lg font-bold text-gray-800">전체 동의</span>
-          </label>
-
-          <div class="space-y-3">
-
-            <!-- 약관 1 -->
-            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-2xl">
-              <label class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTerm(1)">
-                <div id="term1"
-                     class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
-                </div>
-                <span class="text-gray-700 text-sm">[필수] 모담 서비스 이용약관</span>
-              </label>
-              <button onclick="openTermModal('모담 서비스 이용약관')"
-                      class="text-xs text-gray-400 hover:text-[#F5A5A5] transition-colors ml-4 flex-shrink-0">
-                보기
-              </button>
-            </div>
-
-            <!-- 약관 2 -->
-            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-2xl">
-              <label class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTerm(2)">
-                <div id="term2"
-                     class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
-                </div>
-                <span class="text-gray-700 text-sm">[필수] 전자금융거래 이용약관</span>
-              </label>
-              <button onclick="openTermModal('전자금융거래 이용약관')"
-                      class="text-xs text-gray-400 hover:text-[#F5A5A5] transition-colors ml-4 flex-shrink-0">
-                보기
-              </button>
-            </div>
-
-            <!-- 약관 3 -->
-            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-2xl">
-              <label class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTerm(3)">
-                <div id="term3"
-                     class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
-                </div>
-                <span class="text-gray-700 text-sm">[필수] 개인정보 수집·이용 동의</span>
-              </label>
-              <button onclick="openTermModal('개인정보 수집·이용 동의')"
-                      class="text-xs text-gray-400 hover:text-[#F5A5A5] transition-colors ml-4 flex-shrink-0">
-                보기
-              </button>
-            </div>
-
-            <!-- 약관 4 (선택) -->
-            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-2xl">
-              <label class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTerm(4)">
-                <div id="term4"
-                     class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
-                </div>
-                <span class="text-gray-700 text-sm">[선택] 마케팅 정보 수신 동의</span>
-              </label>
-              <button onclick="openTermModal('마케팅 정보 수신 동의')"
-                      class="text-xs text-gray-400 hover:text-[#F5A5A5] transition-colors ml-4 flex-shrink-0">
-                보기
-              </button>
-            </div>
-
+        <label class="flex items-center gap-4 p-5 bg-[#FCE8E3] rounded-2xl cursor-pointer mb-6"
+               onclick="toggleAll()">
+          <div id="allCheck"
+               class="w-6 h-6 rounded-full border-2 border-[#F5A5A5] flex items-center justify-center flex-shrink-0 transition-all">
           </div>
+          <span class="text-lg font-bold text-gray-800">전체 동의</span>
+        </label>
 
-          <button id="step1Btn" onclick="goStep(2)"
-                  disabled
-                  class="w-full mt-8 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed">
-            동의하고 계속
-          </button>
-        </div>
-      </div>
+        <div class="space-y-3">
 
-      <!-- ===== Step 2: 본인 인증 ===== -->
-      <div id="step2" class="hidden">
-        <div class="text-center mb-8">
-          <h1 class="text-3xl text-gray-800 mb-2">본인 인증</h1>
-          <p class="text-gray-600">계좌 개설을 위해 본인 확인이 필요해요</p>
-        </div>
-
-        <div class="bg-white rounded-3xl shadow-lg p-8">
-
-          <div class="space-y-5 mb-8">
-
-            <!-- 이름 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">이름</label>
-              <input type="text" id="userName" th:value="${userName}" placeholder="홍길동"
-                     oninput="checkStep2()"
-                     class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800 placeholder:text-gray-400"/>
-            </div>
-
-            <!-- 주민등록번호 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">주민등록번호</label>
-              <div class="flex items-center gap-3">
-                <input type="text" id="idFront" maxlength="6" placeholder="앞 6자리"
-                       oninput="formatIdFront(this)"
-                       class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-center tracking-widest"/>
-                <span class="text-gray-400 font-bold">-</span>
-                <div class="flex-1 relative">
-                  <input type="password" id="idBack" maxlength="7" placeholder="뒤 7자리"
-                         oninput="formatIdBack(this)"
-                         class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-center tracking-widest"/>
-                </div>
+          <div class="flex items-center justify-between p-4 border border-gray-200 rounded-2xl">
+            <label class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTerm(1)">
+              <div id="term1"
+                   class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
               </div>
-            </div>
+              <span class="text-gray-700 text-sm">[필수] 모담 서비스 이용약관</span>
+            </label>
+            <button onclick="openTermModal('모담 서비스 이용약관')"
+                    class="text-xs text-gray-400 hover:text-[#F5A5A5] transition-colors ml-4 flex-shrink-0">
+              보기
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between p-4 border border-gray-200 rounded-2xl">
+            <label class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTerm(2)">
+              <div id="term2"
+                   class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
+              </div>
+              <span class="text-gray-700 text-sm">[필수] 전자금융거래 이용약관</span>
+            </label>
+            <button onclick="openTermModal('전자금융거래 이용약관')"
+                    class="text-xs text-gray-400 hover:text-[#F5A5A5] transition-colors ml-4 flex-shrink-0">
+              보기
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between p-4 border border-gray-200 rounded-2xl">
+            <label class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTerm(3)">
+              <div id="term3"
+                   class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
+              </div>
+              <span class="text-gray-700 text-sm">[필수] 개인정보 수집·이용 동의</span>
+            </label>
+            <button onclick="openTermModal('개인정보 수집·이용 동의')"
+                    class="text-xs text-gray-400 hover:text-[#F5A5A5] transition-colors ml-4 flex-shrink-0">
+              보기
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between p-4 border border-gray-200 rounded-2xl">
+            <label class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTerm(4)">
+              <div id="term4"
+                   class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
+              </div>
+              <span class="text-gray-700 text-sm">[선택] 마케팅 정보 수신 동의</span>
+            </label>
+            <button onclick="openTermModal('마케팅 정보 수신 동의')"
+                    class="text-xs text-gray-400 hover:text-[#F5A5A5] transition-colors ml-4 flex-shrink-0">
+              보기
+            </button>
+          </div>
+
+        </div>
+
+        <button id="step1Btn" onclick="goStep(2)"
+                disabled
+                class="w-full mt-8 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed">
+          동의하고 계속
+        </button>
+      </div>
+
+      <div class="text-center mt-6">
+        <button type="button" onclick="openInviteModal()" class="text-gray-500 hover:text-gray-800 underline decoration-gray-300 underline-offset-4 transition-colors">
+          혹시 초대를 받아서 오셨나요? 초대 코드 입력하기
+        </button>
+      </div>
+
+    </div>
+
+    <div id="step2" class="hidden">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl text-gray-800 mb-2">본인 인증</h1>
+        <p class="text-gray-600">계좌 개설을 위해 본인 확인이 필요해요</p>
+      </div>
+
+      <div class="bg-white rounded-3xl shadow-lg p-8">
+
+        <div class="space-y-5 mb-8">
 
             <!-- 휴대폰 번호 -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">휴대폰 번호</label>
               <div class="flex gap-3">
                 <input type="tel" id="phoneNum" placeholder="010-0000-0000" maxlength="13"
+                       th:value="${userPhone}"
                        oninput="formatPhone(this)"
                        class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors"/>
                 <button id="sendCodeBtn" onclick="sendVerificationCode()"
@@ -201,149 +171,171 @@
               </div>
             </div>
 
-            <!-- 인증번호 입력 (발송 후 표시) -->
-            <div id="codeSection" class="hidden">
-              <label class="block text-sm font-medium text-gray-700 mb-2">인증번호</label>
-              <div class="flex gap-3">
-                <div class="relative flex-1">
-                  <input type="text" id="verifyCode" maxlength="6" placeholder="6자리 입력"
-                         oninput="checkStep2()"
-                         class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors tracking-widest"/>
-                  <span id="codeTimer" class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#F5A5A5] font-medium">3:00</span>
-                </div>
-                <button onclick="verifyCode()"
-                        class="px-6 py-4 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors font-medium">
-                  확인
-                </button>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">주민등록번호</label>
+            <div class="flex items-center gap-3">
+              <input type="text" id="idFront" maxlength="6" placeholder="앞 6자리"
+                     oninput="formatIdFront(this)"
+                     class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-center tracking-widest"/>
+              <span class="text-gray-400 font-bold">-</span>
+              <div class="flex-1 relative">
+                <input type="password" id="idBack" maxlength="7" placeholder="뒤 7자리"
+                       oninput="formatIdBack(this)"
+                       class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-center tracking-widest"/>
               </div>
-              <p id="codeMsg" class="text-xs text-gray-400 mt-2">인증번호가 발송됐어요. 3분 안에 입력해 주세요.</p>
-            </div>
-
-          </div>
-
-          <div class="bg-[#FCE8E3] rounded-2xl p-4 mb-6">
-            <div class="flex items-start gap-3">
-              <i data-lucide="shield-check" class="w-5 h-5 text-[#F5A5A5] flex-shrink-0 mt-0.5"></i>
-              <p class="text-sm text-gray-700 leading-relaxed">
-                입력하신 정보는 본인 확인 목적으로만 사용되며, 금융결제원 시스템을 통해 안전하게 처리됩니다.
-              </p>
             </div>
           </div>
 
-          <div class="flex gap-3">
-            <button onclick="goStep(1)"
-                    class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors font-medium">
-              이전
-            </button>
-            <button id="step2Btn" onclick="goStep(3)"
-                    disabled
-                    class="flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed">
-              다음
-            </button>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">휴대폰 번호</label>
+            <div class="flex gap-3">
+              <input type="tel" id="phoneNum" placeholder="010-0000-0000" maxlength="13"
+                     oninput="formatPhone(this)"
+                     class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors"/>
+              <button id="sendCodeBtn" onclick="sendVerificationCode()"
+                      class="px-6 py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors font-medium whitespace-nowrap">
+                인증번호 발송
+              </button>
+            </div>
           </div>
+
+          <div id="codeSection" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-2">인증번호</label>
+            <div class="flex gap-3">
+              <div class="relative flex-1">
+                <input type="text" id="verifyCode" maxlength="6" placeholder="6자리 입력"
+                       oninput="checkStep2()"
+                       class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors tracking-widest"/>
+                <span id="codeTimer" class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#F5A5A5] font-medium">3:00</span>
+              </div>
+              <button onclick="verifyCode()"
+                      class="px-6 py-4 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors font-medium">
+                확인
+              </button>
+            </div>
+            <p id="codeMsg" class="text-xs text-gray-400 mt-2">인증번호가 발송됐어요. 3분 안에 입력해 주세요.</p>
+          </div>
+
+        </div>
+
+        <div class="bg-[#FCE8E3] rounded-2xl p-4 mb-6">
+          <div class="flex items-start gap-3">
+            <i data-lucide="shield-check" class="w-5 h-5 text-[#F5A5A5] flex-shrink-0 mt-0.5"></i>
+            <p class="text-sm text-gray-700 leading-relaxed">
+              입력하신 정보는 본인 확인 목적으로만 사용되며, 금융결제원 시스템을 통해 안전하게 처리됩니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="goStep(1)"
+                  class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors font-medium">
+            이전
+          </button>
+          <button id="step2Btn" onclick="goStep(3)"
+                  disabled
+                  class="flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed">
+            다음
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- ===== Step 3: 계좌 설정 ===== -->
-      <div id="step3" class="hidden">
-        <div class="text-center mb-8">
-          <h1 class="text-3xl text-gray-800 mb-2">계좌 설정</h1>
-          <p class="text-gray-600">두 분만의 공동 계좌를 꾸며보세요</p>
-        </div>
-
-        <div class="bg-white rounded-3xl shadow-lg p-8">
-
-          <div class="space-y-6 mb-8">
-
-            <!-- 계좌 애칭 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">계좌 애칭</label>
-              <input type="text" id="acctAlias" maxlength="20"
-                     th:value="${coupleAcctAlias}"
-                     placeholder="우리만의 계좌 이름을 정해보세요"
-                     oninput="checkStep3()"
-                     class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors placeholder:text-gray-400"/>
-              <div class="flex gap-2 mt-3 flex-wrap">
-                <button type="button" onclick="setAlias('우리의 여행통장')"
-                        class="text-xs px-3 py-1.5 bg-[#FCE8E3] text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
-                  우리의 여행통장
-                </button>
-                <button type="button" onclick="setAlias('데이트 통장')"
-                        class="text-xs px-3 py-1.5 bg-[#FCE8E3] text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
-                  데이트 통장
-                </button>
-                <button type="button" onclick="setAlias('모담 커플통장')"
-                        class="text-xs px-3 py-1.5 bg-[#FCE8E3] text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
-                  모담 커플통장
-                </button>
-                <button type="button" onclick="setAlias('우리 비상금')"
-                        class="text-xs px-3 py-1.5 bg-[#FCE8E3] text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
-                  우리 비상금
-                </button>
-              </div>
-            </div>
-
-            <!-- 초기 입금액 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                초기 입금액 <span class="text-gray-400 font-normal">(선택)</span>
-              </label>
-              <div class="relative">
-                <input type="text" id="initialDeposit"
-                       placeholder="0"
-                       oninput="formatDeposit(this)"
-                       class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors pr-12"/>
-                <span class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 font-medium">원</span>
-              </div>
-              <p class="text-xs text-gray-400 mt-2">계좌 개설 시 연결 계좌에서 이체됩니다. 입력하지 않으면 0원으로 시작해요.</p>
-            </div>
-
-            <!-- 비밀번호 설정 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">계좌 비밀번호 (4자리)</label>
-              <div class="flex gap-3 justify-center">
-                <input type="password" maxlength="1" inputmode="numeric"
-                       class="pin-input w-14 h-14 border-2 border-gray-200 rounded-2xl text-center text-2xl font-bold focus:border-[#F5A5A5] focus:outline-none transition-colors"
-                       oninput="movePinFocus(this, 0)"/>
-                <input type="password" maxlength="1" inputmode="numeric"
-                       class="pin-input w-14 h-14 border-2 border-gray-200 rounded-2xl text-center text-2xl font-bold focus:border-[#F5A5A5] focus:outline-none transition-colors"
-                       oninput="movePinFocus(this, 1)"/>
-                <input type="password" maxlength="1" inputmode="numeric"
-                       class="pin-input w-14 h-14 border-2 border-gray-200 rounded-2xl text-center text-2xl font-bold focus:border-[#F5A5A5] focus:outline-none transition-colors"
-                       oninput="movePinFocus(this, 2)"/>
-                <input type="password" maxlength="1" inputmode="numeric"
-                       class="pin-input w-14 h-14 border-2 border-gray-200 rounded-2xl text-center text-2xl font-bold focus:border-[#F5A5A5] focus:outline-none transition-colors"
-                       oninput="movePinFocus(this, 3)"/>
-              </div>
-              <p class="text-xs text-gray-400 mt-3 text-center">이체 시 사용되는 비밀번호예요</p>
-            </div>
-
-          </div>
-
-          <div class="flex gap-3">
-            <button onclick="goStep(2)"
-                    class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors font-medium">
-              이전
-            </button>
-            <button id="step3Btn" onclick="openConfirmModal()"
-                    disabled
-                    class="flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed">
-              계좌 개설
-            </button>
-          </div>
-        </div>
+    <div id="step3" class="hidden">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl text-gray-800 mb-2">계좌 설정</h1>
+        <p class="text-gray-600">두 분만의 공동 계좌를 꾸며보세요</p>
       </div>
 
-      <!-- ===== Step 4: 개설 완료 ===== -->
-      <div id="step4" class="hidden">
-        <div class="bg-white rounded-3xl shadow-lg p-10 text-center">
+      <div class="bg-white rounded-3xl shadow-lg p-8">
 
-          <div class="w-24 h-24 bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-full flex items-center justify-center mx-auto mb-6">
-            <i data-lucide="check-circle" class="w-12 h-12 text-[#F5A5A5]"></i>
+        <div class="space-y-6 mb-8">
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">계좌 애칭</label>
+            <input type="text" id="acctAlias" maxlength="20"
+                   th:value="${coupleAcctAlias}"
+                   placeholder="우리만의 계좌 이름을 정해보세요"
+                   oninput="checkStep3()"
+                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors placeholder:text-gray-400"/>
+            <div class="flex gap-2 mt-3 flex-wrap">
+              <button type="button" onclick="setAlias('우리의 여행통장')"
+                      class="text-xs px-3 py-1.5 bg-[#FCE8E3] text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
+                우리의 여행통장
+              </button>
+              <button type="button" onclick="setAlias('데이트 통장')"
+                      class="text-xs px-3 py-1.5 bg-[#FCE8E3] text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
+                데이트 통장
+              </button>
+              <button type="button" onclick="setAlias('모담 커플통장')"
+                      class="text-xs px-3 py-1.5 bg-[#FCE8E3] text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
+                모담 커플통장
+              </button>
+              <button type="button" onclick="setAlias('우리 비상금')"
+                      class="text-xs px-3 py-1.5 bg-[#FCE8E3] text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
+                우리 비상금
+              </button>
+            </div>
           </div>
 
-          <h1 class="text-3xl text-gray-800 mb-3">계좌 개설 완료!</h1>
-          <p class="text-gray-600 mb-8">두 분만의 공동 계좌가 만들어졌어요 💕</p>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              초기 입금액 <span class="text-gray-400 font-normal">(선택)</span>
+            </label>
+            <div class="relative">
+              <input type="text" id="initialDeposit"
+                     placeholder="0"
+                     oninput="formatDeposit(this)"
+                     class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors pr-12"/>
+              <span class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 font-medium">원</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">계좌 개설 시 연결 계좌에서 이체됩니다. 입력하지 않으면 0원으로 시작해요.</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">계좌 비밀번호 (4자리)</label>
+            <div class="flex gap-3 justify-center">
+              <input type="password" maxlength="1" inputmode="numeric"
+                     class="pin-input w-14 h-14 border-2 border-gray-200 rounded-2xl text-center text-2xl font-bold focus:border-[#F5A5A5] focus:outline-none transition-colors"
+                     oninput="movePinFocus(this, 0)"/>
+              <input type="password" maxlength="1" inputmode="numeric"
+                     class="pin-input w-14 h-14 border-2 border-gray-200 rounded-2xl text-center text-2xl font-bold focus:border-[#F5A5A5] focus:outline-none transition-colors"
+                     oninput="movePinFocus(this, 1)"/>
+              <input type="password" maxlength="1" inputmode="numeric"
+                     class="pin-input w-14 h-14 border-2 border-gray-200 rounded-2xl text-center text-2xl font-bold focus:border-[#F5A5A5] focus:outline-none transition-colors"
+                     oninput="movePinFocus(this, 2)"/>
+              <input type="password" maxlength="1" inputmode="numeric"
+                     class="pin-input w-14 h-14 border-2 border-gray-200 rounded-2xl text-center text-2xl font-bold focus:border-[#F5A5A5] focus:outline-none transition-colors"
+                     oninput="movePinFocus(this, 3)"/>
+            </div>
+            <p class="text-xs text-gray-400 mt-3 text-center">이체 시 사용되는 비밀번호예요</p>
+          </div>
+
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="goStep(2)"
+                  class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors font-medium">
+            이전
+          </button>
+          <button id="step3Btn" onclick="openConfirmModal()"
+                  disabled
+                  class="flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed">
+            계좌 개설
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="step4" class="hidden">
+      <div class="bg-white rounded-3xl shadow-lg p-10 text-center">
+
+        <div class="w-24 h-24 bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-full flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="check-circle" class="w-12 h-12 text-[#F5A5A5]"></i>
+        </div>
+
+        <h1 class="text-3xl text-gray-800 mb-3">계좌 개설 완료!</h1>
+        <p class="text-gray-600 mb-8">두 분만의 공동 계좌가 만들어졌어요 💕</p>
 
           <!-- 계좌 정보 요약 -->
           <div class="bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-2xl p-6 mb-8 text-left">
@@ -354,8 +346,7 @@
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-600">계좌번호</span>
-                <span class="font-mono font-semibold text-gray-800"
-                      th:text="${newAccountNumber}">1002-1234-5678</span>
+                <span id="summaryAccountNumber" class="font-mono font-semibold text-gray-800">1002-1234-5678</span>
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-600">잔액</span>
@@ -366,254 +357,277 @@
                 <span id="summaryDate" class="font-semibold text-gray-800">2026.05.22</span>
               </div>
             </div>
-          </div>
-
-          <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-8 text-left">
-            <div class="flex items-start gap-3">
-              <i data-lucide="info" class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"></i>
-              <div class="text-sm text-blue-700 leading-relaxed">
-                <p class="font-medium mb-1">파트너에게 초대장을 보내세요</p>
-                <p>파트너가 모담에 가입하고 계좌에 연결하면 공동 관리를 시작할 수 있어요.</p>
-              </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-600">계좌번호</span>
+              <span class="font-mono font-semibold text-gray-800"
+                    th:text="${newAccountNumber}">1002-1234-5678</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-600">잔액</span>
+              <span id="summaryBalance" class="font-semibold text-gray-800">₩0</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-600">개설일</span>
+              <span id="summaryDate" class="font-semibold text-gray-800">2026.05.22</span>
             </div>
           </div>
-
-          <div class="flex gap-3">
-            <a th:href="@{/invite}" href="/invite"
-               class="flex-1 py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors font-medium text-center flex items-center justify-center gap-2">
-              <i data-lucide="send" class="w-5 h-5"></i>
-              파트너 초대
-            </a>
-            <a th:href="@{/dashboard}" href="/dashboard"
-               class="flex-1 py-4 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors font-medium shadow-md text-center flex items-center justify-center gap-2">
-              <i data-lucide="home" class="w-5 h-5"></i>
-              홈으로 이동
-            </a>
-          </div>
-
         </div>
-      </div>
 
+        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-8 text-left">
+          <div class="flex items-start gap-3">
+            <i data-lucide="info" class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"></i>
+            <div class="text-sm text-blue-700 leading-relaxed">
+              <p class="font-medium mb-1">파트너에게 초대장을 보내세요</p>
+              <p>파트너가 모담에 가입하고 계좌에 연결하면 공동 관리를 시작할 수 있어요.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <a th:href="@{/invite}" href="/invite"
+             class="flex-1 py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors font-medium text-center flex items-center justify-center gap-2">
+            <i data-lucide="send" class="w-5 h-5"></i>
+            파트너 초대
+          </a>
+          <a th:href="@{/dashboard}" href="/dashboard"
+             class="flex-1 py-4 bg-[#F5A5A5] text-white rounded-2xl hover:bg-[#F28B8B] transition-colors font-medium shadow-md text-center flex items-center justify-center gap-2">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            홈으로 이동
+          </a>
+        </div>
+
+      </div>
     </div>
-  </div>
 
-  <!-- ===== 약관 모달 ===== -->
-  <div id="termOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
-       onclick="closeTermModal()"></div>
-  <div id="termModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 max-h-[80vh] flex flex-col">
-      <div class="flex items-center justify-between mb-4">
-        <h2 id="termTitle" class="text-lg font-bold text-gray-900">약관</h2>
-        <button onclick="closeTermModal()" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-          <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
-        </button>
-      </div>
-      <div class="flex-1 overflow-y-auto text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-5">
-        <p>제1조 (목적)</p>
-        <p class="mb-4">본 약관은 모담(이하 '서비스')이 제공하는 공동 계좌 서비스 이용에 관한 조건 및 절차, 서비스 이용자와 서비스의 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다.</p>
-        <p>제2조 (서비스의 이용)</p>
-        <p class="mb-4">서비스는 커플을 위한 공동 계좌 관리 기능을 제공합니다. 이용자는 파트너와 함께 계좌를 개설하고, 공동 예산을 관리하며, 소비 내역을 공유할 수 있습니다.</p>
-        <p>제3조 (개인정보 보호)</p>
-        <p class="mb-4">서비스는 관련 법령에 따라 이용자의 개인정보를 안전하게 보호합니다. 개인정보 처리방침은 서비스 내에서 확인하실 수 있습니다.</p>
-        <p>제4조 (책임 제한)</p>
-        <p>서비스는 이용자의 귀책 사유로 인한 손해에 대하여 책임을 지지 않습니다.</p>
-      </div>
-      <button onclick="closeTermModal()"
-              class="mt-4 w-full py-3 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors font-medium">
-        확인
+  </div>
+</div>
+
+<div id="inviteModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 transition-opacity">
+  <div class="bg-white rounded-3xl p-10 w-full max-w-md shadow-2xl transform scale-95 transition-transform">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-800">초대 코드 입력</h2>
+      <button onclick="closeInviteModal()" class="text-gray-400 hover:text-gray-600">
+        <i data-lucide="x" class="w-6 h-6"></i>
       </button>
     </div>
+
+    <form th:action="@{/couples/accept}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <p class="text-gray-600 mb-6">파트너에게 공유받은 6자리 초대 코드를 입력해 주세요.</p>
+
+      <input type="text" name="inviteCode" maxlength="6"
+             class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-center text-2xl tracking-[0.5em] uppercase font-bold text-gray-800 mb-8"
+             placeholder="ABC123" required />
+
+      <button type="submit" class="w-full py-4 bg-[#F5A5A5] text-white hover:bg-[#F28B8B] shadow-md rounded-2xl transition-all font-semibold text-lg">
+        파트너와 연결하기
+      </button>
+    </form>
   </div>
+</div>
 
-  <!-- ===== 계좌 개설 확인 모달 ===== -->
-  <div id="confirmOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
-       onclick="closeConfirmModal()"></div>
-  <div id="confirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-      <div class="text-center mb-6">
-        <div class="w-16 h-16 bg-[#FCE8E3] rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <i data-lucide="landmark" class="w-8 h-8 text-[#F5A5A5]"></i>
-        </div>
-        <h2 class="text-xl font-bold text-gray-900 mb-2">계좌를 개설할까요?</h2>
-        <p class="text-gray-600 text-sm">아래 정보로 공동 계좌가 개설됩니다</p>
+<div id="termOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+     onclick="closeTermModal()"></div>
+<div id="termModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 max-h-[80vh] flex flex-col">
+    <div class="flex items-center justify-between mb-4">
+      <h2 id="termTitle" class="text-lg font-bold text-gray-900">약관</h2>
+      <button onclick="closeTermModal()" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <div class="flex-1 overflow-y-auto text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-5">
+      <p>제1조 (목적)</p>
+      <p class="mb-4">본 약관은 모담(이하 '서비스')이 제공하는 공동 계좌 서비스 이용에 관한 조건 및 절차, 서비스 이용자와 서비스의 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다.</p>
+      <p>제2조 (서비스의 이용)</p>
+      <p class="mb-4">서비스는 커플을 위한 공동 계좌 관리 기능을 제공합니다. 이용자는 파트너와 함께 계좌를 개설하고, 공동 예산을 관리하며, 소비 내역을 공유할 수 있습니다.</p>
+      <p>제3조 (개인정보 보호)</p>
+      <p class="mb-4">서비스는 관련 법령에 따라 이용자의 개인정보를 안전하게 보호합니다. 개인정보 처리방침은 서비스 내에서 확인하실 수 있습니다.</p>
+      <p>제4조 (책임 제한)</p>
+      <p>서비스는 이용자의 귀책 사유로 인한 손해에 대하여 책임을 지지 않습니다.</p>
+    </div>
+    <button onclick="closeTermModal()"
+            class="mt-4 w-full py-3 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors font-medium">
+      확인
+    </button>
+  </div>
+</div>
+
+<div id="confirmOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+     onclick="closeConfirmModal()"></div>
+<div id="confirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-[#FCE8E3] rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="landmark" class="w-8 h-8 text-[#F5A5A5]"></i>
       </div>
+      <h2 class="text-xl font-bold text-gray-900 mb-2">계좌를 개설할까요?</h2>
+      <p class="text-gray-600 text-sm">아래 정보로 공동 계좌가 개설됩니다</p>
+    </div>
 
-      <div class="bg-gray-50 rounded-2xl p-5 mb-6 space-y-3 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-600">계좌 애칭</span>
-          <span id="confirmAlias" class="font-semibold text-gray-800">-</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-600">초기 입금액</span>
-          <span id="confirmDeposit" class="font-semibold text-gray-800">₩0</span>
-        </div>
+    <div class="bg-gray-50 rounded-2xl p-5 mb-6 space-y-3 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-600">계좌 애칭</span>
+        <span id="confirmAlias" class="font-semibold text-gray-800">-</span>
       </div>
-
-      <div class="flex gap-3">
-        <button onclick="closeConfirmModal()"
-                class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">
-          취소
-        </button>
-        <form th:action="@{/account/open}" method="post" id="openForm" class="flex-1">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-          <input type="hidden" name="acctAlias" id="formAlias"/>
-          <input type="hidden" name="initialDeposit" id="formDeposit"/>
-          <button type="button" onclick="submitOpen()"
-                  class="w-full py-4 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors font-medium shadow-md">
-            개설하기
-          </button>
-        </form>
+      <div class="flex justify-between">
+        <span class="text-gray-600">초기 입금액</span>
+        <span id="confirmDeposit" class="font-semibold text-gray-800">₩0</span>
       </div>
     </div>
+
+    <div class="flex gap-3">
+      <button onclick="closeConfirmModal()"
+              class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">
+        취소
+      </button>
+      <form th:action="@{/account/open}" method="post" id="openForm" class="flex-1">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" name="acctAlias" id="formAlias"/>
+        <input type="hidden" name="initialDeposit" id="formDeposit"/>
+        <button type="button" onclick="submitOpen()"
+                class="w-full py-4 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors font-medium shadow-md">
+          개설하기
+        </button>
+      </form>
+    </div>
   </div>
+</div>
 
-  <script th:inline="javascript">
+<script th:inline="javascript">
+  lucide.createIcons();
+
+  let currentStep = 1;
+  const termsRequired = [1, 2, 3];
+  const termState = { 1: false, 2: false, 3: false, 4: false };
+  let codeVerified = false;
+  let timerInterval = null;
+
+  /* ========== 스텝 이동 ========== */
+  function goStep(n) {
+    document.getElementById('step' + currentStep).classList.add('hidden');
+    currentStep = n;
+    document.getElementById('step' + currentStep).classList.remove('hidden');
+    updateStepper();
     lucide.createIcons();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-    let currentStep = 1;
-    const termsRequired = [1, 2, 3];
-    const termState = { 1: false, 2: false, 3: false, 4: false };
-    let codeVerified = false;
-    let timerInterval = null;
+  /* ========== 스텝퍼 UI ========== */
+  function updateStepper() {
+    for (let i = 1; i <= 4; i++) {
+      const circle = document.getElementById('stepCircle' + i);
+      const icon   = document.getElementById('stepIcon' + i);
+      const label  = document.getElementById('stepLabel' + i);
+      const line   = document.getElementById('line' + i);
 
-    /* ========== 스텝 이동 ========== */
-    function goStep(n) {
-      document.getElementById('step' + currentStep).classList.add('hidden');
-      currentStep = n;
-      document.getElementById('step' + currentStep).classList.remove('hidden');
-      updateStepper();
-      lucide.createIcons();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    /* ========== 스텝퍼 UI ========== */
-    function updateStepper() {
-      for (let i = 1; i <= 4; i++) {
-        const circle = document.getElementById('stepCircle' + i);
-        const icon   = document.getElementById('stepIcon' + i);
-        const label  = document.getElementById('stepLabel' + i);
-        const line   = document.getElementById('line' + i);
-
-        if (i < currentStep) {
-          circle.className = 'w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-[#F5A5A5] text-white';
-          icon.innerHTML   = '<i data-lucide="check" class="w-6 h-6"></i>';
-          label.className  = 'text-xs mt-2 whitespace-nowrap text-[#F5A5A5] font-medium';
-        } else if (i === currentStep) {
-          circle.className = 'w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-[#F5A5A5] text-white';
-          icon.textContent = i;
-          label.className  = 'text-xs mt-2 whitespace-nowrap font-semibold text-gray-700';
-        } else {
-          circle.className = 'w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-white text-gray-400';
-          icon.textContent = i;
-          label.className  = 'text-xs mt-2 whitespace-nowrap text-gray-400';
-        }
-        if (line) {
-          line.className = 'h-1 w-16 mx-3 mb-6 rounded transition-all ' + (i < currentStep ? 'bg-[#F5A5A5]' : 'bg-gray-300');
-        }
-      }
-      lucide.createIcons();
-    }
-
-    /* ========== Step 1: 약관 ========== */
-    function toggleTerm(n) {
-      termState[n] = !termState[n];
-      renderTermCheck(n);
-      syncAllCheck();
-      checkStep1();
-    }
-
-    function toggleAll() {
-      const allChecked = termsRequired.every(n => termState[n]);
-      [1, 2, 3, 4].forEach(n => { termState[n] = !allChecked; renderTermCheck(n); });
-      syncAllCheck();
-      checkStep1();
-    }
-
-    function renderTermCheck(n) {
-      const el = document.getElementById('term' + n);
-      if (termState[n]) {
-        el.className = 'w-5 h-5 rounded-full border-2 border-[#F5A5A5] bg-[#F5A5A5] flex items-center justify-center flex-shrink-0 transition-all';
-        el.innerHTML = '<svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+      if (i < currentStep) {
+        circle.className = 'w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-[#F5A5A5] text-white';
+        icon.innerHTML   = '<i data-lucide="check" class="w-6 h-6"></i>';
+        label.className  = 'text-xs mt-2 whitespace-nowrap text-[#F5A5A5] font-medium';
+      } else if (i === currentStep) {
+        circle.className = 'w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-[#F5A5A5] text-white';
+        icon.textContent = i;
+        label.className  = 'text-xs mt-2 whitespace-nowrap font-semibold text-gray-700';
       } else {
-        el.className = 'w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all';
-        el.innerHTML = '';
+        circle.className = 'w-12 h-12 rounded-full flex items-center justify-center font-bold shadow-md bg-white text-gray-400';
+        icon.textContent = i;
+        label.className  = 'text-xs mt-2 whitespace-nowrap text-gray-400';
+      }
+      if (line) {
+        line.className = 'h-1 w-16 mx-3 mb-6 rounded transition-all ' + (i < currentStep ? 'bg-[#F5A5A5]' : 'bg-gray-300');
       }
     }
+    lucide.createIcons();
+  }
 
-    function syncAllCheck() {
-      const allChecked = [1, 2, 3, 4].every(n => termState[n]);
-      const reqChecked = termsRequired.every(n => termState[n]);
-      const el = document.getElementById('allCheck');
-      if (allChecked) {
-        el.className = 'w-6 h-6 rounded-full border-2 border-[#F5A5A5] bg-[#F5A5A5] flex items-center justify-center flex-shrink-0 transition-all';
-        el.innerHTML = '<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
-      } else {
-        el.className = 'w-6 h-6 rounded-full border-2 border-[#F5A5A5] flex items-center justify-center flex-shrink-0 transition-all';
-        el.innerHTML = '';
-      }
-    }
+  /* ========== Step 1: 약관 ========== */
+  function toggleTerm(n) {
+    termState[n] = !termState[n];
+    renderTermCheck(n);
+    syncAllCheck();
+    checkStep1();
+  }
 
-    function checkStep1() {
-      const ok = termsRequired.every(n => termState[n]);
-      const btn = document.getElementById('step1Btn');
-      if (ok) {
-        btn.disabled = false;
-        btn.className = 'w-full mt-8 py-4 bg-[#F5A5A5] text-white rounded-2xl font-semibold text-lg transition-all hover:bg-[#F28B8B] shadow-md cursor-pointer';
-      } else {
-        btn.disabled = true;
-        btn.className = 'w-full mt-8 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed';
-      }
-    }
+  function toggleAll() {
+    const allChecked = termsRequired.every(n => termState[n]);
+    [1, 2, 3, 4].forEach(n => { termState[n] = !allChecked; renderTermCheck(n); });
+    syncAllCheck();
+    checkStep1();
+  }
 
-    /* ========== Step 2: 본인 인증 ========== */
-    function formatIdFront(input) {
-      input.value = input.value.replace(/\D/g, '').slice(0, 6);
-      checkStep2();
+  function renderTermCheck(n) {
+    const el = document.getElementById('term' + n);
+    if (termState[n]) {
+      el.className = 'w-5 h-5 rounded-full border-2 border-[#F5A5A5] bg-[#F5A5A5] flex items-center justify-center flex-shrink-0 transition-all';
+      el.innerHTML = '<svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+    } else {
+      el.className = 'w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all';
+      el.innerHTML = '';
     }
-    function formatIdBack(input) {
-      input.value = input.value.replace(/\D/g, '').slice(0, 7);
-      checkStep2();
-    }
-    function formatPhone(input) {
-      let val = input.value.replace(/\D/g, '');
-      if (val.length > 3 && val.length <= 7)      val = val.slice(0,3) + '-' + val.slice(3);
-      else if (val.length > 7)                     val = val.slice(0,3) + '-' + val.slice(3,7) + '-' + val.slice(7,11);
-      input.value = val;
-      checkStep2();
-    }
+  }
 
-    function sendVerificationCode() {
-      const phone = document.getElementById('phoneNum').value.replace(/\D/g,'');
-      if (phone.length < 10) { alert('올바른 휴대폰 번호를 입력해주세요.'); return; }
-      document.getElementById('codeSection').classList.remove('hidden');
-      document.getElementById('sendCodeBtn').textContent = '재발송';
-      startTimer();
-      lucide.createIcons();
+  function syncAllCheck() {
+    const allChecked = [1, 2, 3, 4].every(n => termState[n]);
+    const reqChecked = termsRequired.every(n => termState[n]);
+    const el = document.getElementById('allCheck');
+    if (allChecked) {
+      el.className = 'w-6 h-6 rounded-full border-2 border-[#F5A5A5] bg-[#F5A5A5] flex items-center justify-center flex-shrink-0 transition-all';
+      el.innerHTML = '<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+    } else {
+      el.className = 'w-6 h-6 rounded-full border-2 border-[#F5A5A5] flex items-center justify-center flex-shrink-0 transition-all';
+      el.innerHTML = '';
     }
+  }
 
-    function startTimer() {
-      if (timerInterval) clearInterval(timerInterval);
-      let sec = 180;
-      const el = document.getElementById('codeTimer');
-      timerInterval = setInterval(() => {
-        sec--;
-        const m = String(Math.floor(sec / 60)).padStart(1,'0');
-        const s = String(sec % 60).padStart(2,'0');
-        el.textContent = m + ':' + s;
-        if (sec <= 0) {
-          clearInterval(timerInterval);
-          el.textContent = '만료';
-          el.className = 'absolute right-4 top-1/2 -translate-y-1/2 text-sm text-red-400 font-medium';
-        }
-      }, 1000);
+  function checkStep1() {
+    const ok = termsRequired.every(n => termState[n]);
+    const btn = document.getElementById('step1Btn');
+    if (ok) {
+      btn.disabled = false;
+      btn.className = 'w-full mt-8 py-4 bg-[#F5A5A5] text-white rounded-2xl font-semibold text-lg transition-all hover:bg-[#F28B8B] shadow-md cursor-pointer';
+    } else {
+      btn.disabled = true;
+      btn.className = 'w-full mt-8 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed';
     }
+  }
 
-    function verifyCode() {
-      const code = document.getElementById('verifyCode').value;
-      if (code.length === 6) {
-        codeVerified = true;
-        document.getElementById('codeMsg').textContent = '✓ 인증이 완료됐어요.';
-        document.getElementById('codeMsg').className = 'text-xs text-[#F5A5A5] mt-2 font-medium';
+  /* ========== Step 2: 본인 인증 ========== */
+  function formatIdFront(input) {
+    input.value = input.value.replace(/\D/g, '').slice(0, 6);
+    checkStep2();
+  }
+  function formatIdBack(input) {
+    input.value = input.value.replace(/\D/g, '').slice(0, 7);
+    checkStep2();
+  }
+  function formatPhone(input) {
+    let val = input.value.replace(/\D/g, '');
+    if (val.length > 3 && val.length <= 7)      val = val.slice(0,3) + '-' + val.slice(3);
+    else if (val.length > 7)                     val = val.slice(0,3) + '-' + val.slice(3,7) + '-' + val.slice(7,11);
+    input.value = val;
+    checkStep2();
+  }
+
+  function sendVerificationCode() {
+    const phone = document.getElementById('phoneNum').value.replace(/\D/g,'');
+    if (phone.length < 10) { alert('올바른 휴대폰 번호를 입력해주세요.'); return; }
+    document.getElementById('codeSection').classList.remove('hidden');
+    document.getElementById('sendCodeBtn').textContent = '재발송';
+    startTimer();
+    lucide.createIcons();
+  }
+
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    let sec = 180;
+    const el = document.getElementById('codeTimer');
+    timerInterval = setInterval(() => {
+      sec--;
+      const m = String(Math.floor(sec / 60)).padStart(1,'0');
+      const s = String(sec % 60).padStart(2,'0');
+      el.textContent = m + ':' + s;
+      if (sec <= 0) {
         clearInterval(timerInterval);
         checkStep2();
       }
@@ -624,7 +638,8 @@
       const front = document.getElementById('idFront').value;
       const back  = document.getElementById('idBack').value;
       const phone = document.getElementById('phoneNum').value.replace(/\D/g,'');
-      const ok = name && front.length === 6 && back.length === 7 && phone.length >= 10 && codeVerified;
+      // 인증번호 확인 완료 여부만으로 다음 버튼 활성화
+      const ok = codeVerified;
       const btn = document.getElementById('step2Btn');
       if (ok) {
         btn.disabled = false;
@@ -665,6 +680,17 @@
         btn.disabled = true;
         btn.className = 'flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed';
       }
+    }, 1000);
+  }
+
+  function verifyCode() {
+    const code = document.getElementById('verifyCode').value;
+    if (code.length === 6) {
+      codeVerified = true;
+      document.getElementById('codeMsg').textContent = '✓ 인증이 완료됐어요.';
+      document.getElementById('codeMsg').className = 'text-xs text-[#F5A5A5] mt-2 font-medium';
+      clearInterval(timerInterval);
+      checkStep2();
     }
 
     /* ========== 확인 모달 ========== */
@@ -690,18 +716,54 @@
       const raw     = document.getElementById('initialDeposit').value.replace(/,/g,'');
       const deposit = raw ? parseInt(raw) : 0;
 
-      /* 완료 화면 정보 채우기 */
-      document.getElementById('summaryAlias').textContent   = alias;
-      document.getElementById('summaryBalance').textContent = '₩' + deposit.toLocaleString();
-      document.getElementById('summaryDate').textContent    =
-        new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' })
-                  .replace(/\. /g,'.').replace('.','.').slice(0,-1);
+      // PIN 4자리 조합
+      const pins = [...document.querySelectorAll('.pin-input')].map(el => el.value);
+      const password = pins.join('');
 
-      closeConfirmModal();
-      goStep(4);
+      // CSRF 토큰 (Spring Security 세션 기반)
+      const csrfToken = document.querySelector('input[name="_csrf"]').value;
 
-      /* 서버 제출 (Spring Boot 연동 시 활성화) */
-      // document.getElementById('openForm').submit();
+      const requestBody = {
+        accountType   : 'GROUP',
+        acctAlias     : alias,
+        initialDeposit: deposit,
+        password      : password,
+        agreeService  : termState[1],
+        agreeFinance  : termState[2],
+        agreePrivacy  : termState[3],
+        agreeMarketing: termState[4]
+      };
+
+      fetch('/api/accounts', {
+        method : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN' : csrfToken
+        },
+        body: JSON.stringify(requestBody)
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw err; });
+        return res.json();
+      })
+      .then(data => {
+        // 서버 응답값으로 완료 화면 채우기
+        document.getElementById('summaryAlias').textContent   = data.data.acctAlias || alias;
+        document.getElementById('summaryBalance').textContent = '₩' + deposit.toLocaleString();
+        document.getElementById('summaryDate').textContent    =
+          new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' })
+                    .replace(/\. /g,'.').replace('.','.').slice(0,-1);
+
+        // 서버에서 발급된 실제 계좌번호 표시
+        document.getElementById('summaryAccountNumber').textContent = data.data.accountNumber;
+
+        closeConfirmModal();
+        goStep(4);
+      })
+      .catch(err => {
+        console.error('계좌 개설 실패:', err);
+        alert(err.message || '계좌 개설 중 오류가 발생했습니다.');
+      });
     }
 
     /* ========== 약관 모달 ========== */
@@ -710,14 +772,44 @@
       document.getElementById('termOverlay').classList.remove('hidden');
       document.getElementById('termModal').classList.remove('hidden');
     }
-    function closeTermModal() {
-      document.getElementById('termOverlay').classList.add('hidden');
-      document.getElementById('termModal').classList.add('hidden');
+  }
+
+  /* ========== Step 3: 계좌 설정 ========== */
+  function setAlias(val) {
+    document.getElementById('acctAlias').value = val;
+    checkStep3();
+  }
+
+  function formatDeposit(input) {
+    const raw = input.value.replace(/[^0-9]/g, '');
+    input.value = raw ? parseInt(raw).toLocaleString() : '';
+  }
+
+  function movePinFocus(input, idx) {
+    input.value = input.value.replace(/\D/g,'').slice(0,1);
+    const pins = document.querySelectorAll('.pin-input');
+    if (input.value && idx < pins.length - 1) pins[idx + 1].focus();
+    checkStep3();
+  }
+
+  function checkStep3() {
+    const alias = document.getElementById('acctAlias').value.trim();
+    const pins  = [...document.querySelectorAll('.pin-input')].map(el => el.value);
+    const pinOk = pins.every(v => v.length === 1);
+    const btn   = document.getElementById('step3Btn');
+    if (alias && pinOk) {
+      btn.disabled = false;
+      btn.className = 'flex-1 py-4 bg-[#F5A5A5] text-white rounded-2xl font-semibold text-lg transition-all hover:bg-[#F28B8B] shadow-md cursor-pointer';
+    } else {
+      btn.disabled = true;
+      btn.className = 'flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed';
     }
 
     /* 초기화 */
     window.addEventListener('DOMContentLoaded', function() {
       lucide.createIcons();
+      // 서버에서 pre-fill된 필드(이름·전화번호)가 있을 경우 버튼 상태를 즉시 반영
+      checkStep2();
     });
   </script>
 </body>

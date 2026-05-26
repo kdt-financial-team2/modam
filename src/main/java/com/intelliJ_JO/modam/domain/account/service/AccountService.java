@@ -34,20 +34,26 @@ public class AccountService {
     // 계좌 개설 — 세션의 인증된 사용자를 개설자로 등록
     @Transactional
     public AccountResponseDto createAccount(AccountCreateRequestDto request, Member member) {
-        if (!request.getPassword().equals(request.getPasswordConfirm())) {
-            throw new IllegalArgumentException("계좌 비밀번호가 일치하지 않습니다.");
-        }
+        // 초기 입금액 (미입력 시 0)
+        long deposit = request.getInitialDeposit() != null ? request.getInitialDeposit() : 0L;
 
         Account account = Account.builder()
                 .accountNumber(generateAccountNumber())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .accountType(request.getAccountType())
+                .acctAlias(request.getAcctAlias())
+                .balance(deposit)
+                .availableBalance(deposit)
                 .deliveryAddress(request.getDeliveryAddress())
                 .jobInfo(request.getJobInfo())
                 .tradePurpose(request.getTradePurpose())
                 .fundSource(request.getFundSource())
                 .onceTransferLimit(request.getOnceTransferLimit())
                 .dailyTransferLimit(request.getDailyTransferLimit())
+                .agreeService(request.isAgreeService())
+                .agreeFinance(request.isAgreeFinance())
+                .agreePrivacy(request.isAgreePrivacy())
+                .agreeMarketing(request.isAgreeMarketing())
                 .build();
 
         Account saved = accountRepository.save(account);
@@ -136,5 +142,15 @@ public class AccountService {
             candidate = UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
         } while (accountRepository.existsByAccountNumber(candidate));
         return candidate;
+    }
+
+    // [추가] 계좌 비밀번호 검증 메서드
+    public void verifyAccountPassword(Long accountId, String rawPassword) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
+
+        if (!passwordEncoder.matches(rawPassword, account.getPasswordHash())) {
+            throw new IllegalArgumentException("계좌 비밀번호가 일치하지 않습니다.");
+        }
     }
 }
