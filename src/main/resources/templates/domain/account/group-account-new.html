@@ -156,12 +156,20 @@
 
         <div class="space-y-5 mb-8">
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">이름</label>
-            <input type="text" id="userName" th:value="${userName}" placeholder="홍길동"
-                   oninput="checkStep2()"
-                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800 placeholder:text-gray-400"/>
-          </div>
+            <!-- 휴대폰 번호 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">휴대폰 번호</label>
+              <div class="flex gap-3">
+                <input type="tel" id="phoneNum" placeholder="010-0000-0000" maxlength="13"
+                       th:value="${userPhone}"
+                       oninput="formatPhone(this)"
+                       class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors"/>
+                <button id="sendCodeBtn" onclick="sendVerificationCode()"
+                        class="px-6 py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors font-medium whitespace-nowrap">
+                  인증번호 발송
+                </button>
+              </div>
+            </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">주민등록번호</label>
@@ -329,11 +337,25 @@
         <h1 class="text-3xl text-gray-800 mb-3">계좌 개설 완료!</h1>
         <p class="text-gray-600 mb-8">두 분만의 공동 계좌가 만들어졌어요 💕</p>
 
-        <div class="bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-2xl p-6 mb-8 text-left">
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-gray-600">계좌 애칭</span>
-              <span id="summaryAlias" class="font-semibold text-gray-800">모담 커플통장</span>
+          <!-- 계좌 정보 요약 -->
+          <div class="bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-2xl p-6 mb-8 text-left">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600">계좌 애칭</span>
+                <span id="summaryAlias" class="font-semibold text-gray-800">모담 커플통장</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600">계좌번호</span>
+                <span id="summaryAccountNumber" class="font-mono font-semibold text-gray-800">1002-1234-5678</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600">잔액</span>
+                <span id="summaryBalance" class="font-semibold text-gray-800">₩0</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600">개설일</span>
+                <span id="summaryDate" class="font-semibold text-gray-800">2026.05.22</span>
+              </div>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-sm text-gray-600">계좌번호</span>
@@ -607,8 +629,56 @@
       el.textContent = m + ':' + s;
       if (sec <= 0) {
         clearInterval(timerInterval);
-        el.textContent = '만료';
-        el.className = 'absolute right-4 top-1/2 -translate-y-1/2 text-sm text-red-400 font-medium';
+        checkStep2();
+      }
+    }
+
+    function checkStep2() {
+      const name  = document.getElementById('userName').value.trim();
+      const front = document.getElementById('idFront').value;
+      const back  = document.getElementById('idBack').value;
+      const phone = document.getElementById('phoneNum').value.replace(/\D/g,'');
+      // 인증번호 확인 완료 여부만으로 다음 버튼 활성화
+      const ok = codeVerified;
+      const btn = document.getElementById('step2Btn');
+      if (ok) {
+        btn.disabled = false;
+        btn.className = 'flex-1 py-4 bg-[#F5A5A5] text-white rounded-2xl font-semibold text-lg transition-all hover:bg-[#F28B8B] shadow-md cursor-pointer';
+      } else {
+        btn.disabled = true;
+        btn.className = 'flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed';
+      }
+    }
+
+    /* ========== Step 3: 계좌 설정 ========== */
+    function setAlias(val) {
+      document.getElementById('acctAlias').value = val;
+      checkStep3();
+    }
+
+    function formatDeposit(input) {
+      const raw = input.value.replace(/[^0-9]/g, '');
+      input.value = raw ? parseInt(raw).toLocaleString() : '';
+    }
+
+    function movePinFocus(input, idx) {
+      input.value = input.value.replace(/\D/g,'').slice(0,1);
+      const pins = document.querySelectorAll('.pin-input');
+      if (input.value && idx < pins.length - 1) pins[idx + 1].focus();
+      checkStep3();
+    }
+
+    function checkStep3() {
+      const alias = document.getElementById('acctAlias').value.trim();
+      const pins  = [...document.querySelectorAll('.pin-input')].map(el => el.value);
+      const pinOk = pins.every(v => v.length === 1);
+      const btn   = document.getElementById('step3Btn');
+      if (alias && pinOk) {
+        btn.disabled = false;
+        btn.className = 'flex-1 py-4 bg-[#F5A5A5] text-white rounded-2xl font-semibold text-lg transition-all hover:bg-[#F28B8B] shadow-md cursor-pointer';
+      } else {
+        btn.disabled = true;
+        btn.className = 'flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed';
       }
     }, 1000);
   }
@@ -622,21 +692,85 @@
       clearInterval(timerInterval);
       checkStep2();
     }
-  }
 
-  function checkStep2() {
-    const name  = document.getElementById('userName').value.trim();
-    const front = document.getElementById('idFront').value;
-    const back  = document.getElementById('idBack').value;
-    const phone = document.getElementById('phoneNum').value.replace(/\D/g,'');
-    const ok = name && front.length === 6 && back.length === 7 && phone.length >= 10 && codeVerified;
-    const btn = document.getElementById('step2Btn');
-    if (ok) {
-      btn.disabled = false;
-      btn.className = 'flex-1 py-4 bg-[#F5A5A5] text-white rounded-2xl font-semibold text-lg transition-all hover:bg-[#F28B8B] shadow-md cursor-pointer';
-    } else {
-      btn.disabled = true;
-      btn.className = 'flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed';
+    /* ========== 확인 모달 ========== */
+    function openConfirmModal() {
+      const alias   = document.getElementById('acctAlias').value.trim();
+      const raw     = document.getElementById('initialDeposit').value.replace(/,/g,'');
+      const deposit = raw ? parseInt(raw) : 0;
+      document.getElementById('confirmAlias').textContent   = alias;
+      document.getElementById('confirmDeposit').textContent = '₩' + deposit.toLocaleString();
+      document.getElementById('formAlias').value   = alias;
+      document.getElementById('formDeposit').value = deposit;
+      document.getElementById('confirmOverlay').classList.remove('hidden');
+      document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmOverlay').classList.add('hidden');
+      document.getElementById('confirmModal').classList.add('hidden');
+    }
+
+    function submitOpen() {
+      const alias   = document.getElementById('acctAlias').value.trim();
+      const raw     = document.getElementById('initialDeposit').value.replace(/,/g,'');
+      const deposit = raw ? parseInt(raw) : 0;
+
+      // PIN 4자리 조합
+      const pins = [...document.querySelectorAll('.pin-input')].map(el => el.value);
+      const password = pins.join('');
+
+      // CSRF 토큰 (Spring Security 세션 기반)
+      const csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+      const requestBody = {
+        accountType   : 'GROUP',
+        acctAlias     : alias,
+        initialDeposit: deposit,
+        password      : password,
+        agreeService  : termState[1],
+        agreeFinance  : termState[2],
+        agreePrivacy  : termState[3],
+        agreeMarketing: termState[4]
+      };
+
+      fetch('/api/accounts', {
+        method : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN' : csrfToken
+        },
+        body: JSON.stringify(requestBody)
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw err; });
+        return res.json();
+      })
+      .then(data => {
+        // 서버 응답값으로 완료 화면 채우기
+        document.getElementById('summaryAlias').textContent   = data.data.acctAlias || alias;
+        document.getElementById('summaryBalance').textContent = '₩' + deposit.toLocaleString();
+        document.getElementById('summaryDate').textContent    =
+          new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' })
+                    .replace(/\. /g,'.').replace('.','.').slice(0,-1);
+
+        // 서버에서 발급된 실제 계좌번호 표시
+        document.getElementById('summaryAccountNumber').textContent = data.data.accountNumber;
+
+        closeConfirmModal();
+        goStep(4);
+      })
+      .catch(err => {
+        console.error('계좌 개설 실패:', err);
+        alert(err.message || '계좌 개설 중 오류가 발생했습니다.');
+      });
+    }
+
+    /* ========== 약관 모달 ========== */
+    function openTermModal(title) {
+      document.getElementById('termTitle').textContent = title;
+      document.getElementById('termOverlay').classList.remove('hidden');
+      document.getElementById('termModal').classList.remove('hidden');
     }
   }
 
@@ -670,68 +804,13 @@
       btn.disabled = true;
       btn.className = 'flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl font-semibold text-lg transition-all cursor-not-allowed';
     }
-  }
 
-  /* ========== 확인 모달 ========== */
-  function openConfirmModal() {
-    const alias   = document.getElementById('acctAlias').value.trim();
-    const raw     = document.getElementById('initialDeposit').value.replace(/,/g,'');
-    const deposit = raw ? parseInt(raw) : 0;
-    document.getElementById('confirmAlias').textContent   = alias;
-    document.getElementById('confirmDeposit').textContent = '₩' + deposit.toLocaleString();
-    document.getElementById('formAlias').value   = alias;
-    document.getElementById('formDeposit').value = deposit;
-    document.getElementById('confirmOverlay').classList.remove('hidden');
-    document.getElementById('confirmModal').classList.remove('hidden');
-  }
-
-  function closeConfirmModal() {
-    document.getElementById('confirmOverlay').classList.add('hidden');
-    document.getElementById('confirmModal').classList.add('hidden');
-  }
-
-  function submitOpen() {
-    const alias   = document.getElementById('acctAlias').value.trim();
-    const raw     = document.getElementById('initialDeposit').value.replace(/,/g,'');
-    const deposit = raw ? parseInt(raw) : 0;
-
-    /* 완료 화면 정보 채우기 */
-    document.getElementById('summaryAlias').textContent   = alias;
-    document.getElementById('summaryBalance').textContent = '₩' + deposit.toLocaleString();
-    document.getElementById('summaryDate').textContent    =
-      new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' })
-                .replace(/\. /g,'.').replace('.','.').slice(0,-1);
-
-    closeConfirmModal();
-    goStep(4);
-
-    /* 서버 제출 (Spring Boot 연동 시 활성화) */
-    // document.getElementById('openForm').submit();
-  }
-
-  /* ========== 약관 모달 ========== */
-  function openTermModal(title) {
-    document.getElementById('termTitle').textContent = title;
-    document.getElementById('termOverlay').classList.remove('hidden');
-    document.getElementById('termModal').classList.remove('hidden');
-  }
-  function closeTermModal() {
-    document.getElementById('termOverlay').classList.add('hidden');
-    document.getElementById('termModal').classList.add('hidden');
-  }
-
-  /* ========== 초대 모달 [추가됨] ========== */
-  function openInviteModal() {
-    document.getElementById('inviteModal').classList.remove('hidden');
-  }
-  function closeInviteModal() {
-    document.getElementById('inviteModal').classList.add('hidden');
-  }
-
-  /* 초기화 */
-  window.addEventListener('DOMContentLoaded', function() {
-    lucide.createIcons();
-  });
-</script>
+    /* 초기화 */
+    window.addEventListener('DOMContentLoaded', function() {
+      lucide.createIcons();
+      // 서버에서 pre-fill된 필드(이름·전화번호)가 있을 경우 버튼 상태를 즉시 반영
+      checkStep2();
+    });
+  </script>
 </body>
 </html>
