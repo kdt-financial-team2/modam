@@ -48,3 +48,4 @@ data/*.trace.db
 
 ### logs
 logs
+modam.log
