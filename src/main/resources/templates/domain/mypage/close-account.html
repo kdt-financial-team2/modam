@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계좌 해지 - 모담</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+<th:block th:replace="~{common/layout/header :: nav}"></th:block>
+
+<div class="flex flex-1">
+
+    <th:block th:replace="~{common/layout/mypage-sidebar :: sidebar('close-account')}"></th:block>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div class="max-w-4xl">
+            <h1 class="text-2xl font-bold text-gray-800 mb-8">계좌 해지</h1>
+
+            <div class="space-y-6">
+                <h2 class="text-lg font-bold text-gray-800">커플 통장</h2>
+
+                <div class="bg-[#FCE8E3] rounded-xl p-6">
+                    <div class="flex items-start gap-3">
+                        <div class="text-2xl">💑</div>
+                        <div>
+                            <h3 class="text-gray-800 font-semibold mb-2">커플 통장이란?</h3>
+                            <p class="text-sm text-gray-700 leading-relaxed">두 분이 함께 사용하는 공동 계좌입니다. 공동 예산 관리, 목표 저축, 소비 내역 공유 기능을 함께 이용할 수 있어요.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="closureStatusBanner" class="hidden rounded-xl p-6 border-2 bg-blue-50 border-blue-200">
+                    <div class="flex items-start gap-3">
+                        <span id="closureStatusIcon" class="text-2xl">⏳</span>
+                        <div>
+                            <h3 id="closureStatusTitle" class="font-bold mb-2 text-blue-800">계좌 해지 요청 대기 중</h3>
+                            <p id="closureStatusDesc" class="text-sm leading-relaxed text-blue-700">파트너가 동의하면 계좌가 해지됩니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-200 p-6">
+                    <div class="flex items-start justify-between mb-6">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <h3 class="text-lg font-bold text-gray-800">우리의 커플 통장</h3>
+                                <span class="px-3 py-1 bg-pink-100 text-pink-700 text-xs rounded-lg">💕 커플</span>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-lg">활성</span>
+                            </div>
+                            <div class="space-y-1 text-sm text-gray-600">
+                                <div>계좌번호: <span class="font-mono">1002-9876-5432</span></div>
+                                <div>잔액: <span class="text-xl font-bold text-gray-900">₩<span th:text="${accountBalance != null ? #numbers.formatInteger(accountBalance, 0, 'COMMA') : '1,245,000'}" id="closeAccountBalance">1,245,000</span></span></div>
+                                <div>개설일: 2026.01.15</div>
+                                <div>파트너: <span th:text="${partnerName != null ? partnerName : '이서연'}" id="closePartnerName">이서연</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="text-sm font-semibold text-gray-800 mb-3">사용 현황</h4>
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="text-center">
+                            <div class="text-xs text-gray-500 mb-1">이번 달 지출</div>
+                            <div class="text-lg font-bold text-gray-900">₩854,000</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-gray-500 mb-1">목표 저축</div>
+                            <div class="text-lg font-bold text-gray-900">₩3,500,000</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-gray-500 mb-1">적립 포인트</div>
+                            <div class="text-lg font-bold text-pink-500" th:text="${userPoints != null ? userPoints + 'P' : '12,450P'}">12,450P</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 rounded-xl p-4 mb-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-lg">💡</span>
+                            <h4 class="text-sm font-semibold text-gray-800">예상 환급액</h4>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white rounded-lg p-3 border border-blue-200">
+                                <div class="text-xs text-gray-600 mb-1" id="closeMyName" th:text="${userName != null ? userName + '님' : '김민수님'}">김민수님</div>
+                                <div class="text-xl font-bold text-blue-600">₩<span th:text="${myRefund != null ? #numbers.formatInteger(myRefund, 0, 'COMMA') : '740,736'}" id="closeMyRefund">740,736</span></div>
+                                <div class="text-xs text-gray-500 mt-1">기여도 <span th:text="${myContribution != null ? #numbers.formatDecimal(myContribution, 1, 1) + '%' : '56.5%'}" id="closeMyContrib">56.5%</span></div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-pink-200">
+                                <div class="text-xs text-gray-600 mb-1" id="closePartnerNameRefund" th:text="${partnerName != null ? partnerName + '님' : '이서연님'}">이서연님</div>
+                                <div class="text-xl font-bold text-pink-600">₩<span th:text="${partnerRefund != null ? #numbers.formatInteger(partnerRefund, 0, 'COMMA') : '504,264'}" id="closePartnerRefund">504,264</span></div>
+                                <div class="text-xs text-gray-500 mt-1">기여도 <span th:text="${partnerContribution != null ? #numbers.formatDecimal(partnerContribution, 1, 1) + '%' : '43.5%'}" id="closePartnerContrib">43.5%</span></div>
+                            </div>
+                        </div>
+                        <button onclick="showRefundModal()" class="w-full mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium">상세 내역 확인하기</button>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                    <div class="flex items-start gap-3">
+                        <span class="text-xl">⚠️</span>
+                        <div>
+                            <h3 class="text-gray-800 font-semibold mb-3">계좌 해지 시 주의사항</h3>
+                            <ul class="text-sm text-red-600 space-y-1">
+                                <li>• 두 분 모두 해지에 동의해야 계좌가 해지됩니다</li>
+                                <li>• 지금은 기여도에 따라 계좌의 잔액을 분배합니다</li>
+                                <li>• 진행 중인 목표 저축이 모두 중단됩니다</li>
+                                <li>• 적립한 포인트가 모두 소멸됩니다</li>
+                                <li>• 파트너와의 연결이 해제됩니다</li>
+                                <li>• 계좌 해지 후에는 복구가 불가능합니다</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="closureActionBtn" onclick="handleClosureAction()"
+                        class="w-full py-4 rounded-xl transition-colors font-medium text-lg bg-red-500 hover:bg-red-600 text-white">
+                    커플 통장 해지 요청하기
+                </button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="refundModalOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onclick="hideRefundModal()"></div>
+<div id="refundModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">환급액 확인</h2>
+            <p class="text-sm text-gray-600 mb-6">계좌 해지 시 각자의 기여도에 따라 잔액이 환급됩니다</p>
+
+            <div class="bg-[#FCE8E3] rounded-xl p-6 mb-6">
+                <div class="text-sm text-gray-600 mb-2">현재 계좌 잔액</div>
+                <div class="text-4xl font-bold text-gray-900">₩<span id="refundBalance">1,245,000</span></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-blue-50 rounded-xl p-5 border-2 border-blue-200">
+                    <h3 id="refundMyTitle" class="text-sm font-bold text-gray-800 mb-4">김민수님의 송금 내역</h3>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">2026.05.01</span><span class="text-blue-600 font-semibold">+₩500,000</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">2026.04.01</span><span class="text-blue-600 font-semibold">+₩500,000</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">2026.03.01</span><span class="text-blue-600 font-semibold">+₩300,000</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">2026.02.01</span><span class="text-blue-600 font-semibold">+₩200,000</span></div>
+                    </div>
+                    <div class="border-t-2 border-blue-300 pt-3 space-y-2">
+                        <div class="flex justify-between"><span class="text-sm text-gray-600">총 송금액</span><span class="text-lg font-bold text-blue-600">₩1,500,000</span></div>
+                        <div class="flex justify-between"><span class="text-sm text-gray-600">기여도</span><span id="refundMyContrib2" class="text-lg font-bold text-blue-600">56.5%</span></div>
+                    </div>
+                </div>
+                <div class="bg-pink-50 rounded-xl p-5 border-2 border-pink-200">
+                    <h3 id="refundPartnerTitle" class="text-sm font-bold text-gray-800 mb-4">이서연님의 송금 내역</h3>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">2026.04.15</span><span class="text-pink-600 font-semibold">+₩400,000</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">2026.03.15</span><span class="text-pink-600 font-semibold">+₩350,000</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">2026.02.15</span><span class="text-pink-600 font-semibold">+₩250,000</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">2026.01.20</span><span class="text-pink-600 font-semibold">+₩150,000</span></div>
+                    </div>
+                    <div class="border-t-2 border-pink-300 pt-3 space-y-2">
+                        <div class="flex justify-between"><span class="text-sm text-gray-600">총 송금액</span><span class="text-lg font-bold text-pink-600">₩1,150,000</span></div>
+                        <div class="flex justify-between"><span class="text-sm text-gray-600">기여도</span><span id="refundPartnerContrib2" class="text-lg font-bold text-pink-600">43.5%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-800 mb-4">환급 예상 금액</h3>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white rounded-xl p-5 border-2 border-blue-200">
+                    <div id="refundMyName2" class="text-sm text-gray-600 mb-1">김민수님</div>
+                    <div id="refundMyAmt" class="text-3xl font-bold text-blue-600 mb-1">₩740,736</div>
+                    <div id="refundMyContrib3" class="text-xs text-gray-500">기여도 56.5% 기준</div>
+                </div>
+                <div class="bg-white rounded-xl p-5 border-2 border-pink-200">
+                    <div id="refundPartnerName2" class="text-sm text-gray-600 mb-1">이서연님</div>
+                    <div id="refundPartnerAmt" class="text-3xl font-bold text-pink-600 mb-1">₩504,264</div>
+                    <div id="refundPartnerContrib3" class="text-xs text-gray-500">기여도 43.5% 기준</div>
+                </div>
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5 mb-6">
+                <div class="flex items-start gap-2">
+                    <span class="text-lg">ℹ️</span>
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">환급 방식 안내</h4>
+                        <p class="text-sm text-gray-700">환급액은 각자가 송금한 금액의 비율(기여도)에 따라 계산됩니다. 위 금액이 각자의 등록된 계좌로 자동 송금됩니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="hideRefundModal()" class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">취소</button>
+                <button id="refundConfirmBtn" onclick="handleConfirmClosure()" class="flex-1 py-4 rounded-xl transition-colors font-medium bg-red-500 text-white hover:bg-red-600">해지 요청하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+<script th:inline="javascript">
+    const serverUserName     = /*[[${userName}]]*/ null;
+    const serverPartnerName  = /*[[${partnerName}]]*/ null;
+    const serverClosureStatus= /*[[${accountClosureStatus}]]*/ null;
+    const serverClosureBy    = /*[[${closureRequestedBy}]]*/ null;
+    const serverMyRefund     = /*[[${myRefund}]]*/ null;
+    const serverPartnerRefund= /*[[${partnerRefund}]]*/ null;
+    const serverMyContrib    = /*[[${myContribution}]]*/ null;
+    const serverPartnerContrib= /*[[${partnerContribution}]]*/ null;
+    const serverBalance      = /*[[${accountBalance}]]*/ null;
+
+    let userName          = serverUserName || '김민수';
+    let partnerName       = serverPartnerName || '이서연';
+    let closureStatus     = serverClosureStatus || 'none';
+    let closureRequestedBy= serverClosureBy || '';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initClosureSection();
+      initRefundModal();
+      lucide.createIcons();
+    });
+
+    function initClosureSection() {
+      const banner = document.getElementById('closureStatusBanner');
+      const btn    = document.getElementById('closureActionBtn');
+      if (closureStatus === 'pending') {
+        banner.classList.remove('hidden');
+        if (closureRequestedBy === userName) {
+          banner.className = 'rounded-xl p-6 border-2 bg-blue-50 border-blue-200';
+          document.getElementById('closureStatusIcon').textContent  = '⏳';
+          document.getElementById('closureStatusTitle').textContent = '계좌 해지 요청 대기 중';
+          document.getElementById('closureStatusDesc').textContent  = `${partnerName}님이 동의하면 계좌가 해지됩니다.`;
+          btn.className = 'w-full py-4 rounded-xl transition-colors font-medium text-lg bg-gray-500 hover:bg-gray-600 text-white';
+          btn.textContent = '커플 통장 해지 취소하기';
+        } else {
+          banner.className = 'rounded-xl p-6 border-2 bg-orange-50 border-orange-200';
+          document.getElementById('closureStatusIcon').textContent  = '⚠️';
+          document.getElementById('closureStatusTitle').textContent = `${closureRequestedBy}님이 계좌 해지를 요청했습니다`;
+          document.getElementById('closureStatusDesc').textContent  = '환급액을 확인하고 해지에 동의하거나 거절할 수 있습니다.';
+          btn.className = 'w-full py-4 rounded-xl transition-colors font-medium text-lg bg-orange-500 hover:bg-orange-600 text-white';
+          btn.textContent = '커플 통장 해지 동의하기';
+        }
+      } else {
+        banner.classList.add('hidden');
+        btn.className = 'w-full py-4 rounded-xl transition-colors font-medium text-lg bg-red-500 hover:bg-red-600 text-white';
+        btn.textContent = '커플 통장 해지 요청하기';
+      }
+    }
+
+    function handleClosureAction() {
+      if (closureStatus === 'pending' && closureRequestedBy === userName) {
+        if (confirm('계좌 해지 요청을 취소하시겠습니까?')) {
+          closureStatus = 'none'; closureRequestedBy = '';
+          alert('계좌 해지 요청이 취소되었습니다.');
+          initClosureSection();
+        }
+      } else {
+        showRefundModal();
+      }
+    }
+
+    function showRefundModal() {
+      document.getElementById('refundModalOverlay').classList.remove('hidden');
+      document.getElementById('refundModal').classList.remove('hidden');
+      const btn = document.getElementById('refundConfirmBtn');
+      if (closureStatus === 'pending' && closureRequestedBy === userName) {
+        btn.className = 'flex-1 py-4 rounded-xl transition-colors font-medium bg-gray-500 text-white hover:bg-gray-600';
+        btn.textContent = '해지 요청 취소하기';
+      } else if (closureStatus === 'pending') {
+        btn.className = 'flex-1 py-4 rounded-xl transition-colors font-medium bg-orange-500 text-white hover:bg-orange-600';
+        btn.textContent = '해지 동의하기';
+      } else {
+        btn.className = 'flex-1 py-4 rounded-xl transition-colors font-medium bg-red-500 text-white hover:bg-red-600';
+        btn.textContent = '해지 요청하기';
+      }
+    }
+
+    function hideRefundModal() {
+      document.getElementById('refundModalOverlay').classList.add('hidden');
+      document.getElementById('refundModal').classList.add('hidden');
+    }
+
+    function handleConfirmClosure() {
+      if (closureStatus === 'pending' && closureRequestedBy === userName) {
+        if (confirm('계좌 해지 요청을 취소하시겠습니까?')) {
+          closureStatus = 'none'; closureRequestedBy = '';
+          alert('계좌 해지 요청이 취소되었습니다.');
+          hideRefundModal(); initClosureSection();
+        }
+      } else if (closureStatus === 'pending') {
+        if (confirm(`${closureRequestedBy}님의 계좌 해지 요청에 동의하시겠습니까?\n\n동의하시면 계좌가 즉시 해지됩니다.`)) {
+          alert('계좌 해지가 완료되었습니다.\n환급 금액은 1-2 영업일 내 입금됩니다.');
+          closureStatus = 'none'; hideRefundModal(); initClosureSection();
+        }
+      } else {
+        closureStatus = 'pending'; closureRequestedBy = userName;
+        alert(`계좌 해지 요청이 완료되었습니다.\n\n${partnerName}님이 동의하면 계좌가 해지됩니다.`);
+        hideRefundModal(); initClosureSection();
+      }
+    }
+
+    function initRefundModal() {
+      const myR = serverMyRefund !== null ? serverMyRefund : 740736;
+      const prR = serverPartnerRefund !== null ? serverPartnerRefund : 504264;
+      const myC = serverMyContrib !== null ? serverMyContrib : 56.5;
+      const prC = serverPartnerContrib !== null ? serverPartnerContrib : 43.5;
+      const bal = serverBalance !== null ? serverBalance : 1245000;
+      document.getElementById('refundBalance').textContent     = bal.toLocaleString();
+      document.getElementById('refundMyTitle').textContent     = userName + '님의 송금 내역';
+      document.getElementById('refundPartnerTitle').textContent= partnerName + '님의 송금 내역';
+      document.getElementById('refundMyContrib2').textContent  = myC.toFixed(1) + '%';
+      document.getElementById('refundPartnerContrib2').textContent = prC.toFixed(1) + '%';
+      document.getElementById('refundMyName2').textContent     = userName + '님';
+      document.getElementById('refundPartnerName2').textContent= partnerName + '님';
+      document.getElementById('refundMyAmt').textContent       = '₩' + myR.toLocaleString();
+      document.getElementById('refundPartnerAmt').textContent  = '₩' + prR.toLocaleString();
+      document.getElementById('refundMyContrib3').textContent  = '기여도 ' + myC.toFixed(1) + '% 기준';
+      document.getElementById('refundPartnerContrib3').textContent = '기여도 ' + prC.toFixed(1) + '% 기준';
+    }
+</script>
+<th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+</body>
+</html>

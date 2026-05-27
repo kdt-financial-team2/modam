@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="sidebar(activeMenu)">
+    <aside class="w-72 bg-white border-r border-gray-200 p-6 flex-shrink-0 sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto z-10">
+        <div class="space-y-2 mb-8">
+
+            <a th:href="@{/mypage/profile}"
+               th:classappend="${activeMenu == 'profile'} ? 'bg-[#FCE8E3] text-gray-800 font-medium' : 'text-gray-600 hover:bg-gray-50'"
+               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
+                <i data-lucide="user" class="w-5 h-5"></i><span>프로필 정보</span>
+            </a>
+
+            <a th:href="@{/mypage/accounts}"
+               th:classappend="${activeMenu == 'accounts'} ? 'bg-[#FCE8E3] text-gray-800 font-medium' : 'text-gray-600 hover:bg-gray-50'"
+               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
+                <i data-lucide="credit-card" class="w-5 h-5"></i><span>연결 계좌</span>
+            </a>
+
+            <a th:href="@{/mypage/notifications}"
+               th:classappend="${activeMenu == 'notifications'} ? 'bg-[#FCE8E3] text-gray-800 font-medium' : 'text-gray-600 hover:bg-gray-50'"
+               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
+                <i data-lucide="bell" class="w-5 h-5"></i><span>알림</span>
+            </a>
+
+            <a th:href="@{/mypage/items}"
+               th:classappend="${activeMenu == 'items'} ? 'bg-[#FCE8E3] text-gray-800 font-medium' : 'text-gray-600 hover:bg-gray-50'"
+               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i><span>아이템 관리</span>
+            </a>
+
+            <a th:href="@{/mypage/cards}"
+               th:classappend="${activeMenu == 'cards'} ? 'bg-[#FCE8E3] text-gray-800 font-medium' : 'text-gray-600 hover:bg-gray-50'"
+               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
+                <i data-lucide="settings" class="w-5 h-5"></i><span>카드 관리</span>
+            </a>
+
+            <a th:href="@{/mypage/close-account}"
+               th:classappend="${activeMenu == 'close-account'} ? 'bg-[#FCE8E3] text-gray-800 font-medium' : 'text-gray-600 hover:bg-gray-50'"
+               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
+                <i data-lucide="x-circle" class="w-5 h-5"></i><span>계좌 해지</span>
+            </a>
+
+            <a th:href="@{/mypage/withdrawal}"
+               th:classappend="${activeMenu == 'withdrawal'} ? 'bg-[#FCE8E3] text-gray-800 font-medium' : 'text-gray-600 hover:bg-gray-50'"
+               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
+                <i data-lucide="user-x" class="w-5 h-5"></i><span>회원 탈퇴</span>
+            </a>
+        </div>
+
+        <div class="bg-[#FCE8E3] rounded-xl p-4 mt-12">
+            <div class="flex items-center gap-2 mb-2">
+                <i data-lucide="help-circle" class="w-5 h-5 text-gray-700"></i>
+                <span class="text-sm text-gray-800">도움이 필요하신가요?</span>
+            </div>
+            <button class="text-sm text-[#F5A5A5] hover:underline flex items-center gap-1">
+                고객센터 <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </aside>
+</th:block>
+</body>
+</html>
