@@ -28,6 +28,11 @@
     <!-- 로그인 카드 -->
     <div class="w-full max-w-md bg-white rounded-3xl p-12 shadow-2xl">
 
+      <!-- 비밀번호 변경 성공 메시지 -->
+      <div th:if="${resetSuccess}" class="bg-green-50 border-2 border-green-200 rounded-2xl p-4 text-center mb-6">
+        <p class="text-green-600">✅ 비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해주세요.</p>
+      </div>
+
       <!-- 서버 에러 메시지 -->
       <div th:if="${loginError}" class="bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-center mb-6">
         <p class="text-red-600">❌ <span th:text="${loginError}">아이디 또는 비밀번호가 일치하지 않습니다</span></p>
@@ -71,12 +76,17 @@
           <p class="text-sm text-red-500 mt-2 hidden" id="passwordError">❌ 비밀번호를 입력해주세요</p>
         </div>
 
-        <!-- 자동 로그인 -->
-        <div class="flex items-center">
+        <!-- 자동 로그인 + 아이디/비밀번호 찾기 -->
+        <div class="flex items-center justify-between">
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" name="remember-me" class="w-5 h-5 rounded accent-[#F5A5A5]"/>
             <span class="text-gray-700">자동 로그인</span>
           </label>
+          <div class="flex gap-3 text-sm text-gray-500">
+            <a th:href="@{/auth/find-id}" class="hover:text-[#F5A5A5] transition-colors">아이디 찾기</a>
+            <span class="text-gray-300">|</span>
+            <a th:href="@{/auth/find-password}" class="hover:text-[#F5A5A5] transition-colors">비밀번호 찾기</a>
+          </div>
         </div>
 
         <!-- 로그인 버튼 -->

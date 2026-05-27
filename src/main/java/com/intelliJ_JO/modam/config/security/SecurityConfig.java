@@ -76,6 +76,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     // 로그인·회원가입 관련 경로 (비로그인 접근 허용)
                     "/", "/landing", "/auth/login", "/auth/login?*", "/login",
+                    "/auth/find-id", "/auth/find-password", "/auth/find-password/**",
                     "/signup/**", "/terms",
                     "/members/join",
                     // 정적 리소스 (CSS, JS, 이미지)
