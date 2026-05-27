@@ -18,9 +18,12 @@ public class AccountResponseDto {
     private Long dailyTransferLimit;
     private LocalDateTime createdAt;
 
+    private String acctAlias;
+
     public AccountResponseDto(Account account) {
         this.id = account.getId();
         this.accountNumber = account.getAccountNumber();
+        this.acctAlias = account.getAcctAlias();
         this.accountType = account.getAccountType().name();
         this.status = account.getStatus().name();
         this.balance = account.getBalance();

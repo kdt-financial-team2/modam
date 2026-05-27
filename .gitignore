@@ -40,3 +40,12 @@ out/
 ### H2 Database ###
 data/*.mv.db
 data/*.trace.db
+
+### Claude
+
+.claude/
+
+
+### logs
+logs
+modam.log

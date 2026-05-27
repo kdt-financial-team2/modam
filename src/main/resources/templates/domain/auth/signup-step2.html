@@ -78,23 +78,37 @@
             <label class="block text-gray-800 mb-2">아이디</label>
             <input type="text" th:field="*{userId}"
                    class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                   placeholder="영문, 숫자 조합 6-20자"/>
-            <p class="text-sm text-red-500 mt-1" th:if="${#fields.hasErrors('userId')}" th:errors="*{userId}"></p>
+                   placeholder="영문, 숫자 조합 4-20자"
+                   minlength="4" maxlength="20"
+                   oninput="updateCharCount(this, 'userIdCount', 4, 20)"/>
+            <div class="flex justify-between items-center mt-1">
+              <p class="text-sm text-red-500" th:if="${#fields.hasErrors('userId')}" th:errors="*{userId}"></p>
+              <p class="text-xs text-gray-400 ml-auto">최소 4자 · 최대 20자 · <span id="userIdCount">0</span>/20</p>
+            </div>
           </div>
 
           <div>
             <label class="block text-gray-800 mb-2">비밀번호</label>
             <input type="password" th:field="*{password}"
                    class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                   placeholder="영문, 숫자, 특수문자 조합 8자 이상"/>
-            <p class="text-sm text-red-500 mt-1" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+                   placeholder="영문, 숫자, 특수문자 조합 8-20자"
+                   minlength="8" maxlength="20"
+                   oninput="checkPasswordMatch(); updateCharCount(this, 'pwCount', 8, 20)"/>
+            <div class="flex justify-between items-center mt-1">
+              <p class="text-sm text-red-500" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+              <p class="text-xs text-gray-400 ml-auto">최소 8자 · 최대 20자 · <span id="pwCount">0</span>/20</p>
+            </div>
           </div>
 
           <div>
             <label class="block text-gray-800 mb-2">비밀번호 확인</label>
             <input type="password" th:field="*{passwordConfirm}"
-                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                   placeholder="비밀번호를 다시 입력해주세요"/>
+                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none transition-colors"
+                   placeholder="비밀번호를 다시 입력해주세요"
+                   maxlength="20"
+                   oninput="checkPasswordMatch()"/>
+            <p id="pwMatchError" class="hidden text-sm text-red-500 mt-1">비밀번호가 일치하지 않습니다.</p>
+            <p id="pwMatchSuccess" class="hidden text-sm text-green-500 mt-1">비밀번호가 일치합니다.</p>
           </div>
 
           <!-- 개인 정보 -->
@@ -105,7 +119,10 @@
               <label class="block text-gray-800 mb-2">이름</label>
               <input type="text" th:field="*{name}"
                      class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                     placeholder="홍길동"/>
+                     placeholder="홍길동"
+                     minlength="2" maxlength="20"
+                     oninput="updateCharCount(this, 'nameCount', 2, 20)"/>
+              <p class="text-xs text-gray-400 mt-1 text-right">최소 2자 · 최대 20자 · <span id="nameCount">0</span>/20</p>
             </div>
 
             <div>
@@ -149,7 +166,9 @@
               <label class="block text-gray-800 mb-2">휴대폰 번호</label>
               <input type="tel" th:field="*{phone}"
                      class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                     placeholder="010-1234-5678"/>
+                     placeholder="010-1234-5678"
+                     oninput="formatPhone(this)"
+                     maxlength="13"/>
             </div>
 
             <div>
@@ -180,7 +199,7 @@
              class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
             <i data-lucide="chevron-left" class="w-5 h-5"></i> 이전
           </a>
-          <button type="submit"
+          <button type="submit" id="submitBtn"
                   class="flex-1 py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors flex items-center justify-center gap-2">
             다음 <i data-lucide="chevron-right" class="w-5 h-5"></i>
           </button>
@@ -211,6 +230,74 @@
           document.getElementById('address').value = data.roadAddress || data.jibunAddress;
         }
       }).open();
+    }
+
+    /* 비밀번호 일치 여부 실시간 검사 + 다음 버튼 활성/비활성 */
+    function checkPasswordMatch() {
+      const pw        = document.getElementById('password').value;
+      const pwConfirm = document.getElementById('passwordConfirm').value;
+      const input     = document.getElementById('passwordConfirm');
+      const errMsg    = document.getElementById('pwMatchError');
+      const okMsg     = document.getElementById('pwMatchSuccess');
+      const btn       = document.getElementById('submitBtn');
+
+      // 확인란이 비어 있으면 피드백 숨기고 버튼 유지
+      if (!pwConfirm) {
+        input.classList.remove('border-red-400', 'border-green-400');
+        input.classList.add('border-gray-200');
+        errMsg.classList.add('hidden');
+        okMsg.classList.add('hidden');
+        setSubmitEnabled(true);
+        return;
+      }
+
+      if (pw === pwConfirm) {
+        input.classList.remove('border-red-400', 'border-gray-200');
+        input.classList.add('border-green-400');
+        errMsg.classList.add('hidden');
+        okMsg.classList.remove('hidden');
+        setSubmitEnabled(true);
+      } else {
+        input.classList.remove('border-green-400', 'border-gray-200');
+        input.classList.add('border-red-400');
+        errMsg.classList.remove('hidden');
+        okMsg.classList.add('hidden');
+        setSubmitEnabled(false);
+      }
+    }
+
+    /* 다음 버튼 활성/비활성 토글 */
+    function setSubmitEnabled(enabled) {
+      const btn = document.getElementById('submitBtn');
+      if (enabled) {
+        btn.disabled = false;
+        btn.className = 'flex-1 py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors flex items-center justify-center gap-2 cursor-pointer';
+      } else {
+        btn.disabled = true;
+        btn.className = 'flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl transition-colors flex items-center justify-center gap-2 cursor-not-allowed';
+      }
+    }
+
+    /* 글자 수 카운터 업데이트 — 최소 미달 시 빨간색, 충족 시 초록색 */
+    function updateCharCount(input, counterId, min, max) {
+      const len  = input.value.length;
+      const span = document.getElementById(counterId);
+      if (span) span.textContent = len;
+      if (len >= min && len <= max) {
+        span.classList.remove('text-red-400');
+        span.classList.add('text-green-500');
+      } else {
+        span.classList.remove('text-green-500');
+        span.classList.add('text-red-400');
+      }
+    }
+
+    /* 휴대폰 번호 자동 하이픈 포맷 (최대 11자리 숫자 기준) */
+    function formatPhone(input) {
+      const digits = input.value.replace(/[^0-9]/g, '').slice(0, 11);
+      if (digits.length < 4)       input.value = digits;
+      else if (digits.length < 8)  input.value = digits.slice(0, 3) + '-' + digits.slice(3);
+      else                         input.value = digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7);
     }
   </script>
 </body>

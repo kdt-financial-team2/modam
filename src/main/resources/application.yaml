@@ -11,6 +11,11 @@ spring:
     username: test
     password: 1234
 
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -25,6 +30,13 @@ spring:
     user:
       name: test
       password: 1234
+
+logging:
+  file:
+    name: logs/modam.log
+  level:
+    root: INFO
+    "[com.intelliJ_JO.modam]": DEBUG
 
 springdoc:
   api-docs:
