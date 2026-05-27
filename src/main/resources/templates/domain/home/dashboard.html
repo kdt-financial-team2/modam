@@ -153,10 +153,10 @@
         <!-- ===== 오른쪽 컬럼 (30%) ===== -->
         <div class="col-span-3 space-y-8">
 
-          <!-- 커플 정보 카드: 온보딩 상태 -->
+          <!-- 커플 정보 카드: 온보딩 상태 (정보 미저장 시에만 렌더링) -->
           <div id="coupleOnboarding"
-               class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8"
-               th:classappend="${isCoupleInfoSaved} ? ' hidden' : ''">
+               th:if="${!isCoupleInfoSaved}"
+               class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
             <div class="text-center mb-6">
               <div class="w-16 h-16 bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-full flex items-center justify-center mx-auto mb-4">
                 <i data-lucide="heart" class="w-8 h-8 text-[#F5A5A5]"></i>
@@ -217,17 +217,22 @@
             </form>
           </div>
 
-          <!-- 커플 정보 카드: 저장된 상태 (저장하기 후 표시) -->
+          <!-- 커플 정보 카드: 저장된 상태 (보기/편집 토글) -->
           <div id="coupleSaved"
-               class="hidden bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-3xl shadow-sm border border-gray-100 p-6"
-               th:classappend="${isCoupleInfoSaved} ? ' !block' : ''">
+               th:if="${isCoupleInfoSaved}"
+               class="bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-3xl shadow-sm border border-gray-100 p-6">
+
+            <!-- 헤더: 편집 아이콘 클릭 시 모드 전환 -->
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-bold text-gray-900">커플 정보</h3>
-              <a th:href="@{/couple-info/edit}" class="p-2 hover:bg-white/50 rounded-xl transition-colors">
-                <i data-lucide="edit" class="w-5 h-5 text-gray-700"></i>
-              </a>
+              <button id="coupleEditToggleBtn" onclick="toggleCoupleEdit()"
+                      class="p-2 hover:bg-white/50 rounded-xl transition-colors">
+                <i id="coupleEditIcon" data-lucide="edit" class="w-5 h-5 text-gray-700"></i>
+              </button>
             </div>
-            <div class="space-y-4">
+
+            <!-- ===== 보기 모드 ===== -->
+            <div id="coupleViewMode" class="space-y-4">
               <div class="bg-white/70 backdrop-blur rounded-2xl p-5">
                 <div class="flex items-start gap-3 mb-4">
                   <div class="w-12 h-12 bg-[#F5A5A5] rounded-xl flex items-center justify-center flex-shrink-0">
@@ -268,6 +273,65 @@
                 </button>
               </form>
             </div>
+
+            <!-- ===== 편집 모드 (기본 hidden) ===== -->
+            <div id="coupleEditMode" class="hidden space-y-4">
+              <form th:action="@{/couple-info/edit}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="space-y-4">
+                  <!-- 시작일 입력 -->
+                  <div class="bg-white/70 backdrop-blur rounded-2xl p-5">
+                    <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                      <i data-lucide="calendar" class="w-4 h-4 text-[#F5A5A5]"></i>
+                      시작일
+                    </label>
+                    <input type="date" name="dDay" id="editDDay"
+                           class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl
+                                  focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800"/>
+                  </div>
+                  <!-- 계좌 애칭 입력 -->
+                  <div class="bg-white/70 backdrop-blur rounded-2xl p-5">
+                    <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                      <i data-lucide="sparkles" class="w-4 h-4 text-[#F5A5A5]"></i>
+                      계좌 애칭
+                    </label>
+                    <input type="text" name="acctAlias" id="editAcctAlias"
+                           placeholder="예: 우리의 여행통장"
+                           class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl
+                                  focus:border-[#F5A5A5] focus:outline-none transition-colors placeholder:text-gray-400 text-gray-800"/>
+                    <div class="mt-3">
+                      <p class="text-xs text-gray-500 mb-2">💡 추천 애칭:</p>
+                      <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="setEditAlias('우리의 여행통장')"
+                                class="text-xs px-3 py-1.5 bg-white/80 text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
+                          우리의 여행통장
+                        </button>
+                        <button type="button" onclick="setEditAlias('데이트 통장')"
+                                class="text-xs px-3 py-1.5 bg-white/80 text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
+                          데이트 통장
+                        </button>
+                        <button type="button" onclick="setEditAlias('모담 커플통장')"
+                                class="text-xs px-3 py-1.5 bg-white/80 text-gray-700 rounded-full hover:bg-[#F5A5A5] hover:text-white transition-colors">
+                          모담 커플통장
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- 취소 / 저장 버튼 -->
+                  <div class="flex gap-3">
+                    <button type="button" onclick="toggleCoupleEdit()"
+                            class="flex-1 py-4 bg-white/70 text-gray-700 rounded-xl hover:bg-white transition-colors font-medium">
+                      취소
+                    </button>
+                    <button type="submit"
+                            class="flex-1 py-4 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors font-semibold shadow-md">
+                      저장하기
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
           </div>
 
           <!-- 연결된 프로필 카드 -->
@@ -391,30 +455,20 @@
       }
     });
 
-    /* ---- 커플 정보 저장: 온보딩 숨기고 저장 카드 표시 ---- */
+    /* ---- 커플 정보 저장: 서버에 폼 제출 후 대시보드 리다이렉트 ---- */
     function saveCoupleInfo(e) {
       e.preventDefault();
       const dateVal  = document.getElementById('coupleDate').value;
       const aliasVal = document.getElementById('acctAlias').value.trim();
       if (!dateVal || !aliasVal) return;
 
-      // 날짜 포맷: 2026-04-30 → 2026.04.30
-      document.getElementById('savedDateDisplay').textContent = dateVal.replace(/-/g, '.');
+      // 저장 버튼 로딩 상태로 변경
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = '저장 중...';
 
-      // 함께한 일 수 계산
-      const days = Math.ceil(Math.abs(new Date() - new Date(dateVal)) / (1000 * 60 * 60 * 24));
-      document.getElementById('savedDaysDisplay').textContent = days;
-
-      // 계좌 애칭
-      document.getElementById('savedAliasDisplay').textContent = aliasVal;
-
-      // 카드 전환
-      document.getElementById('coupleOnboarding').classList.add('hidden');
-      document.getElementById('coupleSaved').classList.remove('hidden');
-      lucide.createIcons();
-
-      /* 서버 제출 (Spring Boot 연동 시 주석 해제) */
-      // document.getElementById('coupleInfoForm').submit();
+      // 서버에 실제 제출 → POST /dashboard/couple-info → redirect:/dashboard
+      document.getElementById('coupleInfoForm').submit();
     }
 
     /* ---- 저장하기 버튼 활성화 검사 ---- */
@@ -432,28 +486,65 @@
       }
     }
 
-    /* ---- 계좌 애칭 추천 ---- */
+    /* ---- 계좌 애칭 추천 (온보딩 폼용) ---- */
     function setAlias(value) {
       document.getElementById('acctAlias').value = value;
       checkCoupleForm();
     }
 
-    /* ---- 출석 체크 ---- */
+    /* ---- 커플 정보 보기 ↔ 편집 모드 토글 ---- */
+    function toggleCoupleEdit() {
+      const viewMode = document.getElementById('coupleViewMode');
+      const editMode = document.getElementById('coupleEditMode');
+      const icon     = document.getElementById('coupleEditIcon');
+      const isEditing = !editMode.classList.contains('hidden');
+
+      if (isEditing) {
+        // 보기 모드로 복귀
+        editMode.classList.add('hidden');
+        viewMode.classList.remove('hidden');
+        icon.setAttribute('data-lucide', 'edit');
+      } else {
+        // 편집 모드 진입: 현재 표시 값을 입력 필드에 채움
+        const dateText  = document.getElementById('savedDateDisplay').textContent.trim();
+        const aliasText = document.getElementById('savedAliasDisplay').textContent.trim();
+        // "yyyy.MM.dd" → "yyyy-MM-dd" 변환 (input[type=date] 형식)
+        document.getElementById('editDDay').value      = dateText.replace(/\./g, '-');
+        document.getElementById('editAcctAlias').value = aliasText;
+
+        viewMode.classList.add('hidden');
+        editMode.classList.remove('hidden');
+        icon.setAttribute('data-lucide', 'x');
+      }
+      lucide.createIcons();
+    }
+
+    /* ---- 편집 폼 추천 애칭 선택 ---- */
+    function setEditAlias(value) {
+      document.getElementById('editAcctAlias').value = value;
+    }
+
+    /* ---- 출석 체크: 버튼 로딩 상태로 변경 후 서버에 폼 제출 ---- */
     function handleCheckin(e) {
-      e.preventDefault();
       const btn   = document.getElementById('checkinBtn');
       const label = document.getElementById('checkinLabel');
       if (!btn || btn.disabled) return;
 
       btn.disabled = true;
       btn.className = 'w-full flex items-center justify-center gap-2 py-4 bg-white/50 text-gray-400 rounded-2xl font-medium cursor-not-allowed';
-      label.textContent = '오늘 출석 완료!';
-
-      showPointToast();
-
-      /* 서버 제출 (Spring Boot 연동 시 활성화) */
-      // setTimeout(() => e.target.submit(), 300);
+      label.textContent = '처리 중...';
+      // 폼이 정상 submit → POST /dashboard/checkin → redirect:/dashboard?checkin=success
     }
+
+    /* ---- 리다이렉트 후 ?checkin=success 파라미터로 포인트 토스트 표시 ---- */
+    (function checkCheckinResult() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('checkin') === 'success') {
+        showPointToast();
+        // URL에서 파라미터 제거 (새로고침 시 토스트 재표시 방지)
+        window.history.replaceState({}, '', '/dashboard');
+      }
+    })();
 
     /* ---- 포인트 토스트 표시/숨김 ---- */
     let toastTimer = null;

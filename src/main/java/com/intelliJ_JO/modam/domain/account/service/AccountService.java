@@ -12,6 +12,8 @@ import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
+import com.intelliJ_JO.modam.domain.couple.entity.Couple;
+import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -29,25 +32,32 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMemberRepository accountMemberRepository;
+    private final CoupleRepository coupleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     // 계좌 개설 — 세션의 인증된 사용자를 개설자로 등록
     @Transactional
     public AccountResponseDto createAccount(AccountCreateRequestDto request, Member member) {
-        if (!request.getPassword().equals(request.getPasswordConfirm())) {
-            throw new IllegalArgumentException("계좌 비밀번호가 일치하지 않습니다.");
-        }
+        // 초기 입금액 (미입력 시 0)
+        long deposit = request.getInitialDeposit() != null ? request.getInitialDeposit() : 0L;
 
         Account account = Account.builder()
                 .accountNumber(generateAccountNumber())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .accountType(request.getAccountType())
+                .acctAlias(request.getAcctAlias())
+                .balance(deposit)
+                .availableBalance(deposit)
                 .deliveryAddress(request.getDeliveryAddress())
                 .jobInfo(request.getJobInfo())
                 .tradePurpose(request.getTradePurpose())
                 .fundSource(request.getFundSource())
                 .onceTransferLimit(request.getOnceTransferLimit())
                 .dailyTransferLimit(request.getDailyTransferLimit())
+                .agreeService(request.isAgreeService())
+                .agreeFinance(request.isAgreeFinance())
+                .agreePrivacy(request.isAgreePrivacy())
+                .agreeMarketing(request.isAgreeMarketing())
                 .build();
 
         Account saved = accountRepository.save(account);
@@ -58,6 +68,14 @@ public class AccountService {
                 .member(member)
                 .inviteStatus(InviteStatus.ACCEPT)
                 .build());
+
+        // GROUP 계좌이면 Couple 레코드도 함께 생성 (초대코드 포함)
+        if (saved.getAccountType() == AccountType.GROUP) {
+            coupleRepository.save(Couple.builder()
+                    .account(saved)
+                    .inviteCode(UUID.randomUUID().toString())
+                    .build());
+        }
 
         return new AccountResponseDto(saved);
     }
@@ -129,12 +147,26 @@ public class AccountService {
                 .collect(Collectors.toList());
     }
 
-    // 계좌 번호 생성 (UUID 기반 16자리 대문자, 중복 시 재생성)
+    // 계좌 번호 생성 (1100-XXXXXXXX-XXX 형식, 중복 시 재생성)
     private String generateAccountNumber() {
+        Random rnd = new Random();
         String candidate;
         do {
-            candidate = UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
+            // 8자리 + 3자리 랜덤 숫자
+            String mid   = String.format("%08d", rnd.nextInt(100_000_000));
+            String check = String.format("%03d", rnd.nextInt(1_000));
+            candidate = "1100-" + mid + "-" + check;
         } while (accountRepository.existsByAccountNumber(candidate));
         return candidate;
+    }
+
+    // [추가] 계좌 비밀번호 검증 메서드
+    public void verifyAccountPassword(Long accountId, String rawPassword) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
+
+        if (!passwordEncoder.matches(rawPassword, account.getPasswordHash())) {
+            throw new IllegalArgumentException("계좌 비밀번호가 일치하지 않습니다.");
+        }
     }
 }

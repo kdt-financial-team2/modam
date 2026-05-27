@@ -23,8 +23,10 @@ import org.springframework.ui.Model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import com.intelliJ_JO.modam.domain.point.entity.PointReason;
 import java.util.List;
 import java.util.Map;
 
@@ -115,8 +117,12 @@ public class DashboardService {
             model.addAttribute("savingsGoalPercent", 0);
         }
 
-        // 6-2. 출석 체크 여부 (TODO: 출석 체크 도메인 구현 후 연동)
-        model.addAttribute("isCheckedIn", false);
+        // 6-2. 오늘 출석 체크 여부 — 오늘 00:00 ~ 23:59:59 사이 ATTENDANCE 적립 내역 존재 시 true
+        LocalDate today = LocalDate.now();
+        boolean isCheckedIn = pointRepository.existsByMemberIdAndReasonAndCreatedAtBetween(
+                member.getId(), PointReason.ATTENDANCE,
+                today.atStartOfDay(), today.atTime(LocalTime.MAX));
+        model.addAttribute("isCheckedIn", isCheckedIn);
 
         // 7. 커플 포인트 (멤버 개인 포인트 최신 잔액)
         int couplePoints = pointRepository

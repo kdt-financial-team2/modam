@@ -11,5 +11,4 @@ public class ModamApplication {
     public static void main(String[] args) {
         SpringApplication.run(ModamApplication.class, args);
     }
-
 }
