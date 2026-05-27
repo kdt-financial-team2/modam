@@ -19,6 +19,7 @@ import java.util.List;
 public class MypageViewController {
 
     private final AccountMemberRepository accountMemberRepository;
+    private final DashboardService dashboardService;
 
     @GetMapping("/mypage")
     public String mypage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -68,6 +69,7 @@ public class MypageViewController {
             model.addAttribute("partnerContribution", 0.0);
         }
 
+        dashboardService.populateHeader(member, model);
         model.addAttribute("section",              "profile");
         model.addAttribute("userPoints",           0);
         model.addAttribute("cardIssued",           false);

@@ -77,6 +77,8 @@ public class DashboardService {
         }
 
         Long accountId = myMembership.getAccount().getId();
+        long accountBalance = myMembership.getAccount().getBalance();
+        model.addAttribute("accountBalance", accountBalance);
 
         // 2. 이번 달 기간 설정
         LocalDate now = LocalDate.now();
@@ -255,6 +257,7 @@ public class DashboardService {
     }
 
     private void populateEmpty(Member member, Model model) {
+        model.addAttribute("accountBalance",     0);
         model.addAttribute("totalExpense",      0);
         model.addAttribute("balanceData",       List.of());
         model.addAttribute("recentTransactions",List.of());
