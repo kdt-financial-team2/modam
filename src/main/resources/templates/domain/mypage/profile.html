@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로필 정보 - 모담</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+<th:block th:replace="~{common/layout/header :: nav}"></th:block>
+
+<div class="flex flex-1">
+
+    <th:block th:replace="~{common/layout/mypage-sidebar :: sidebar('profile')}"></th:block>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+
+        <div id="section-profile" class="max-w-4xl">
+            <h1 class="text-2xl font-bold text-gray-800 mb-8">프로필 정보</h1>
+
+            <div th:if="${successMsg}" class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-center gap-2">
+                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                <span th:text="${successMsg}"></span>
+            </div>
+            <div th:if="${errorMsg}" class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-2">
+                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                <span th:text="${errorMsg}"></span>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm p-8 mb-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-6">내 정보</h2>
+                <div class="flex items-start gap-8">
+
+                    <div class="flex flex-col items-center">
+                        <input type="file" id="profileFile" accept="image/*" class="hidden" onchange="previewImage(this)">
+
+                        <label for="profileFile"
+                               class="relative group cursor-pointer block w-32 h-32 rounded-full overflow-hidden mb-4 border-2 border-gray-100 shadow-inner bg-gray-50">
+
+                            <div id="profileImageContainer" class="w-full h-full flex items-center justify-center">
+                                <img th:if="${member != null and member.profileImg != null}"
+                                     id="profileImagePreview"
+                                     th:src="${member.profileImg}"
+                                     alt="프로필 사진"
+                                     class="w-full h-full object-cover"/>
+
+                                <div th:unless="${member != null and member.profileImg != null}"
+                                     id="profileDefaultIcon"
+                                     class="w-full h-full flex items-center justify-center bg-[#FCE8E3]">
+                                    <i data-lucide="user" class="w-16 h-16 text-gray-400"></i>
+                                </div>
+                            </div>
+
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center rounded-full">
+                                <div class="scale-50 group-hover:scale-100 transition-transform duration-300">
+                                    <i data-lucide="camera" class="w-8 h-8 text-white"></i>
+                                </div>
+                            </div>
+                        </label>
+
+                        <button onclick="document.getElementById('profileFile').click()"
+                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors text-sm">
+                            사진 변경
+                        </button>
+                    </div>
+
+                    <form th:action="@{/mypage/profile/update}" method="post" class="flex-1 space-y-4">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2">이름 (변경 불가)</label>
+                                <input type="text" id="profileName" name="name"
+                                       th:value="${member != null ? member.name : '김민수'}"
+                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed" readonly/>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2">아이디 (변경 불가)</label>
+                                <input type="text" th:value="${member != null ? member.userId : 'minsu_kim'}"
+                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed" disabled/>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2">이메일 (변경 불가)</label>
+                            <input type="email" id="profileEmail"
+                                   th:value="${member != null ? member.email : 'minsu.kim@email.com'}"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed" disabled/>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2">휴대폰 번호</label>
+                            <input type="tel" id="profilePhone" name="phoneNo"
+                                   th:value="${member != null ? member.phoneNo : '010-1234-5678'}"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
+                                   oninput="formatPhone(this)" maxlength="13" required/>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors mt-4 font-medium">정보 수정 저장하기</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm p-8">
+                <h2 class="text-lg font-bold text-gray-800 mb-6">보안 설정</h2>
+                <form th:action="@{/mypage/password/update}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2">현재 비밀번호</label>
+                            <div class="relative">
+                                <input type="password" id="currentPw" name="currentPassword" placeholder="현재 비밀번호를 입력하세요"
+                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors pr-12"
+                                       oninput="validatePasswordForm()"/>
+                                <button type="button" onclick="togglePw('currentPw','eyeCurrent')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    <i data-lucide="eye" id="eyeCurrent" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2">새 비밀번호</label>
+                            <div class="relative">
+                                <input type="password" id="newPw" name="newPassword" placeholder="영문, 숫자, 특수문자 조합 8-20자"
+                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none transition-colors pr-12"
+                                       minlength="8" maxlength="20" oninput="validatePasswordForm()"/>
+                                <button type="button" onclick="togglePw('newPw','eyeNew')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    <i data-lucide="eye" id="eyeNew" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                            <p id="newPwLengthError" class="hidden text-sm text-red-500 mt-1">비밀번호는 8자 이상이어야 합니다.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2">새 비밀번호 확인</label>
+                            <div class="relative">
+                                <input type="password" id="confirmPw" name="confirmPassword" placeholder="새 비밀번호를 다시 입력하세요"
+                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none transition-colors pr-12"
+                                       maxlength="20" oninput="validatePasswordForm()"/>
+                                <button type="button" onclick="togglePw('confirmPw','eyeConfirm')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    <i data-lucide="eye" id="eyeConfirm" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                            <p id="pwMatchError" class="hidden text-sm text-red-500 mt-1">비밀번호가 일치하지 않습니다.</p>
+                            <p id="pwMatchSuccess" class="hidden text-sm text-green-500 mt-1">비밀번호가 일치합니다.</p>
+                        </div>
+
+                        <button type="submit" id="pwSubmitBtn" disabled
+                                class="w-full py-3 bg-gray-200 text-gray-400 rounded-xl transition-colors mt-4 font-medium cursor-not-allowed">
+                            비밀번호 변경
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
+
+    // 눈동자 아이콘 비밀번호 보이기/숨기기
+    function togglePw(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon  = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    // 휴대폰 번호 자동 하이픈 및 제한 포맷팅 (회원가입에서 이식)
+    function formatPhone(input) {
+      const digits = input.value.replace(/[^0-9]/g, '').slice(0, 11);
+      if (digits.length < 4)       input.value = digits;
+      else if (digits.length < 8)  input.value = digits.slice(0, 3) + '-' + digits.slice(3);
+      else                         input.value = digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7);
+    }
+
+    // 비밀번호 실시간 유효성 검사 및 UI 변경
+    function validatePasswordForm() {
+        const currentPw = document.getElementById('currentPw').value;
+        const newPw = document.getElementById('newPw').value;
+        const confirmPw = document.getElementById('confirmPw').value;
+
+        const newPwInput = document.getElementById('newPw');
+        const confirmPwInput = document.getElementById('confirmPw');
+
+        const lenError = document.getElementById('newPwLengthError');
+        const matchError = document.getElementById('pwMatchError');
+        const matchSuccess = document.getElementById('pwMatchSuccess');
+        const btn = document.getElementById('pwSubmitBtn');
+
+        let isLengthValid = false;
+        let isMatchValid = false;
+
+        // 1. 새 비밀번호 길이 검사 (8자 이상)
+        if (newPw.length > 0 && newPw.length < 8) {
+            newPwInput.classList.remove('border-gray-200', 'border-green-400', 'focus:border-[#FCE8E3]');
+            newPwInput.classList.add('border-red-400');
+            lenError.classList.remove('hidden');
+        } else if (newPw.length >= 8) {
+            newPwInput.classList.remove('border-red-400', 'focus:border-[#FCE8E3]');
+            newPwInput.classList.add('border-green-400');
+            lenError.classList.add('hidden');
+            isLengthValid = true;
+        } else {
+            // 비어있을 때 초기화
+            newPwInput.classList.remove('border-red-400', 'border-green-400');
+            newPwInput.classList.add('border-gray-200', 'focus:border-[#FCE8E3]');
+            lenError.classList.add('hidden');
+        }
+
+        // 2. 비밀번호 일치 검사
+        if (confirmPw.length > 0) {
+            if (newPw === confirmPw && isLengthValid) {
+                confirmPwInput.classList.remove('border-red-400', 'border-gray-200', 'focus:border-[#FCE8E3]');
+                confirmPwInput.classList.add('border-green-400');
+                matchError.classList.add('hidden');
+                matchSuccess.classList.remove('hidden');
+                isMatchValid = true;
+            } else {
+                confirmPwInput.classList.remove('border-green-400', 'border-gray-200', 'focus:border-[#FCE8E3]');
+                confirmPwInput.classList.add('border-red-400');
+                matchError.classList.remove('hidden');
+                matchSuccess.classList.add('hidden');
+            }
+        } else {
+            // 비어있을 때 초기화
+            confirmPwInput.classList.remove('border-red-400', 'border-green-400');
+            confirmPwInput.classList.add('border-gray-200', 'focus:border-[#FCE8E3]');
+            matchError.classList.add('hidden');
+            matchSuccess.classList.add('hidden');
+        }
+
+        // 3. 버튼 활성화 제어 (모든 조건 충족 시)
+        if (currentPw.trim() !== '' && isLengthValid && isMatchValid) {
+            btn.disabled = false;
+            btn.className = 'w-full py-3 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors mt-4 font-medium cursor-pointer';
+        } else {
+            btn.disabled = true;
+            btn.className = 'w-full py-3 bg-gray-200 text-gray-400 rounded-xl transition-colors mt-4 font-medium cursor-not-allowed';
+        }
+    }
+
+    // 🔥 [추가됨] 프론트엔드 이미지 실시간 미리보기 (서버 전송 없음)
+    // ⚠️ 윈도우/맥 간 stetching 에러 해결을 위해 HTML을 완전히 교체하는 방식으로 로직 변경
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const container = document.getElementById('profileImageContainer');
+
+                // 1. 기존 컨테이너 내부(아이콘 또는 옛날 사진)를 완전히 깨끗하게 비움
+                container.innerHTML = '';
+
+                // 2. 새로운 img 태그를 자바스크립트로 직접 생성
+                const newImg = document.createElement('img');
+                newImg.id = 'profileImagePreview';
+                newImg.src = e.target.result; // 사용자가 선택한 이미지의 임시 경로 바인딩
+                newImg.alt = 'Profile';
+                // 윈도우/맥 stetching을 차단하는 가장 확실한 스타일 강제 주입
+                newImg.className = 'w-full h-full object-cover';
+
+                // 3. 깨끗해진 컨테이너에 새로운 이미지를 주입
+                container.appendChild(newImg);
+            }
+
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
+<th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 탈퇴 - 모담</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+<th:block th:replace="~{common/layout/header :: nav}"></th:block>
+
+<div class="flex flex-1">
+
+    <th:block th:replace="~{common/layout/mypage-sidebar :: sidebar('withdrawal')}"></th:block>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div class="max-w-3xl">
+            <h1 class="text-3xl font-bold text-gray-800 mb-10">회원 탈퇴</h1>
+
+            <div id="withdrawalStep-check" class="bg-white rounded-3xl shadow-sm p-8">
+                <h2 class="text-xl text-gray-800 mb-6">회원 탈퇴 안내</h2>
+                <p class="text-gray-600 mb-8">회원 탈퇴를 진행하기 전에 아래 내용을 확인해주세요</p>
+
+                <div th:if="${hasActiveAccount}" id="activeAccountWarning" class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6">
+                    <div class="flex gap-3">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 text-amber-600 flex-shrink-0 mt-1"></i>
+                        <div>
+                            <h3 class="text-amber-900 font-bold mb-2">활성화된 커플 통장이 있습니다</h3>
+                            <p class="text-sm text-amber-800 mb-3">회원 탈퇴를 진행하기 위해서는 먼저 커플 통장을 해지해야 합니다.</p>
+                            <div class="bg-white rounded-lg p-4 mb-4 text-sm text-amber-900 border border-amber-100">
+                                <p class="mb-2">⚠️ <strong>중요:</strong> 커플 통장 해지는 두 분 모두 동의해야 완료됩니다.</p>
+                                <ul class="list-disc list-inside space-y-1 text-amber-800">
+                                    <li>한 분이 먼저 해지를 요청하면 "해지 대기" 상태가 됩니다</li>
+                                    <li>파트너가 동의하면 실제로 계좌가 해지됩니다</li>
+                                    <li>두 분 모두 해지에 동의해야 회원 탈퇴가 가능합니다</li>
+                                </ul>
+                            </div>
+                            <a th:href="@{/mypage/close-account}"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors font-medium">
+                                계좌 해지 페이지로 이동
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 mb-8">
+                    <div class="flex items-start gap-3 text-gray-700">
+                        <div class="w-6 h-6 rounded-full bg-[#FCE8E3] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-sm text-[#F5A5A5]">✓</span></div>
+                        <p>모든 개인정보 및 서비스 이용 기록이 영구적으로 삭제됩니다</p>
+                    </div>
+                    <div class="flex items-start gap-3 text-gray-700">
+                        <div class="w-6 h-6 rounded-full bg-[#FCE8E3] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-sm text-[#F5A5A5]">✓</span></div>
+                        <p>보유하신 모든 포인트가 소멸되며 환불이 불가능합니다</p>
+                    </div>
+                    <div class="flex items-start gap-3 text-gray-700">
+                        <div class="w-6 h-6 rounded-full bg-[#FCE8E3] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-sm text-[#F5A5A5]">✓</span></div>
+                        <p>탈퇴 후 30일 동안 동일한 정보로 재가입이 불가능합니다</p>
+                    </div>
+                </div>
+
+                <button id="proceedWithdrawalBtn" onclick="handleProceedWithdrawal()"
+                        th:disabled="${hasActiveAccount}"
+                        th:class="${hasActiveAccount} ? 'w-full py-4 bg-gray-200 text-gray-400 rounded-xl cursor-not-allowed font-medium' : 'w-full py-4 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors font-medium'">
+                    회원 탈퇴 진행하기
+                </button>
+            </div>
+
+            <div id="withdrawalStep-password" class="bg-white rounded-3xl shadow-sm p-8 hidden">
+                <h2 class="text-xl text-gray-800 mb-6">비밀번호 재입력</h2>
+                <p class="text-gray-600 mb-6">본인 확인을 위해 비밀번호를 입력해주세요</p>
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-600 mb-2">비밀번호</label>
+                    <div class="relative">
+                        <input type="password" id="withdrawalPw" placeholder="비밀번호를 입력하세요"
+                               onkeypress="if(event.key==='Enter' && this.value) goToWithdrawalStep('notice')"
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FCE8E3] focus:outline-none transition-colors pr-12"/>
+                        <button type="button" onclick="togglePw('withdrawalPw','eyeWithdrawal')"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <i data-lucide="eye" id="eyeWithdrawal" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <button onclick="if(document.getElementById('withdrawalPw').value) goToWithdrawalStep('notice')"
+                        class="w-full py-3 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors font-medium">확인</button>
+            </div>
+
+            <div id="withdrawalStep-notice" class="hidden">
+                <div class="bg-white rounded-3xl shadow-sm p-8 mb-6">
+                    <h2 class="text-xl text-gray-800 mb-6">탈퇴 안내 및 경고</h2>
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-6">
+                        <div class="flex gap-3">
+                            <i data-lucide="alert-triangle" class="w-6 h-6 text-red-500 flex-shrink-0 mt-1"></i>
+                            <div class="space-y-4">
+                                <div>
+                                    <h3 class="text-red-800 font-bold mb-1">⚠️ 계정 정보 삭제</h3>
+                                    <p class="text-sm text-red-700">회원 탈퇴 시 모든 개인정보 및 서비스 이용 기록이 <strong>영구적으로 삭제</strong>되며, 복구가 불가능합니다.</p>
+                                </div>
+                                <div>
+                                    <h3 class="text-red-800 font-bold mb-1">⚠️ 포인트 소멸</h3>
+                                    <p class="text-sm text-red-700">보유하신 모든 포인트는 탈퇴와 동시에 소멸되며, <strong>환불이 불가능</strong>합니다.</p>
+                                </div>
+                                <div>
+                                    <h3 class="text-red-800 font-bold mb-1">⚠️ 연결 계좌 해지</h3>
+                                    <p class="text-sm text-red-700">연결된 모든 계좌 정보가 해지되며, 진행 중인 거래가 있을 경우 정상적으로 처리되지 않을 수 있습니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                        <h3 class="text-gray-800 font-bold mb-4">관련 내용 확인</h3>
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" id="withdrawalAgree" class="w-5 h-5 mt-0.5 rounded border-gray-300 accent-[#FCE8E3] cursor-pointer"/>
+                            <span class="text-gray-700 text-sm leading-relaxed">위 모든 내용을 확인하였으며, 이에 동의하고 회원 탈퇴를 진행합니다. 탈퇴 후 모든 데이터가 삭제되며 복구할 수 없음을 이해했습니다.</span>
+                        </label>
+                    </div>
+                </div>
+                <form th:action="@{/mypage/withdraw}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" onclick="return handleFinalWithdrawal(event)"
+                            class="w-full py-4 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-lg font-bold text-lg">회원 탈퇴하기</button>
+                </form>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<div id="accountModalOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onclick="hideAccountModal()"></div>
+<div id="accountModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-8">
+        <div class="flex items-center gap-3 mb-6">
+            <i data-lucide="alert-triangle" class="w-8 h-8 text-amber-500"></i>
+            <h2 class="text-xl font-bold text-gray-800">활성화된 계좌가 있습니다</h2>
+        </div>
+        <p class="text-gray-600 mb-8 leading-relaxed">회원 탈퇴를 진행하기 위해서는 먼저 커플 통장을 해지해야 합니다.</p>
+        <div class="flex gap-3">
+            <button onclick="hideAccountModal()" class="flex-1 py-3.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">취소</button>
+            <a th:href="@{/mypage/close-account}" class="flex-1 py-3.5 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors font-medium text-center">계좌 해지하러 가기</a>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+<script th:inline="javascript">
+    const hasActiveAccount = /*[[${hasActiveAccount}]]*/ true;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+
+    function togglePw(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon  = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    function goToWithdrawalStep(step) {
+      ['check','password','notice'].forEach(s => {
+        const el = document.getElementById('withdrawalStep-' + s);
+        if (el) el.classList.add('hidden');
+      });
+      const target = document.getElementById('withdrawalStep-' + step);
+      if (target) target.classList.remove('hidden');
+    }
+
+    function handleProceedWithdrawal() {
+      if (hasActiveAccount) {
+        document.getElementById('accountModalOverlay').classList.remove('hidden');
+        document.getElementById('accountModal').classList.remove('hidden');
+      } else {
+        goToWithdrawalStep('password');
+      }
+    }
+
+    function hideAccountModal() {
+      document.getElementById('accountModalOverlay').classList.add('hidden');
+      document.getElementById('accountModal').classList.add('hidden');
+    }
+
+    function handleFinalWithdrawal(e) {
+      if (!document.getElementById('withdrawalAgree').checked) {
+        alert('안내 사항을 확인하시고 동의 체크박스에 체크해주세요.');
+        e.preventDefault();
+        return false;
+      }
+      if(!confirm("정말 모담 서비스를 탈퇴하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    }
+</script>
+<th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+</body>
+</html>

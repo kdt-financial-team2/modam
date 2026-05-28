@@ -25,6 +25,7 @@ public class SavingsViewController {
 
     private final SavingsService savingsService;
     private final AccountService accountService;
+    private final DashboardService dashboardService;
 
     // ===== 저축 목표 리스트 조회 =====
     @GetMapping("/savings")
@@ -37,6 +38,8 @@ public class SavingsViewController {
         AccountResponseDto account = accountService.getAccount(status.getAccountId());
         List<SavingsResponseDto> savingsList = savingsService.getSavingsByAccountId(status.getAccountId());
 
+        dashboardService.populateHeader(userDetails.getMember(), model);
+        model.addAttribute("currentPage", "savings");
         model.addAttribute("userName", userDetails.getMember().getName());
         model.addAttribute("accountBalance", account.getAvailableBalance());
         model.addAttribute("savingsGoals", savingsList);
@@ -52,6 +55,7 @@ public class SavingsViewController {
             return "redirect:/account-setup";
         }
 
+        dashboardService.populateHeader(userDetails.getMember(), model);
         model.addAttribute("accountId", status.getAccountId());
         model.addAttribute("userName", userDetails.getMember().getName());
         model.addAttribute("partnerName", "파트너");
@@ -84,7 +88,6 @@ public class SavingsViewController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            // 🔥 [수정됨] 주석을 해제하고 실제 Service를 호출하여 DB에 저장합니다!
             savingsService.updateAutoTransfer(goalId, amount, frequency, startDate);
 
             redirectAttributes.addFlashAttribute("successMsg", "자동 이체 설정이 완료되었습니다! 💸");

@@ -16,8 +16,8 @@
     <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
 
       <!-- 로고 -->
-      <a th:href="@{/}" class="flex-shrink-0 hover:opacity-80 transition-opacity">
-        <img th:src="@{/images/icons/logo.png}" alt="모담 로고" class="h-20 w-auto object-contain"/>
+      <a th:href="@{/dashboard}" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+        <img th:src="@{/images/icons/logo.png}" alt="모담 로고" class="h-11 w-auto object-contain"/>
       </a>
 
       <!-- 오른쪽 메뉴 -->
@@ -110,6 +110,11 @@
           <!-- 프로필 드롭다운 -->
           <div id="profileDropdown"
                class="hidden absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden">
+            <a th:href="@{/}"
+               class="flex items-center gap-3 px-5 py-3 text-gray-800 hover:bg-[#FFF7F5] transition-colors">
+              <i data-lucide="home" class="w-5 h-5"></i>
+              <span>서비스 소개</span>
+            </a>
             <a th:href="@{/mypage}"
                class="flex items-center gap-3 px-5 py-3 text-gray-800 hover:bg-[#FFF7F5] transition-colors">
               <i data-lucide="user" class="w-5 h-5"></i>

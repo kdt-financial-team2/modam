@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아이템 관리 - 모담</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+<th:block th:replace="~{common/layout/header :: nav}"></th:block>
+
+<div class="flex flex-1">
+
+    <th:block th:replace="~{common/layout/mypage-sidebar :: sidebar('items')}"></th:block>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div id="section-items" class="max-w-4xl">
+            <h1 class="text-2xl font-bold text-gray-800 mb-8">아이템 관리</h1>
+
+            <div class="bg-white rounded-3xl shadow-sm p-8 mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-bold text-gray-800">보유 테마</h2>
+                    <a th:href="@{/point-shop}" href="/point-shop"
+                       class="text-[#F5A5A5] hover:text-[#F28B8B] transition-colors text-sm font-medium">더 구매하기</a>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <th:block th:each="theme : ${purchasedThemes}">
+                        <div th:class="${theme.isActive} ? 'relative bg-gradient-to-br from-[#FFB6D9] to-[#FFE4F0] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5]' : 'relative bg-gradient-to-br from-[#FFB6D9] to-[#FFE4F0] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer'">
+                            <div th:if="${theme.isActive}" class="absolute top-2 right-2 px-3 py-1 bg-[#F5A5A5] text-white text-xs rounded-full">사용 중</div>
+                            <div class="text-6xl mb-3" th:text="${theme.image}">🌸</div>
+                            <p class="text-sm text-gray-800 text-center font-medium" th:text="${theme.name}">테마 이름</p>
+                            <p class="text-xs text-gray-600 mt-1" th:text="${theme.purchasedDate}">2026.01.01</p>
+                        </div>
+                    </th:block>
+                    <th:block th:if="${#lists.isEmpty(purchasedThemes)}">
+                        <div class="static-theme-item relative bg-gradient-to-br from-[#FFB6D9] to-[#FFE4F0] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5]">
+                            <div class="absolute top-2 right-2 px-3 py-1 bg-[#F5A5A5] text-white text-xs rounded-full">사용 중</div>
+                            <div class="text-6xl mb-3">🌸</div>
+                            <p class="text-sm text-gray-800 text-center font-medium">봄날의 벚꽃 핑크</p>
+                            <p class="text-xs text-gray-600 mt-1">2026.03.15</p>
+                        </div>
+                        <div class="static-theme-item bg-gradient-to-br from-[#2D2D2D] to-[#1A1A1A] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer">
+                            <div class="text-6xl mb-3">🌙</div>
+                            <p class="text-sm text-white text-center font-medium">다크 모드 감성</p>
+                            <p class="text-xs text-gray-400 mt-1">2025.11.05</p>
+                        </div>
+                        <div class="static-theme-item bg-gradient-to-br from-[#4ECDC4] to-[#E0F7F6] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer">
+                            <div class="text-6xl mb-3">🍃</div>
+                            <p class="text-sm text-gray-800 text-center font-medium">시원한 민트 브리즈</p>
+                            <p class="text-xs text-gray-600 mt-1">2025.06.18</p>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-bold text-gray-800">보유 이모티콘</h2>
+                    <a th:href="@{/point-shop}" href="/point-shop"
+                       class="text-[#F5A5A5] hover:text-[#F28B8B] transition-colors text-sm font-medium">더 구매하기</a>
+                </div>
+                <div class="grid grid-cols-4 gap-4">
+                    <th:block th:each="emoticon : ${purchasedEmoticons}">
+                        <div th:class="${emoticon.isActive} ? 'relative bg-[#FCE8E3] rounded-2xl p-5 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5] hover:scale-105 transition-transform cursor-pointer' : 'bg-white border-2 border-gray-200 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer'">
+                            <div th:if="${emoticon.isActive}" class="absolute top-1 right-1 px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">사용 중</div>
+                            <div class="text-5xl mb-2" th:text="${emoticon.image}">🐶</div>
+                            <p class="text-xs text-gray-800 text-center font-medium" th:text="${emoticon.name}">이모티콘</p>
+                            <p class="text-xs text-gray-500 mt-1" th:text="${emoticon.purchasedDate}">2026.01.01</p>
+                        </div>
+                    </th:block>
+                    <th:block th:if="${#lists.isEmpty(purchasedEmoticons)}">
+                        <div class="static-emoticon-item relative bg-[#FCE8E3] rounded-2xl p-5 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5] hover:scale-105 transition-transform cursor-pointer">
+                            <div class="absolute top-1 right-1 px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">사용 중</div>
+                            <div class="text-5xl mb-2">🐶</div>
+                            <p class="text-xs text-gray-800 text-center font-medium">잔소리쟁이 멍멍이</p>
+                            <p class="text-xs text-gray-500 mt-1">2026.02.20</p>
+                        </div>
+                        <div class="static-emoticon-item bg-white border-2 border-gray-200 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer">
+                            <div class="text-5xl mb-2">💰</div>
+                            <p class="text-xs text-gray-800 text-center font-medium">월급날 기분 최고</p>
+                            <p class="text-xs text-gray-500 mt-1">2026.01.12</p>
+                        </div>
+                        <div class="static-emoticon-item bg-white border-2 border-gray-200 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer">
+                            <div class="text-5xl mb-2">🐰</div>
+                            <p class="text-xs text-gray-800 text-center font-medium">귀요미 토끼 세트</p>
+                            <p class="text-xs text-gray-500 mt-1">2026.04.05</p>
+                        </div>
+                        <div class="static-emoticon-item bg-white border-2 border-gray-200 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer">
+                            <div class="text-5xl mb-2">🐻</div>
+                            <p class="text-xs text-gray-800 text-center font-medium">행복한 곰돌이 친구들</p>
+                            <p class="text-xs text-gray-500 mt-1">2026.05.01</p>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+</script>
+<th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+</body>
+</html>

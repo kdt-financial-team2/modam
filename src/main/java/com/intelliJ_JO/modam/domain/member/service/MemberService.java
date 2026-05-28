@@ -136,4 +136,55 @@ public class MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
         member.deactivate();
     }
+
+    // ====================================================================
+    // 🔥 [마이페이지 전용] 프로필 & 비밀번호 업데이트 로직 추가
+    // ====================================================================
+    @Transactional
+    public void updateMyPageProfile(Long memberId, String name, String phoneNo) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        member.updateInfo(name, null, null, null, null, null, null, null, null, null, phoneNo, null);
+    }
+
+    @Transactional
+    public void updateMyPagePassword(Long memberId, String currentPassword, String newPassword) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        if (!passwordEncoder.matches(currentPassword, member.getPwHash())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        member.updateInfo(null, passwordEncoder.encode(newPassword), null, null, null, null, null, null, null, null, null, null);
+    }
+
+    // ====================================================================
+    // 조장님 작업분 (아이디/비밀번호 찾기) 유지
+    // ====================================================================
+    public String findUserId(String name, String email) {
+        Member member = memberRepository.findByNameAndEmail(name, email)
+                .orElseThrow(() -> new IllegalArgumentException("입력하신 정보와 일치하는 계정이 없습니다."));
+        String userId = member.getUserId();
+        if (userId.length() <= 3) {
+            return userId.charAt(0) + "*".repeat(userId.length() - 1);
+        }
+        return userId.substring(0, 3) + "*".repeat(userId.length() - 3);
+    }
+
+    public boolean verifyForPasswordReset(String userId, String email) {
+        return memberRepository.findByUserIdAndEmail(userId, email).isPresent();
+    }
+
+    @Transactional
+    public void resetPassword(String userId, String email, String newPassword, String newPasswordConfirm) {
+        if (!newPassword.equals(newPasswordConfirm)) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+        Member member = memberRepository.findByUserIdAndEmail(userId, email)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 요청입니다."));
+        member.updateInfo(null, passwordEncoder.encode(newPassword), null,
+                null, null, null, null, null, null, null, null, null);
+    }
 }

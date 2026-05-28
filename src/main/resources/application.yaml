@@ -20,6 +20,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
 
   h2:
     console:
@@ -37,6 +38,9 @@ logging:
   level:
     root: INFO
     "[com.intelliJ_JO.modam]": DEBUG
+    "[org.springframework.security.web.authentication.rememberme]": TRACE
+    "[org.springframework.security.web.context]": DEBUG
+    "[org.springframework.security.web]": DEBUG
 
 springdoc:
   api-docs:
