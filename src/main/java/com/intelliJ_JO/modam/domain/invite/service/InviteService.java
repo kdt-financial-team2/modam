@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +27,8 @@ public class InviteService {
     private final MemberRepository memberRepository;
     private final AccountMemberRepository accountMemberRepository;
     private final NotificationService notificationService;
-    private final CoupleRepository coupleRepository; // [추가] 커플(초대코드) 저장용 레포지토리
+    private final CoupleRepository coupleRepository;
 
-    // [기존 로직 유지] 앱 내 직접 초대
     @Transactional
     public InviteResponseDto invite(Long accountId, InviteRequestDto request) {
         Account account = accountRepository.findById(accountId)
@@ -38,7 +37,6 @@ public class InviteService {
         Member member = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        // REJECT된 이력이 있는 회원은 재초대 허용, 그 외 중복 초대 방지
         accountMemberRepository.findByAccountIdAndMemberId(accountId, request.getMemberId())
                 .filter(am -> am.getInviteStatus() != InviteStatus.REJECT)
                 .ifPresent(am -> { throw new IllegalStateException("이미 초대된 회원입니다."); });
@@ -55,7 +53,6 @@ public class InviteService {
         return response;
     }
 
-    // [기존 로직 유지] 앱 내 직접 초대 수락
     @Transactional
     public InviteResponseDto accept(Long accountMemberId) {
         AccountMember accountMember = accountMemberRepository.findById(accountMemberId)
@@ -70,18 +67,25 @@ public class InviteService {
     }
 
     // =========================================================================
-    // [신규 로직 추가] 카톡 공유용 랜덤 초대 코드 생성 및 반환
+    // 🔥 [버그 픽스] 안전한 6자리 영문대문자+숫자 초대 코드 생성 로직
     // =========================================================================
     @Transactional
     public String generateInviteCode(Long accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
 
-        // 이미 생성된 초대 코드가 있다면 기존 코드 반환, 없으면 새로 생성
         return coupleRepository.findByAccountId(accountId)
-                .map(Couple::getInviteCode)
+                .map(couple -> {
+                    // 방어 로직: 기존 DB에 저장된 코드가 6자리가 아닐 경우 (이전 버그 데이터)
+                    if (couple.getInviteCode() == null || couple.getInviteCode().length() != 6) {
+                        String newFixedCode = createRandomCode();
+                        couple.updateInviteCode(newFixedCode); // 더티 체킹을 통해 DB 업데이트
+                        return newFixedCode;
+                    }
+                    return couple.getInviteCode();
+                })
                 .orElseGet(() -> {
-                    String newCode = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+                    String newCode = createRandomCode();
                     Couple newCouple = Couple.builder()
                             .account(account)
                             .inviteCode(newCode)
@@ -89,5 +93,16 @@ public class InviteService {
                     coupleRepository.save(newCouple);
                     return newCode;
                 });
+    }
+
+    // 보안이 강화된(SecureRandom) 6자리 난수 생성기 내부 메서드
+    private String createRandomCode() {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder code = new StringBuilder(6);
+        for (int i = 0; i < 6; i++) {
+            code.append(characters.charAt(random.nextInt(characters.length())));
+        }
+        return code.toString();
     }
 }
