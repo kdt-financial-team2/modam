@@ -8,6 +8,7 @@ import com.intelliJ_JO.modam.domain.point.entity.PointReason;
 import com.intelliJ_JO.modam.domain.point.service.PointService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class HomeViewController {
@@ -30,6 +32,11 @@ public class HomeViewController {
 
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal CustomUserDetails userDetails, Model model, HttpServletResponse response) {
+        log.debug("[대시보드] userDetails={}", userDetails != null ? userDetails.getUsername() : "null");
+        if (userDetails == null) {
+            log.warn("[대시보드] userDetails가 null입니다. 로그인 페이지로 이동합니다.");
+            return "redirect:/auth/login";
+        }
         response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
         model.addAttribute("userName", userDetails.getMember().getName());
         model.addAttribute("currentPage", "home");

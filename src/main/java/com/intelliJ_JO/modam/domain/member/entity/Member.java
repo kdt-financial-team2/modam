@@ -1,6 +1,5 @@
 package com.intelliJ_JO.modam.domain.member.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -53,6 +52,23 @@ public class Member {
     @Builder.Default
     @Column(name = "agree_third_party", nullable = false)
     private boolean agreeThirdParty = false; // 개인정보 제3자 제공 동의
+
+    // 🔥 [옵션 A 적용] 마이페이지 세부 알림 설정 컬럼 4개 (기본값 Y)
+    @Builder.Default
+    @Column(name = "noti_deposit", length = 1)
+    private String notiDeposit = "Y";
+
+    @Builder.Default
+    @Column(name = "noti_withdrawal", length = 1)
+    private String notiWithdrawal = "Y";
+
+    @Builder.Default
+    @Column(name = "noti_weekly", length = 1)
+    private String notiWeekly = "Y";
+
+    @Builder.Default
+    @Column(name = "noti_monthly", length = 1)
+    private String notiMonthly = "Y";
 
     @Column(name = "en_first", nullable = false)
     private String enFirst;
@@ -130,5 +146,13 @@ public class Member {
 
     public void updateTheme(String theme) {
         this.theme = theme;
+    }
+
+    // 🔥 [추가됨] 알림 설정 일괄 업데이트 편의 메서드
+    public void updateNotiSettings(String deposit, String withdrawal, String weekly, String monthly) {
+        if (deposit != null) this.notiDeposit = deposit;
+        if (withdrawal != null) this.notiWithdrawal = withdrawal;
+        if (weekly != null) this.notiWeekly = weekly;
+        if (monthly != null) this.notiMonthly = monthly;
     }
 }

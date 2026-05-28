@@ -76,6 +76,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     // 로그인·회원가입 관련 경로 (비로그인 접근 허용)
                     "/", "/landing", "/auth/login", "/auth/login?*", "/login",
+                    "/auth/find-id", "/auth/find-password", "/auth/find-password/**",
                     "/signup/**", "/terms",
                     "/members/join",
                     // 정적 리소스 (CSS, JS, 이미지)
@@ -86,7 +87,8 @@ public class SecurityConfig {
                     // H2 콘솔 (개발용 DB 관리 도구)
                     "/h2-console/**"
                 ).permitAll()                   // 위 경로는 인증 없이 접근 허용
-                .anyRequest().permitAll()       // 모든 요청 인증 없이 접근 허용 (개발용)
+                .requestMatchers("/dashboard/**").authenticated() // 대시보드는 인증 필요
+                .anyRequest().permitAll()       // 나머지 요청은 인증 없이 접근 허용
             )
 
             // 폼 로그인 설정
@@ -100,12 +102,20 @@ public class SecurityConfig {
                 .permitAll()                            // 로그인 페이지 자체는 모두 허용
             )
 
+            // 자동 로그인(Remember-Me) 설정
+            .rememberMe(rememberMe -> rememberMe
+                .userDetailsService(customUserDetailsService)
+                .key("modam-remember-me-secret-key")
+                .tokenValiditySeconds(7 * 24 * 60 * 60) // 7일
+                .rememberMeParameter("remember-me")
+            )
+
             // 로그아웃 설정
             .logout(logout -> logout
                 .logoutUrl("/logout")                   // 로그아웃 요청 경로 (POST)
                 .logoutSuccessUrl("/auth/login")        // 로그아웃 후 이동할 페이지
                 .invalidateHttpSession(true)            // 세션 무효화
-                .deleteCookies("JSESSIONID")            // 세션 쿠키 삭제
+                .deleteCookies("JSESSIONID", "remember-me") // 세션 및 자동 로그인 쿠키 삭제
             );
 
         return http.build();

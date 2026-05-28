@@ -59,7 +59,7 @@
             <div class="flex justify-between items-center p-4 bg-[#FAFAFA] rounded-2xl">
               <span class="text-gray-600">현재 포인트</span>
               <span class="text-xl text-gray-800">
-                <span th:text="${#numbers.formatInteger(userPoints, 0, 'COMMA')}"
+                <span th:text="${#numbers.formatInteger(couplePoints, 0, 'COMMA')}"
                       id="currentPoints">12,450</span>P
               </span>
             </div>
@@ -73,7 +73,7 @@
             <div class="flex justify-between items-center p-4 bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-2xl">
               <span class="text-gray-800">구매 후 잔액</span>
               <span class="text-2xl text-[#F5A5A5]">
-                <span th:text="${#numbers.formatInteger(userPoints - product.price, 0, 'COMMA')}"
+                <span th:text="${#numbers.formatInteger(couplePoints - product.price, 0, 'COMMA')}"
                       id="remainPoints">10,950</span>P
               </span>
             </div>
@@ -118,7 +118,7 @@
 
   <script th:inline="javascript">
     const serverProduct = /*[[${product}]]*/ null;
-    const serverPoints  = /*[[${userPoints}]]*/ 12450;
+    const serverPoints  = /*[[${couplePoints}]]*/ 12450;
 
     // 서버 데이터 없을 때 기본 상품 1번으로 표시
     const defaultProduct = { id:1, name:'봄날의 벚꽃 핑크', price:1500, category:'theme', image:'🌸' };

@@ -35,6 +35,7 @@ public class CoupleViewController {
         }
 
         String inviteCode = inviteService.generateInviteCode(status.getAccountId());
+        dashboardService.populateHeader(userDetails.getMember(), model);
         model.addAttribute("inviteCode", inviteCode);
 
         return "domain/couple/invite";

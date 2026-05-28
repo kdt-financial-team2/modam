@@ -26,6 +26,8 @@ public class AccountCreateRequestDto {
     @Pattern(regexp = "^[0-9]{4}$", message = "계좌 비밀번호는 숫자 4자리여야 합니다.")
     private String password;
 
+    private String passwordConfirm;
+
     // 이체 한도
     private Long onceTransferLimit;
     private Long dailyTransferLimit;
@@ -48,4 +50,5 @@ public class AccountCreateRequestDto {
 
     // 선택 약관 동의
     private boolean agreeMarketing;
+    private boolean agreeThirdParty;
 }
