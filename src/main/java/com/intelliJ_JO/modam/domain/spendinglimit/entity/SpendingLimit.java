@@ -1,12 +1,13 @@
 package com.intelliJ_JO.modam.domain.spendinglimit.entity;
 
+import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "spending_limit", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"mem_id", "category"})
+        @UniqueConstraint(columnNames = {"account_id", "category"})
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -22,6 +23,11 @@ public class SpendingLimit {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mem_id", nullable = false)
     private Member member;
+
+    // 커플 통장
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 
     // 카테고리
     @Column(nullable = false, length = 50)

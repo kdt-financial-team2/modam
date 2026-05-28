@@ -1,6 +1,6 @@
 package com.intelliJ_JO.modam.domain.member.entity;
 
-
+import com.intelliJ_JO.modam.domain.account.entity.Account;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -104,6 +104,11 @@ public class Member {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MemberRole role = MemberRole.USER;
+
+    // 커플 통장
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     public void updateInfo(String name, String pwHash, String email,
                            String enFirst, String enLast,
