@@ -11,9 +11,15 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,7 +46,6 @@ public class MyPageService {
         member.updateTheme(theme);
     }
 
-    // 🔥 [추가됨] 알림 설정 업데이트 로직 (옵션 A)
     @Transactional
     public void updateNotificationSettings(Long memberId, String deposit, String withdrawal, String weekly, String monthly) {
         Member member = memberRepository.findById(memberId)
@@ -48,10 +53,49 @@ public class MyPageService {
         member.updateNotiSettings(deposit, withdrawal, weekly, monthly);
     }
 
+    // 🔥 [추가됨] 크로스플랫폼 운영체제 대응 프로필 사진 서버 로컬 업로드 처리 로직
+    @Transactional
+    public String uploadProfileImage(Long memberId, MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("업로드된 파일이 유효하지 않습니다.");
+        }
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        // 1. 프로젝트 최상단 루트 하위에 uploads/profiles 폴더 동적 획득 (Mac/Windows 완벽 호환)
+        String projectRoot = System.getProperty("user.dir");
+        Path uploadPath = Paths.get(projectRoot, "uploads", "profiles");
+
+        // 지정 디렉토리가 없으면 디렉토리 생성 처리
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // 2. 확장자를 추출하고 고유 파일명 랜덤 생성 (중복 차단)
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        String savedFilename = UUID.randomUUID().toString() + extension;
+
+        // 3. 해당 경로로 파일 물리적 전송 및 저장
+        Path targetPath = uploadPath.resolve(savedFilename);
+        file.transferTo(targetPath.toFile());
+
+        // 4. WebMvcConfig와 대응하는 리소스 웹 가상 경로 생성
+        String profileImgUrl = "/uploads/profiles/" + savedFilename;
+
+        // 5. 엔티티 정보 변경 (나머지는 null 처리하여 프로필 이미지만 갱신)
+        member.updateInfo(null, null, null, null, null, null, null, null, null, null, null, profileImgUrl);
+
+        return profileImgUrl;
+    }
+
     // ==========================================
     // 2. 아이템(Inventory) 조회 및 장착 영역
     // ==========================================
-
     @Getter
     @Builder
     public static class MyPageItemDto {
