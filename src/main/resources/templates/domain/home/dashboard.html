@@ -54,13 +54,16 @@
 
           <!-- 계좌 잔액 카드 (도넛 차트) -->
           <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-8">계좌 잔액</h2>
+            <div class="flex items-center gap-4 mb-8">
+              <h2 class="text-3xl font-bold text-gray-900">계좌 잔액</h2>
+              <span class="text-3xl font-bold text-gray-900">₩<span th:text="${#numbers.formatInteger(accountBalance, 1, 'COMMA')}">3,500,000</span></span>
+            </div>
             <div class="flex items-center gap-12">
               <div class="flex-1">
-                <div class="text-5xl font-bold text-gray-900 mb-3">
-                  ₩<span th:text="${#numbers.formatInteger(totalExpense, 1, 'COMMA')}">1,245,000</span>
+                <div class="flex items-center justify-between mb-8">
+                  <p class="text-gray-500 text-lg">5월 총 지출</p>
+                  <span class="text-xl font-semibold text-gray-500">₩<span th:text="${#numbers.formatInteger(totalExpense, 1, 'COMMA')}">1,245,000</span></span>
                 </div>
-                <p class="text-gray-500 text-lg mb-8">5월 총 지출</p>
                 <!-- 범례 -->
                 <div class="space-y-4">
                   <div th:each="item : ${balanceData}" class="flex items-center justify-between">

@@ -6,17 +6,22 @@ import com.intelliJ_JO.modam.domain.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class AuthViewController {
@@ -26,7 +31,12 @@ public class AuthViewController {
     private static final String SESSION_SIGNUP = "signupForm";
 
     @GetMapping("/auth/login")
-    public String login(HttpSession session, Model model) {
+    public String login(HttpSession session, Model model, Authentication authentication) {
+        log.debug("[자동로그인 확인] authentication type: {}", authentication != null ? authentication.getClass().getSimpleName() : "null");
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            return "redirect:/dashboard";
+        }
         String loginError = (String) session.getAttribute("loginError");
         if (loginError != null) {
             model.addAttribute("loginError", loginError);
@@ -152,6 +162,69 @@ public class AuthViewController {
     @GetMapping("/signup/complete")
     public String signupComplete() {
         return "domain/auth/signup-complete";
+    }
+
+    // ===== 아이디 찾기 =====
+
+    @GetMapping("/auth/find-id")
+    public String findIdPage() {
+        return "domain/auth/find-id";
+    }
+
+    @PostMapping("/auth/find-id")
+    public String findId(@RequestParam String name, @RequestParam String email,
+                         Model model) {
+        try {
+            String maskedId = memberService.findUserId(name, email);
+            model.addAttribute("maskedId", maskedId);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        model.addAttribute("name", name);
+        return "domain/auth/find-id";
+    }
+
+    // ===== 비밀번호 찾기 =====
+
+    @GetMapping("/auth/find-password")
+    public String findPasswordPage() {
+        return "domain/auth/find-password";
+    }
+
+    @PostMapping("/auth/find-password/verify")
+    public String verifyForPasswordReset(@RequestParam String userId, @RequestParam String email,
+                                         HttpSession session, Model model) {
+        boolean valid = memberService.verifyForPasswordReset(userId, email);
+        if (!valid) {
+            model.addAttribute("error", "입력하신 정보와 일치하는 계정이 없습니다.");
+            return "domain/auth/find-password";
+        }
+        session.setAttribute("resetUserId", userId);
+        session.setAttribute("resetEmail", email);
+        model.addAttribute("verified", true);
+        return "domain/auth/find-password";
+    }
+
+    @PostMapping("/auth/find-password/reset")
+    public String resetPassword(@RequestParam String newPassword,
+                                @RequestParam String newPasswordConfirm,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+        String userId = (String) session.getAttribute("resetUserId");
+        String email = (String) session.getAttribute("resetEmail");
+        if (userId == null || email == null) {
+            return "redirect:/auth/find-password";
+        }
+        try {
+            memberService.resetPassword(userId, email, newPassword, newPasswordConfirm);
+            session.removeAttribute("resetUserId");
+            session.removeAttribute("resetEmail");
+            redirectAttributes.addFlashAttribute("resetSuccess", true);
+            return "redirect:/auth/login";
+        } catch (IllegalArgumentException e) {
+            session.setAttribute("resetPasswordError", e.getMessage());
+            return "redirect:/auth/find-password?reset=true";
+        }
     }
 
     private SignupForm getOrCreateForm(HttpSession session) {

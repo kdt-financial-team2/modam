@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime; // [추가됨] 시간 처리를 위한 임포트
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +26,7 @@ public class TransferViewController {
 
     private final TransactionService transactionService;
     private final AccountService accountService;
+    private final DashboardService dashboardService;
 
     @GetMapping("/transfer")
     public String transfer(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -34,8 +35,9 @@ public class TransferViewController {
             return "redirect:/account-setup";
         }
         AccountResponseDto account = accountService.getAccount(status.getAccountId());
+        dashboardService.populateHeader(userDetails.getMember(), model);
         model.addAttribute("currentBalance", account.getAvailableBalance());
-        return "domain/transfer/transfer"; // 조장님이 폴더명도 transaction -> transfer로 변경하셨네요!
+        return "domain/transfer/transfer";
     }
 
     @PostMapping("/transfer")
@@ -43,17 +45,15 @@ public class TransferViewController {
             @RequestParam String bankName,
             @RequestParam String accountNumber,
             @RequestParam Long amount,
-            @RequestParam String accountPassword, // [추가됨] 비밀번호 파라미터 수신
+            @RequestParam String accountPassword,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             RedirectAttributes redirectAttributes) {
 
         GroupAccountStatusDto status = accountService.getGroupAccountStatus(userDetails.getMember());
 
         try {
-            // 1. 비밀번호 검증 (방금 추가한 메서드 호출)
             accountService.verifyAccountPassword(status.getAccountId(), accountPassword);
 
-            // 2. 이체 로직 실행
             TransactionRequestDto request = new TransactionRequestDto();
             request.setMemberId(userDetails.getMember().getId());
             request.setAccountId(status.getAccountId());
@@ -64,18 +64,16 @@ public class TransferViewController {
 
             transactionService.createTransaction(request);
 
-            // 3. 성공 시 데이터 전달
             Map<String, Object> transferData = new HashMap<>();
             transferData.put("bankName", getKoreanBankName(bankName));
             transferData.put("accountNumber", accountNumber);
             transferData.put("amount", amount);
-            transferData.put("transferredAt", LocalDateTime.now()); // [추가됨] 성공 시간
+            transferData.put("transferredAt", LocalDateTime.now());
             redirectAttributes.addFlashAttribute("transfer", transferData);
 
             return "redirect:/transfer/complete";
 
         } catch (Exception e) {
-            // 실패 시 처리
             AccountResponseDto account = accountService.getAccount(status.getAccountId());
             Map<String, Object> failedData = new HashMap<>();
             failedData.put("reason", e.getMessage());
@@ -83,29 +81,28 @@ public class TransferViewController {
             failedData.put("currentBalance", account.getAvailableBalance());
             redirectAttributes.addFlashAttribute("failedTransfer", failedData);
 
-            // =====================================================================
-            // [추가됨] HTML에서 transfer.amount와 transferredAt을 참조하므로, 시도했던 이체 정보(transferData)를 같이 담아줍니다!
             Map<String, Object> transferData = new HashMap<>();
             transferData.put("bankName", getKoreanBankName(bankName));
             transferData.put("accountNumber", accountNumber);
             transferData.put("amount", amount);
-            transferData.put("transferredAt", LocalDateTime.now()); // [추가됨] 에러 발생 시간 담기!
+            transferData.put("transferredAt", LocalDateTime.now());
             redirectAttributes.addFlashAttribute("transfer", transferData);
-            // =====================================================================
 
             return "redirect:/transfer/failed";
         }
     }
 
     @GetMapping("/transfer/complete")
-    public String transferComplete(Model model) {
+    public String transferComplete(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         if (!model.containsAttribute("transfer")) return "redirect:/transfer";
+        dashboardService.populateHeader(userDetails.getMember(), model);
         return "domain/transfer/transfer-complete";
     }
 
     @GetMapping("/transfer/failed")
-    public String transferFailed(Model model) {
+    public String transferFailed(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         if (!model.containsAttribute("failedTransfer")) return "redirect:/transfer";
+        dashboardService.populateHeader(userDetails.getMember(), model);
         return "domain/transfer/transfer-failed";
     }
 
