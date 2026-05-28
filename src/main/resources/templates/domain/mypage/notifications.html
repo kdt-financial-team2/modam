@@ -22,10 +22,10 @@
             <form th:action="@{/mypage/notifications/update}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-                <input type="hidden" name="depositAlert" id="valDeposit" th:value="${noti != null ? noti.depositAlert : 'Y'}">
-                <input type="hidden" name="withdrawalAlert" id="valWithdrawal" th:value="${noti != null ? noti.withdrawalAlert : 'Y'}">
-                <input type="hidden" name="weeklyReport" id="valWeekly" th:value="${noti != null ? noti.weeklyReport : 'Y'}">
-                <input type="hidden" name="monthlyReport" id="valMonthly" th:value="${noti != null ? noti.monthlyReport : 'Y'}">
+                <input type="hidden" name="depositAlert" id="valDeposit" th:value="${noti != null ? noti.notiDeposit : 'Y'}">
+                <input type="hidden" name="withdrawalAlert" id="valWithdrawal" th:value="${noti != null ? noti.notiWithdrawal : 'Y'}">
+                <input type="hidden" name="weeklyReport" id="valWeekly" th:value="${noti != null ? noti.notiWeekly : 'Y'}">
+                <input type="hidden" name="monthlyReport" id="valMonthly" th:value="${noti != null ? noti.notiMonthly : 'Y'}">
 
                 <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-3xl shadow-sm p-8 mb-6">
                     <div class="flex items-center justify-between">
