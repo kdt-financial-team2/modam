@@ -17,13 +17,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -35,6 +32,7 @@ public class MypageViewController {
     private final MemberService memberService;
     private final MyPageService myPageService;
 
+    // 세션 캐시 방지 및 최신 DB 데이터 조회를 위한 헬퍼 메서드
     private Member getFreshMember(Long memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
@@ -46,7 +44,7 @@ public class MypageViewController {
     }
 
     // =========================================================================
-    // 1. 프로필 관리 + 🔥 비동기 이미지 파일 업로드 추가
+    // 1. 프로필 관리
     // =========================================================================
     @GetMapping("/mypage/profile")
     public String profilePage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -62,33 +60,25 @@ public class MypageViewController {
     public String updateProfile(
             @RequestParam String name,
             @RequestParam String phoneNo,
+            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage, // 🔥 이미지 파일 수신 파라미터 통합 추가
             @AuthenticationPrincipal CustomUserDetails userDetails,
             RedirectAttributes rttr) {
         try {
-            memberService.updateMyPageProfile(userDetails.getMember().getId(), name, phoneNo);
+            Long memberId = userDetails.getMember().getId();
+
+            // 1. 이름 및 휴대폰 번호 텍스트 정보 업데이트
+            memberService.updateMyPageProfile(memberId, name, phoneNo);
+
+            // 2. 🔥 사용자가 프로필 사진을 새로 선택하여 전송한 경우 서버 로컬 저장 및 DB 갱신 수행
+            if (profileImage != null && !profileImage.isEmpty()) {
+                myPageService.uploadProfileImage(memberId, profileImage);
+            }
+
             rttr.addFlashAttribute("successMsg", "프로필 정보가 성공적으로 수정되었습니다.");
         } catch (Exception e) {
-            rttr.addFlashAttribute("errorMsg", "프로필 수정 중 오류가 발생했습니다.");
+            rttr.addFlashAttribute("errorMsg", "프로필 수정 중 오류가 발생했습니다: " + e.getMessage());
         }
         return "redirect:/mypage/profile";
-    }
-
-    // 🔥 [추가됨] 프론트엔드 비동기(Fetch) 파일 수신 엔드포인트 구현 (JSON 응답 반환)
-    @PostMapping("/mypage/profile/image-upload")
-    @ResponseBody
-    public Map<String, Object> uploadProfileImage(
-            @RequestParam("profileFile") MultipartFile file,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            String savedImgUrl = myPageService.uploadProfileImage(userDetails.getMember().getId(), file);
-            response.put("success", true);
-            response.put("imgUrl", savedImgUrl);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-        }
-        return response;
     }
 
     @PostMapping("/mypage/password/update")
@@ -227,7 +217,7 @@ public class MypageViewController {
     }
 
     // =========================================================================
-    // 공통 헬퍼 메서드
+    // 공통 금융 데이터 추출 헬퍼 메서드
     // =========================================================================
     private void populateAccountData(Member member, Model model) {
         dashboardService.populateHeader(member, model);
@@ -274,6 +264,7 @@ public class MypageViewController {
         }
     }
 
+    // 카드 발급 워크플로우 전용 스텝 라우터 경로 매핑
     @GetMapping("/mypage/card/step1") public String cardStep1() { return "domain/mypage/card-step1"; }
     @GetMapping("/mypage/card/step2") public String cardStep2() { return "domain/mypage/card-step2"; }
     @GetMapping("/mypage/card/step3") public String cardStep3() { return "domain/mypage/card-step3"; }
