@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>연결 계좌 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+<th:block th:replace="~{common/layout/header :: nav}"></th:block>
+
+<div class="flex flex-1">
+
+  <th:block th:replace="~{common/layout/mypage-sidebar :: sidebar('accounts')}"></th:block>
+
+  <main class="flex-1 p-8 overflow-y-auto">
+    <div class="max-w-4xl">
+      <h1 class="text-2xl text-gray-800 mb-8">연결 계좌</h1>
+
+      <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-3xl shadow-md p-8 mb-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+            <i data-lucide="dollar-sign" class="w-6 h-6 text-[#F5A5A5]"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">총 예치금액</p>
+            <p class="text-4xl text-gray-800">
+              <span th:text="${accountBalance != null ? #numbers.formatInteger(accountBalance, 0, 'COMMA') : '0'}" id="accountBalance">1,245,000</span>원
+            </p>
+          </div>
+        </div>
+        <div class="bg-white/50 rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-gray-700">내 입금액</span>
+            <span class="text-xl text-gray-800">
+                <span th:text="${myDeposit != null ? #numbers.formatInteger(myDeposit, 0, 'COMMA') : '0'}" id="myDeposit">800,000</span>원
+              </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-700">파트너 입금액</span>
+            <span class="text-xl text-gray-800">
+                <span th:text="${partnerDeposit != null ? #numbers.formatInteger(partnerDeposit, 0, 'COMMA') : '0'}" id="partnerDeposit">434,500</span>원
+              </span>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center gap-2 text-sm text-gray-600">
+          <i data-lucide="trending-up" class="w-4 h-4"></i>
+          <span>이번 달 이자 예상: +1,200원</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl shadow-sm p-8 mb-6">
+        <h2 class="text-lg text-gray-800 mb-6">계좌 정보</h2>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
+            <span class="text-gray-600">계좌번호</span>
+            <span class="text-gray-800 font-mono" th:text="${accountNumber != null ? accountNumber : '계좌 없음'}">110-123456789-012</span>
+          </div>
+          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
+            <span class="text-gray-600">계좌 상태</span>
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span class="text-gray-800">정상</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
+            <span class="text-gray-600">개설일</span>
+            <span class="text-gray-800">2026년 5월 13일</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl shadow-sm p-8">
+        <h2 class="text-lg text-gray-800 mb-6">계좌 관리</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <button class="py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors">이체한도 변경</button>
+          <button class="py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors">계좌 비밀번호 변경</button>
+          <button class="py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors">거래 내역 다운로드</button>
+          <button class="py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors">계좌 증명서 발급</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+  });
+</script>
+<th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+</body>
+</html>
