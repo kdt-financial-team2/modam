@@ -17,21 +17,24 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
 public class MypageViewController {
 
     private final AccountMemberRepository accountMemberRepository;
-    private final MemberRepository memberRepository; // 🔥 DB 최신 조회를 위해 추가
+    private final MemberRepository memberRepository;
     private final DashboardService dashboardService;
     private final MemberService memberService;
     private final MyPageService myPageService;
 
-    // 🔥 세션 캐시 대신 DB 최신 데이터를 가져오는 헬퍼 메서드
     private Member getFreshMember(Long memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
@@ -43,11 +46,11 @@ public class MypageViewController {
     }
 
     // =========================================================================
-    // 1. 프로필 관리
+    // 1. 프로필 관리 + 🔥 비동기 이미지 파일 업로드 추가
     // =========================================================================
     @GetMapping("/mypage/profile")
     public String profilePage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        Member freshMember = getFreshMember(userDetails.getMember().getId()); // 🔥 최신 데이터 조회
+        Member freshMember = getFreshMember(userDetails.getMember().getId());
         dashboardService.populateHeader(freshMember, model);
 
         model.addAttribute("member", freshMember);
@@ -68,6 +71,24 @@ public class MypageViewController {
             rttr.addFlashAttribute("errorMsg", "프로필 수정 중 오류가 발생했습니다.");
         }
         return "redirect:/mypage/profile";
+    }
+
+    // 🔥 [추가됨] 프론트엔드 비동기(Fetch) 파일 수신 엔드포인트 구현 (JSON 응답 반환)
+    @PostMapping("/mypage/profile/image-upload")
+    @ResponseBody
+    public Map<String, Object> uploadProfileImage(
+            @RequestParam("profileFile") MultipartFile file,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String savedImgUrl = myPageService.uploadProfileImage(userDetails.getMember().getId(), file);
+            response.put("success", true);
+            response.put("imgUrl", savedImgUrl);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
     }
 
     @PostMapping("/mypage/password/update")
@@ -101,7 +122,7 @@ public class MypageViewController {
     // =========================================================================
     @GetMapping("/mypage/notifications")
     public String notificationsPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        Member freshMember = getFreshMember(userDetails.getMember().getId()); // 🔥 최신 알림 설정값 조회
+        Member freshMember = getFreshMember(userDetails.getMember().getId());
         dashboardService.populateHeader(freshMember, model);
 
         model.addAttribute("noti", freshMember);
