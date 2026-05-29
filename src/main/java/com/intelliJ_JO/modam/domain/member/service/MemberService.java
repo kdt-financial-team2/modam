@@ -164,6 +164,10 @@ public class MemberService {
         return !memberRepository.existsByUserId(userId);
     }
 
+    public boolean checkAccountAvailable(String accountNumber) {
+        return !memberRepository.existsByPersAcctNo(accountNumber);
+    }
+
     // ====================================================================
     // 조장님 작업분 (아이디/비밀번호 찾기) 유지
     // ====================================================================
