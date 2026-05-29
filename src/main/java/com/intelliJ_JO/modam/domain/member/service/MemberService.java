@@ -160,6 +160,10 @@ public class MemberService {
         member.updateInfo(null, passwordEncoder.encode(newPassword), null, null, null, null, null, null, null, null, null, null);
     }
 
+    public boolean checkUserIdAvailable(String userId) {
+        return !memberRepository.existsByUserId(userId);
+    }
+
     // ====================================================================
     // 조장님 작업분 (아이디/비밀번호 찾기) 유지
     // ====================================================================
