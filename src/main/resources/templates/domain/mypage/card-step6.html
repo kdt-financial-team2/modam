@@ -9,122 +9,149 @@
 </head>
 <body class="min-h-screen bg-[#FCE8E3] flex flex-col">
 
-  <!-- ===== 헤더 ===== -->
-  <nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
-    <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
-      <a th:href="@{/}" href="/" class="flex-shrink-0 hover:opacity-80 transition-opacity">
-        <div class="flex items-center gap-2">
-          <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
-            <i data-lucide="heart" class="w-6 h-6 text-white"></i>
-          </div>
-          <span class="text-2xl font-bold text-gray-900">모담</span>
+<nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
+  <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+    <a th:href="@{/}" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
+          <i data-lucide="heart" class="w-6 h-6 text-white"></i>
         </div>
-      </a>
+        <span class="text-2xl font-bold text-gray-900">모담</span>
+      </div>
+    </a>
+  </div>
+</nav>
+
+<div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl text-gray-800 mb-3">비밀번호 확인</h1>
+      <p id="subtitle" class="text-gray-600 text-lg">비밀번호를 한번 더 입력해주세요</p>
     </div>
-  </nav>
 
-  <!-- ===== 메인 콘텐츠 ===== -->
-  <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
-    <div class="w-full max-w-md">
+    <div class="flex justify-center gap-4 mb-12">
+      <div id="dot-0" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
+      <div id="dot-1" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
+      <div id="dot-2" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
+      <div id="dot-3" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
+    </div>
 
-      <!-- 타이틀 -->
-      <div class="text-center mb-12">
-        <h1 class="text-4xl text-gray-800 mb-3">비밀번호 확인</h1>
-        <p id="subtitle" class="text-gray-600 text-lg">비밀번호를 한번 더 입력해주세요</p>
-      </div>
+    <div id="errorMsg" class="hidden text-center text-red-500 mb-4 font-medium">
+      비밀번호가 일치하지 않습니다. 다시 입력해주세요.
+    </div>
 
-      <!-- PIN 디스플레이 -->
-      <div class="flex justify-center gap-4 mb-12">
-        <div id="dot-0" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
-        <div id="dot-1" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
-        <div id="dot-2" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
-        <div id="dot-3" class="w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all"></div>
-      </div>
-
-      <!-- 에러 메시지 -->
-      <div id="errorMsg" class="hidden text-center text-red-500 mb-4 font-medium">
-        비밀번호가 일치하지 않습니다. 다시 입력해주세요.
-      </div>
-
-      <!-- 키패드 -->
-      <div class="bg-white rounded-3xl shadow-lg p-6">
-        <div class="grid grid-cols-3 gap-4">
-          <button onclick="pressKey('1')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">1</button>
-          <button onclick="pressKey('2')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">2</button>
-          <button onclick="pressKey('3')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">3</button>
-          <button onclick="pressKey('4')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">4</button>
-          <button onclick="pressKey('5')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">5</button>
-          <button onclick="pressKey('6')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">6</button>
-          <button onclick="pressKey('7')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">7</button>
-          <button onclick="pressKey('8')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">8</button>
-          <button onclick="pressKey('9')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">9</button>
-          <div class="w-full aspect-square"></div>
-          <button onclick="pressKey('0')" class="w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95">0</button>
-          <button onclick="pressDelete()" class="w-full aspect-square bg-gray-50 hover:bg-red-50 rounded-2xl flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors active:scale-95">
-            <i data-lucide="delete" class="w-6 h-6"></i>
-          </button>
-        </div>
-      </div>
+    <div class="bg-white rounded-3xl shadow-lg p-6">
+      <div id="keypad" class="grid grid-cols-3 gap-4"></div>
     </div>
   </div>
+</div>
 
-  <!-- ===== 푸터 ===== -->
-  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+<th:block th:replace="~{common/layout/footer :: footer}"></th:block>
 
-  <script>
-    let confirmPin = '';
+<script th:inline="javascript">
+  let confirmPin = '';
 
-    function updateDots() {
-      for (let i = 0; i < 4; i++) {
-        const dot = document.getElementById('dot-' + i);
-        if (i < confirmPin.length) {
-          dot.className = 'w-16 h-16 rounded-full border-2 border-[#F5A5A5] bg-[#F5A5A5] flex items-center justify-center transition-all';
-          dot.innerHTML = '<div class="w-4 h-4 bg-white rounded-full"></div>';
-        } else {
-          dot.className = 'w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all';
-          dot.innerHTML = '';
-        }
-      }
+  // 🔥 랜덤 키패드 생성 로직 (5단계와 동일하게 섞어서 배치)
+  function renderKeypad() {
+    const keypad = document.getElementById('keypad');
+    keypad.innerHTML = '';
+
+    let numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    for (let i = numbers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
     }
 
-    function pressKey(num) {
-      if (confirmPin.length < 4) {
-        confirmPin += num;
-        updateDots();
-        if (confirmPin.length === 4) {
-          setTimeout(() => {
-            const original = localStorage.getItem('cardPin');
-            if (confirmPin === original) {
-              window.location.href = 'card-step7.html';
-            } else {
-              document.getElementById('errorMsg').classList.remove('hidden');
-              // 빨간 dots 표시 후 초기화
-              for (let i = 0; i < 4; i++) {
-                const dot = document.getElementById('dot-' + i);
-                dot.className = 'w-16 h-16 rounded-full border-2 border-red-400 bg-red-400 flex items-center justify-center transition-all';
-                dot.innerHTML = '<div class="w-4 h-4 bg-white rounded-full"></div>';
-              }
-              setTimeout(() => {
-                confirmPin = '';
-                updateDots();
-              }, 800);
+    let numIdx = 0;
+    for (let i = 0; i < 12; i++) {
+      if (i === 9) {
+        const div = document.createElement('div');
+        div.className = 'w-full aspect-square flex items-center justify-center';
+        keypad.appendChild(div);
+      } else if (i === 11) {
+        const btn = document.createElement('button');
+        btn.onclick = pressDelete;
+        btn.className = 'w-full aspect-square bg-gray-50 hover:bg-red-50 rounded-2xl flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors active:scale-95';
+        btn.innerHTML = '<i data-lucide="delete" class="w-6 h-6"></i>';
+        keypad.appendChild(btn);
+      } else {
+        const num = numbers[numIdx++];
+        const btn = document.createElement('button');
+        btn.onclick = () => pressKey(num.toString());
+        btn.className = 'w-full aspect-square bg-gray-50 hover:bg-[#FCE8E3] rounded-2xl text-2xl text-gray-800 transition-colors active:scale-95 font-medium';
+        btn.textContent = num;
+        keypad.appendChild(btn);
+      }
+    }
+    lucide.createIcons();
+  }
+
+  function updateDots() {
+    for (let i = 0; i < 4; i++) {
+      const dot = document.getElementById('dot-' + i);
+      if (i < confirmPin.length) {
+        dot.className = 'w-16 h-16 rounded-full border-2 border-[#F5A5A5] bg-[#F5A5A5] flex items-center justify-center transition-all';
+        dot.innerHTML = '<div class="w-4 h-4 bg-white rounded-full"></div>';
+      } else {
+        dot.className = 'w-16 h-16 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all';
+        dot.innerHTML = '';
+      }
+    }
+  }
+
+  function pressKey(num) {
+    if (confirmPin.length < 4) {
+      confirmPin += num;
+      updateDots();
+
+      if (confirmPin.length === 4) {
+        setTimeout(() => {
+          const original = localStorage.getItem('cardPin');
+          if (confirmPin === original) {
+            // 성공 시 서버로 POST
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/mypage/card/step6';
+
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden'; csrf.name = '_csrf'; csrf.value = /*[[${_csrf.token}]]*/ '';
+            form.appendChild(csrf);
+
+            const input = document.createElement('input');
+            input.type = 'hidden'; input.name = 'cardPassword'; input.value = confirmPin;
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+            form.submit();
+          } else {
+            // 실패 시 에러 메시지 띄우고 다시 입력하게 초기화
+            document.getElementById('errorMsg').classList.remove('hidden');
+            for (let i = 0; i < 4; i++) {
+              const dot = document.getElementById('dot-' + i);
+              dot.className = 'w-16 h-16 rounded-full border-2 border-red-400 bg-red-400 flex items-center justify-center transition-all';
+              dot.innerHTML = '<div class="w-4 h-4 bg-white rounded-full"></div>';
             }
-          }, 300);
-        }
+            setTimeout(() => {
+              confirmPin = '';
+              updateDots();
+            }, 800);
+          }
+        }, 300);
       }
     }
+  }
 
-    function pressDelete() {
-      if (confirmPin.length > 0) {
-        confirmPin = confirmPin.slice(0, -1);
-        document.getElementById('errorMsg').classList.add('hidden');
-        updateDots();
-      }
+  function pressDelete() {
+    if (confirmPin.length > 0) {
+      confirmPin = confirmPin.slice(0, -1);
+      document.getElementById('errorMsg').classList.add('hidden');
+      updateDots();
     }
+  }
 
-    window.addEventListener('DOMContentLoaded', function() {
-      lucide.createIcons();
-    });
-  </script>
+  window.addEventListener('DOMContentLoaded', function() {
+    renderKeypad(); // 로딩 시 키패드 섞기
+  });
+</script>
 </body>
 </html>
