@@ -1,5 +1,6 @@
 package com.intelliJ_JO.modam.domain.invite.controller;
 
+import com.intelliJ_JO.modam.domain.invite.dto.InviteEmailRequestDto;
 import com.intelliJ_JO.modam.domain.invite.dto.InviteRequestDto;
 import com.intelliJ_JO.modam.domain.invite.dto.InviteResponseDto;
 import com.intelliJ_JO.modam.domain.invite.service.InviteService;
@@ -31,5 +32,14 @@ public class InviteController {
     public GlobalResponse<InviteResponseDto> accept(
             @PathVariable Long accountMemberId) {
         return GlobalResponse.ok(inviteService.accept(accountMemberId));
+    }
+
+    @Operation(summary = "이메일로 초대 코드 발송 (Gmail)")
+    @PostMapping("/accounts/{accountId}/email")
+    public GlobalResponse<Void> sendInviteCodeByEmail(
+            @PathVariable Long accountId,
+            @Valid @RequestBody InviteEmailRequestDto request) {
+        inviteService.sendInviteCodeByEmail(accountId, request.getEmail());
+        return GlobalResponse.ok(null);
     }
 }
