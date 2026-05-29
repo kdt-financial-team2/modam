@@ -187,7 +187,8 @@ public class AuthViewController {
     // ===== 비밀번호 찾기 =====
 
     @GetMapping("/auth/find-password")
-    public String findPasswordPage() {
+    public String findPasswordPage(Model model) {
+        model.addAttribute("verified", false);
         return "domain/auth/find-password";
     }
 
