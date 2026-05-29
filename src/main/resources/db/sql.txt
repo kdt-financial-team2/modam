@@ -142,16 +142,17 @@ CREATE TABLE couple (
     CONSTRAINT fk_cp_acc FOREIGN KEY (acct_id) REFERENCES account(id)
 );
 
--- 10. POINT_HISTORY 테이블 (포인트 내역)
+-- 10. POINT_HISTORY 테이블 (포인트 내역 — 공동 계좌 기준)
 CREATE TABLE point_history (
     id NUMBER PRIMARY KEY,
-    mem_id NUMBER NOT NULL,
+    couple_id NUMBER NOT NULL,
     type VARCHAR2(10) NOT NULL,
+    reason VARCHAR2(30) NOT NULL,
     amt NUMBER NOT NULL,
     aft_bal NUMBER NOT NULL,
     descrip VARCHAR2(255) NOT NULL,
     created_at TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL,
-    CONSTRAINT fk_ph_mem FOREIGN KEY (mem_id) REFERENCES member(id)
+    CONSTRAINT fk_ph_couple FOREIGN KEY (couple_id) REFERENCES couple(id)
 );
 
 -- 11. ITEM 테이블 (상점 아이템)
