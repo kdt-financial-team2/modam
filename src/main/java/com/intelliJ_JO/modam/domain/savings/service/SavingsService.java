@@ -106,9 +106,11 @@ public class SavingsService {
         long current = savings.getCurrentAmount();
         long target = savings.getTargetAmount();
 
+        Long accountId = savings.getAccount().getId();
+
         if (current >= (target / 2) && "N".equals(savings.getIsHalfAwarded())) {
             savings.completeHalfAward();
-            pointService.savePoint(memberId, PointSaveRequest.builder()
+            pointService.savePointByAccountId(accountId, PointSaveRequest.builder()
                     .reason(PointReason.SAVINGS_50)
                     .amt(100)
                     .descrip("저축 목표 50% 달성 보상")
@@ -117,7 +119,7 @@ public class SavingsService {
 
         if (current >= target && "N".equals(savings.getIsFullAwarded())) {
             savings.completeFullAward();
-            pointService.savePoint(memberId, PointSaveRequest.builder()
+            pointService.savePointByAccountId(accountId, PointSaveRequest.builder()
                     .reason(PointReason.SAVINGS_100)
                     .amt(500)
                     .descrip("저축 목표 100% 달성 보상")

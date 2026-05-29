@@ -7,7 +7,7 @@ import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.notification.entity.Notification;
 import com.intelliJ_JO.modam.domain.notification.repository.NotificationRepository;
-import com.intelliJ_JO.modam.domain.point.repository.PointRepository;
+import com.intelliJ_JO.modam.domain.point.service.PointService;
 import com.intelliJ_JO.modam.domain.savings.entity.Savings;
 import com.intelliJ_JO.modam.domain.savings.repository.SavingsRepository;
 import com.intelliJ_JO.modam.domain.transaction.entity.Transaction;
@@ -23,10 +23,8 @@ import org.springframework.ui.Model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import com.intelliJ_JO.modam.domain.point.entity.PointReason;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +36,7 @@ public class DashboardService {
     private final AccountMemberRepository accountMemberRepository;
     private final TransactionRepository transactionRepository;
     private final SavingsRepository savingsRepository;
-    private final PointRepository pointRepository;
+    private final PointService pointService;
     private final CoupleRepository coupleRepository;
     private final NotificationRepository notificationRepository;
 
@@ -119,19 +117,11 @@ public class DashboardService {
             model.addAttribute("savingsGoalPercent", 0);
         }
 
-        // 6-2. 오늘 출석 체크 여부 — 오늘 00:00 ~ 23:59:59 사이 ATTENDANCE 적립 내역 존재 시 true
-        LocalDate today = LocalDate.now();
-        boolean isCheckedIn = pointRepository.existsByMemberIdAndReasonAndCreatedAtBetween(
-                member.getId(), PointReason.ATTENDANCE,
-                today.atStartOfDay(), today.atTime(LocalTime.MAX));
-        model.addAttribute("isCheckedIn", isCheckedIn);
+        // 6-2. 오늘 출석 체크 여부
+        model.addAttribute("isCheckedIn", pointService.isCheckedIn(member.getId()));
 
-        // 7. 커플 포인트 (멤버 개인 포인트 최신 잔액)
-        int couplePoints = pointRepository
-                .findTopByMemberIdOrderByCreatedAtDesc(member.getId())
-                .map(ph -> ph.getAftBal())
-                .orElse(0);
-        model.addAttribute("couplePoints", couplePoints);
+        // 7. 커플 포인트
+        model.addAttribute("couplePoints", pointService.getCurrentPoint(member.getId()));
 
         // 8. 커플 정보
         coupleRepository.findByAccountId(accountId).ifPresentOrElse(couple -> {
@@ -244,11 +234,7 @@ public class DashboardService {
 
     // 대시보드 외 페이지에서 header-dashboard에 필요한 최소 속성만 채움
     public void populateHeader(Member member, Model model) {
-        int couplePoints = pointRepository
-                .findTopByMemberIdOrderByCreatedAtDesc(member.getId())
-                .map(ph -> ph.getAftBal())
-                .orElse(0);
-        model.addAttribute("couplePoints", couplePoints);
+        model.addAttribute("couplePoints", pointService.getCurrentPoint(member.getId()));
 
         List<Notification> notifications = notificationRepository
                 .findByMemberIdOrderByCreatedAtDesc(member.getId(), PageRequest.of(0, 10));

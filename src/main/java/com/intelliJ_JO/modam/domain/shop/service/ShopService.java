@@ -6,6 +6,8 @@ import com.intelliJ_JO.modam.domain.inventory.repository.InventoryRepository;
 import com.intelliJ_JO.modam.domain.item.entity.ItemEntity;
 import com.intelliJ_JO.modam.domain.item.enums.ItemStatus;
 import com.intelliJ_JO.modam.domain.item.repository.ItemRepository;
+import com.intelliJ_JO.modam.domain.couple.entity.Couple;
+import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.point.dto.request.PointSpendRequest;
@@ -46,6 +48,7 @@ public class ShopService {
     private final PointService pointService;
     private final PointRepository pointRepository;
     private final MemberRepository memberRepository;
+    private final CoupleRepository coupleRepository;
 
     public Page<ProductDto> getProducts(String category, int page) {
         Pageable pageable = PageRequest.of(page - 1, PRODUCT_PAGE_SIZE);
@@ -70,7 +73,14 @@ public class ShopService {
 
     public Page<HistoryItemDto> getHistory(Long memberId, int page) {
         Pageable pageable = PageRequest.of(page - 1, HISTORY_PAGE_SIZE);
-        return pointRepository.findByMemberIdOrderByCreatedAtDesc(memberId, pageable)
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        if (member.getAccount() == null) {
+            throw new IllegalStateException("공동 계좌가 없습니다.");
+        }
+        Couple couple = coupleRepository.findByAccountId(member.getAccount().getId())
+                .orElseThrow(() -> new IllegalStateException("공동 계좌가 없습니다."));
+        return pointRepository.findByCoupleIdOrderByCreatedAtDesc(couple.getId(), pageable)
                 .map(HistoryItemDto::from);
     }
 

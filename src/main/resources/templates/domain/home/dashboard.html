@@ -275,6 +275,12 @@
                   <span id="checkinLabel">오늘의 출석 체크</span>
                 </button>
               </form>
+              <!-- 출석 완료 상태 -->
+              <div th:if="${isCheckedIn}"
+                   class="w-full flex items-center justify-center gap-2 py-4 bg-white/50 text-gray-400 rounded-2xl font-medium cursor-default select-none">
+                <i data-lucide="check-circle-2" class="w-5 h-5 flex-shrink-0 text-[#F5A5A5]"></i>
+                <span>오늘 출석 완료 💕</span>
+              </div>
             </div>
 
             <!-- ===== 편집 모드 (기본 hidden) ===== -->
