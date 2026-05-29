@@ -2,6 +2,8 @@ package com.intelliJ_JO.modam.global.view;
 
 import com.intelliJ_JO.modam.config.security.CustomUserDetails;
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
+import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.transaction.dto.TransactionResponseDto;
 import com.intelliJ_JO.modam.domain.transaction.service.TransactionService;
@@ -54,7 +56,10 @@ public class SpendingViewController {
             // 로그인한 멤버의 첫 번째 계좌 가져오기
             Long memberId = userDetails.getMember().getId();
             Account account = accountMemberRepository
-                    .findFirstByMemberId(memberId)
+                    .findByMemberId(memberId).stream()
+                    .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                    .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
+                    .findFirst()
                     .map(am -> am.getAccount())
                     .orElse(null);
 
