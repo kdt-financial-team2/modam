@@ -9,171 +9,206 @@
 </head>
 <body class="min-h-screen bg-[#FCE8E3] flex flex-col">
 
-  <!-- ===== 헤더 ===== -->
-  <nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
-    <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
-      <a th:href="@{/}" href="/" class="flex-shrink-0 hover:opacity-80 transition-opacity">
-        <div class="flex items-center gap-2">
-          <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
-            <i data-lucide="heart" class="w-6 h-6 text-white"></i>
-          </div>
-          <span class="text-2xl font-bold text-gray-900">모담</span>
+<nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
+  <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+    <a th:href="@{/}" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
+          <i data-lucide="heart" class="w-6 h-6 text-white"></i>
         </div>
-      </a>
+        <span class="text-2xl font-bold text-gray-900">모담</span>
+      </div>
+    </a>
+  </div>
+</nav>
+
+<div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
+  <div class="w-full max-w-2xl">
+    <div class="flex items-center justify-center gap-3 mb-12">
+      <div class="w-12 h-12 rounded-full bg-[#F5A5A5] flex items-center justify-center shadow-md"><span class="text-white">✓</span></div>
+      <div class="w-16 h-0.5 bg-[#F5A5A5]"></div>
+      <div class="w-12 h-12 rounded-full bg-[#F5A5A5] flex items-center justify-center shadow-md"><span class="text-white">✓</span></div>
+      <div class="w-16 h-0.5 bg-[#F5A5A5]"></div>
+      <div class="w-12 h-12 rounded-full bg-[#F5A5A5] flex items-center justify-center shadow-md"><span class="text-white font-bold">3</span></div>
     </div>
-  </nav>
 
-  <!-- ===== 메인 콘텐츠 ===== -->
-  <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
-    <div class="w-full max-w-2xl">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl text-gray-800 mb-3">카드 발급 약관 동의</h1>
+      <p class="text-gray-600 text-lg">카드 발급을 위한 약관에 동의해주세요</p>
+    </div>
 
-      <!-- 타이틀 -->
-      <div class="text-center mb-10">
-        <h1 class="text-4xl text-gray-800 mb-3">카드 발급 약관 동의</h1>
-        <p class="text-gray-600 text-lg">카드 발급을 위한 약관에 동의해주세요</p>
+    <div class="bg-white rounded-3xl shadow-lg p-8 mb-8">
+      <div class="border-b border-gray-200 pb-6 mb-6">
+        <div class="flex items-center gap-4 cursor-pointer group w-max" onclick="toggleAll()">
+          <div id="checkAll" class="w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all group-hover:border-[#F5A5A5]"></div>
+          <span class="text-lg text-gray-800">전체 동의</span>
+        </div>
       </div>
 
-      <!-- 약관 컨테이너 -->
-      <div class="bg-white rounded-3xl shadow-lg p-8 mb-8">
+      <div class="space-y-4">
 
-        <!-- 전체 동의 -->
-        <div class="border-b border-gray-200 pb-6 mb-6">
-          <label class="flex items-center gap-4 cursor-pointer group">
-            <div id="checkAll"
-                 onclick="toggleAll()"
-                 class="w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all group-hover:border-[#F5A5A5]">
+        <div class="border border-gray-100 rounded-2xl overflow-hidden transition-colors hover:border-gray-200">
+          <div class="flex items-center justify-between p-4 bg-white">
+            <div class="flex items-center gap-4 cursor-pointer flex-1" onclick="toggleTerm('cardService')">
+              <div id="check-cardService" class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all"></div>
+              <div class="flex items-center gap-2"><span class="text-gray-800">카드 서비스 이용약관</span><span class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">필수</span></div>
             </div>
-            <span class="text-lg text-gray-800">전체 동의</span>
-          </label>
-        </div>
-
-        <!-- 개별 약관 -->
-        <div class="space-y-4">
-          <div class="flex items-center justify-between p-4 rounded-2xl hover:bg-[#FAFAFA] transition-colors">
-            <label class="flex items-center gap-4 cursor-pointer flex-1">
-              <div id="check-cardService" onclick="toggleTerm('cardService')"
-                   class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all hover:border-[#F5A5A5]"></div>
-              <div class="flex items-center gap-2">
-                <span class="text-gray-800">카드 서비스 이용약관</span>
-                <span class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">필수</span>
+            <button type="button" onclick="toggleDetail('detail-cardService', 'icon-cardService')" class="p-2 text-gray-400 hover:text-gray-600">
+              <div id="icon-cardService" class="transition-transform duration-300">
+                <i data-lucide="chevron-down" class="w-5 h-5"></i>
               </div>
-            </label>
-            <button class="text-gray-400 hover:text-gray-600">
-              <i data-lucide="chevron-right" class="w-5 h-5"></i>
             </button>
           </div>
-
-          <div class="flex items-center justify-between p-4 rounded-2xl hover:bg-[#FAFAFA] transition-colors">
-            <label class="flex items-center gap-4 cursor-pointer flex-1">
-              <div id="check-personalInfo" onclick="toggleTerm('personalInfo')"
-                   class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all hover:border-[#F5A5A5]"></div>
-              <div class="flex items-center gap-2">
-                <span class="text-gray-800">개인정보 수집 및 이용 동의</span>
-                <span class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">필수</span>
-              </div>
-            </label>
-            <button class="text-gray-400 hover:text-gray-600">
-              <i data-lucide="chevron-right" class="w-5 h-5"></i>
-            </button>
-          </div>
-
-          <div class="flex items-center justify-between p-4 rounded-2xl hover:bg-[#FAFAFA] transition-colors">
-            <label class="flex items-center gap-4 cursor-pointer flex-1">
-              <div id="check-creditInfo" onclick="toggleTerm('creditInfo')"
-                   class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all hover:border-[#F5A5A5]"></div>
-              <div class="flex items-center gap-2">
-                <span class="text-gray-800">신용정보 조회 동의</span>
-                <span class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">필수</span>
-              </div>
-            </label>
-            <button class="text-gray-400 hover:text-gray-600">
-              <i data-lucide="chevron-right" class="w-5 h-5"></i>
-            </button>
-          </div>
-
-          <div class="flex items-center justify-between p-4 rounded-2xl hover:bg-[#FAFAFA] transition-colors">
-            <label class="flex items-center gap-4 cursor-pointer flex-1">
-              <div id="check-marketing" onclick="toggleTerm('marketing')"
-                   class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all hover:border-[#F5A5A5]"></div>
-              <div class="flex items-center gap-2">
-                <span class="text-gray-800">마케팅 정보 수신 동의</span>
-                <span class="px-2 py-0.5 bg-gray-300 text-gray-600 text-xs rounded-full">선택</span>
-              </div>
-            </label>
-            <button class="text-gray-400 hover:text-gray-600">
-              <i data-lucide="chevron-right" class="w-5 h-5"></i>
-            </button>
+          <div id="detail-cardService" class="hidden px-6 py-5 bg-gray-50 border-t border-gray-100 text-sm text-gray-600 leading-relaxed">
+            <p class="font-semibold text-gray-700 mb-2">[제 1조 목적]</p>
+            <p class="mb-3">본 약관은 모담(MODAM) 카드의 발급 및 이용에 관한 기본적인 사항과 고객과 당사 간의 권리, 의무를 정함을 목적으로 합니다.</p>
+            <p class="font-semibold text-gray-700 mb-2">[제 2조 카드 발급 및 관리]</p>
+            <p>① 당사는 본인의 신청에 따라 심사를 거쳐 카드를 발급합니다.<br>② 카드는 타인에게 양도하거나 대여할 수 없으며, 비밀번호 누출로 인한 책임은 고객에게 있습니다.</p>
           </div>
         </div>
-      </div>
 
-      <!-- 버튼 -->
-      <div class="flex gap-4">
-        <a th:href="@{/card-step3}" href="card-step3.html"
-           class="flex-1 py-4 bg-white border-2 border-gray-300 text-gray-700 text-lg rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-          <i data-lucide="chevron-left" class="w-5 h-5"></i><span>이전</span>
-        </a>
-        <button id="nextBtn" onclick="goNext()" disabled
-                class="flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed">
-          <span>다음</span><i data-lucide="chevron-right" class="w-5 h-5"></i>
-        </button>
+        <div class="border border-gray-100 rounded-2xl overflow-hidden transition-colors hover:border-gray-200">
+          <div class="flex items-center justify-between p-4 bg-white">
+            <div class="flex items-center gap-4 cursor-pointer flex-1" onclick="toggleTerm('personalInfo')">
+              <div id="check-personalInfo" class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all"></div>
+              <div class="flex items-center gap-2"><span class="text-gray-800">개인정보 수집 및 이용 동의</span><span class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">필수</span></div>
+            </div>
+            <button type="button" onclick="toggleDetail('detail-personalInfo', 'icon-personalInfo')" class="p-2 text-gray-400 hover:text-gray-600">
+              <div id="icon-personalInfo" class="transition-transform duration-300">
+                <i data-lucide="chevron-down" class="w-5 h-5"></i>
+              </div>
+            </button>
+          </div>
+          <div id="detail-personalInfo" class="hidden px-6 py-5 bg-gray-50 border-t border-gray-100 text-sm text-gray-600 leading-relaxed">
+            <ul class="list-disc pl-4 space-y-2">
+              <li><strong>수집항목:</strong> 성명, 주민등록번호, 연락처, 주소, 이메일, 결제계좌 정보 등</li>
+              <li><strong>이용목적:</strong> 카드 발급 심사, 배송, 본인 확인, 결제 대금 청구 및 서비스 제공</li>
+              <li><strong>보유 및 이용기간:</strong> 서비스 가입일로부터 서비스 해지 후 5년까지 보관 후 파기</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="border border-gray-100 rounded-2xl overflow-hidden transition-colors hover:border-gray-200">
+          <div class="flex items-center justify-between p-4 bg-white">
+            <div class="flex items-center gap-4 cursor-pointer flex-1" onclick="toggleTerm('creditInfo')">
+              <div id="check-creditInfo" class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all"></div>
+              <div class="flex items-center gap-2"><span class="text-gray-800">신용정보 조회 동의</span><span class="px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">필수</span></div>
+            </div>
+            <button type="button" onclick="toggleDetail('detail-creditInfo', 'icon-creditInfo')" class="p-2 text-gray-400 hover:text-gray-600">
+              <div id="icon-creditInfo" class="transition-transform duration-300">
+                <i data-lucide="chevron-down" class="w-5 h-5"></i>
+              </div>
+            </button>
+          </div>
+          <div id="detail-creditInfo" class="hidden px-6 py-5 bg-gray-50 border-t border-gray-100 text-sm text-gray-600 leading-relaxed">
+            <p>본인은 신용카드 발급 심사, 한도 부여 및 유지 등을 위해 귀사가 종합신용정보집중기관(KCB), 신용정보회사(NICE, KCB 등)로부터 본인의 신용정보(대출, 연체, 카드 개설 내역 등)를 조회하는 것에 동의합니다. 본 동의는 카드 해지 시점까지 유효합니다.</p>
+          </div>
+        </div>
+
+        <div class="border border-gray-100 rounded-2xl overflow-hidden transition-colors hover:border-gray-200">
+          <div class="flex items-center justify-between p-4 bg-white">
+            <div class="flex items-center gap-4 cursor-pointer flex-1" onclick="toggleTerm('marketing')">
+              <div id="check-marketing" class="term-check w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center transition-all"></div>
+              <div class="flex items-center gap-2"><span class="text-gray-800">마케팅 정보 수신 동의</span><span class="px-2 py-0.5 bg-gray-300 text-gray-600 text-xs rounded-full">선택</span></div>
+            </div>
+            <button type="button" onclick="toggleDetail('detail-marketing', 'icon-marketing')" class="p-2 text-gray-400 hover:text-gray-600">
+              <div id="icon-marketing" class="transition-transform duration-300">
+                <i data-lucide="chevron-down" class="w-5 h-5"></i>
+              </div>
+            </button>
+          </div>
+          <div id="detail-marketing" class="hidden px-6 py-5 bg-gray-50 border-t border-gray-100 text-sm text-gray-600 leading-relaxed">
+            <p>모담이 제공하는 맞춤형 금융 상품, 캐시백 이벤트, 쿠폰 등 다양한 혜택 정보를 문자메시지, 이메일, 앱 푸시(Push) 알림을 통해 수신하는 것에 동의합니다. 동의하지 않으셔도 카드 발급 및 기본 서비스 이용은 가능합니다.</p>
+          </div>
+        </div>
+
       </div>
+    </div>
+
+    <div class="flex gap-4">
+      <a th:href="@{/mypage/card/step3}" class="flex-1 py-4 bg-white border-2 border-gray-300 text-gray-700 text-lg rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+        <i data-lucide="chevron-left" class="w-5 h-5"></i><span>이전</span>
+      </a>
+      <button id="nextBtn" onclick="goNext()" disabled class="flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed">
+        <span>다음</span><i data-lucide="chevron-right" class="w-5 h-5"></i>
+      </button>
     </div>
   </div>
+</div>
 
-  <!-- ===== 푸터 ===== -->
-  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+<th:block th:replace="~{common/layout/footer :: footer}"></th:block>
 
-  <script>
-    const terms = { cardService: false, personalInfo: false, creditInfo: false, marketing: false };
+<script th:inline="javascript">
+  const terms = { cardService: false, personalInfo: false, creditInfo: false, marketing: false };
 
-    function setCheckVisual(el, checked) {
-      if (checked) {
-        el.classList.remove('border-gray-300'); el.classList.add('bg-[#F5A5A5]', 'border-[#F5A5A5]');
-        el.innerHTML = '<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
-      } else {
-        el.classList.remove('bg-[#F5A5A5]', 'border-[#F5A5A5]'); el.classList.add('border-gray-300');
-        el.innerHTML = '';
-      }
+  function setCheckVisual(el, checked) {
+    if (checked) {
+      el.classList.remove('border-gray-300'); el.classList.add('bg-[#F5A5A5]', 'border-[#F5A5A5]');
+      el.innerHTML = '<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+    } else {
+      el.classList.remove('bg-[#F5A5A5]', 'border-[#F5A5A5]'); el.classList.add('border-gray-300');
+      el.innerHTML = '';
     }
+  }
 
-    function toggleTerm(key) {
-      terms[key] = !terms[key];
-      setCheckVisual(document.getElementById('check-' + key), terms[key]);
-      const allChecked = Object.values(terms).every(v => v);
-      setCheckVisual(document.getElementById('checkAll'), allChecked);
-      updateNextBtn();
-    }
+  function toggleTerm(key) {
+    terms[key] = !terms[key];
+    setCheckVisual(document.getElementById('check-' + key), terms[key]);
+    const allChecked = Object.values(terms).every(v => v);
+    setCheckVisual(document.getElementById('checkAll'), allChecked);
+    updateNextBtn();
+  }
 
-    function toggleAll() {
-      const allChecked = Object.values(terms).every(v => v);
-      const newVal = !allChecked;
-      Object.keys(terms).forEach(k => {
-        terms[k] = newVal;
-        setCheckVisual(document.getElementById('check-' + k), newVal);
-      });
-      setCheckVisual(document.getElementById('checkAll'), newVal);
-      updateNextBtn();
-    }
-
-    function updateNextBtn() {
-      const canProceed = terms.cardService && terms.personalInfo && terms.creditInfo;
-      const btn = document.getElementById('nextBtn');
-      btn.disabled = !canProceed;
-      btn.className = canProceed
-        ? 'flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-[#F5A5A5] text-white hover:bg-[#F28B8B] shadow-md'
-        : 'flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed';
-    }
-
-    function goNext() {
-      if (terms.cardService && terms.personalInfo && terms.creditInfo) {
-        window.location.href = 'card-step5.html';
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', function() {
-      lucide.createIcons();
+  function toggleAll() {
+    const allChecked = Object.values(terms).every(v => v);
+    const newVal = !allChecked;
+    Object.keys(terms).forEach(k => {
+      terms[k] = newVal;
+      setCheckVisual(document.getElementById('check-' + k), newVal);
     });
-  </script>
+    setCheckVisual(document.getElementById('checkAll'), newVal);
+    updateNextBtn();
+  }
+
+  // 🔥 [추가] 아코디언 상세 보기 토글 로직
+  function toggleDetail(detailId, iconWrapId) {
+    const detail = document.getElementById(detailId);
+    const iconWrap = document.getElementById(iconWrapId);
+
+    if (detail.classList.contains('hidden')) {
+      detail.classList.remove('hidden');
+      iconWrap.classList.add('rotate-180'); // 아이콘 180도 회전
+    } else {
+      detail.classList.add('hidden');
+      iconWrap.classList.remove('rotate-180'); // 아이콘 원래대로
+    }
+  }
+
+  function updateNextBtn() {
+    const canProceed = terms.cardService && terms.personalInfo && terms.creditInfo;
+    const btn = document.getElementById('nextBtn');
+    btn.disabled = !canProceed;
+    btn.className = canProceed
+      ? 'flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-[#F5A5A5] text-white hover:bg-[#F28B8B] shadow-md'
+      : 'flex-1 py-4 text-lg rounded-2xl transition-all flex items-center justify-center gap-2 bg-gray-200 text-gray-400 cursor-not-allowed';
+  }
+
+  function goNext() {
+    if (terms.cardService && terms.personalInfo && terms.creditInfo) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/mypage/card/step4';
+
+      const csrf = document.createElement('input');
+      csrf.type = 'hidden'; csrf.name = '_csrf'; csrf.value = /*[[${_csrf.token}]]*/ '';
+      form.appendChild(csrf);
+
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', function() { lucide.createIcons(); });
+</script>
 </body>
 </html>

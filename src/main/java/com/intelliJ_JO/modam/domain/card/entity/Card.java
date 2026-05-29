@@ -43,6 +43,18 @@ public class Card {
     @Column(name = "exp_date", nullable = false, length = 5)
     private String expiryDate;
 
+    // 🔥 [추가] 카드 디자인 저장용 컬럼
+    @Column(name = "card_design", length = 20)
+    private String cardDesign;
+
+    // 🔥 [추가] 카드 타입 저장용 컬럼 (국내/해외)
+    @Column(name = "card_type", length = 20)
+    private String cardType;
+
+    // 🔥 [추가] 암호화된 비밀번호 저장용 컬럼
+    @Column(name = "card_password", length = 255)
+    private String password;
+
     // 카드 상태 (ACTIVE, LOST, STOPPED)
     // 🔥 Enum으로 변경된 코드
     @Enumerated(EnumType.STRING)
@@ -50,17 +62,14 @@ public class Card {
     @Column(name = "status", nullable = false, length = 20)
     private CardStatus status = CardStatus.ACTIVE;
 
-    // 발급 일시
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
-    // 수정 일시 (상태 변경 추적용)
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // 💡 비즈니스 로직: 카드 상태(분실, 정지 등) 변경용 메서드
     public void updateStatus(CardStatus status) {
         this.status = status;
     }
