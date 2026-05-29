@@ -46,6 +46,12 @@ public class MemberController {
         return GlobalResponse.ok(memberService.updateMember(memberId, request));
     }
 
+    @Operation(summary = "아이디 중복 확인 (true = 사용 가능)")
+    @GetMapping("/check-userid")
+    public GlobalResponse<Boolean> checkUserIdDuplicate(@RequestParam String userId) {
+        return GlobalResponse.ok(memberService.checkUserIdAvailable(userId));
+    }
+
     @Operation(summary = "회원 탈퇴")
     @DeleteMapping("/{memberId}")
     public GlobalResponse<String> deleteMember(@PathVariable Long memberId) {

@@ -65,43 +65,55 @@
     <!-- 스텝 콘텐츠 -->
     <div class="bg-white rounded-3xl shadow-sm p-10">
       <h2 class="text-3xl text-gray-800 mb-3">정보 입력</h2>
-      <p class="text-gray-600 mb-8">회원가입을 위한 정보를 입력해주세요</p>
+      <p class="text-gray-600 mb-8">회원가입을 위한 정보를 입력해주세요 &nbsp;<span class="text-red-500 text-sm font-medium">* 필수 항목</span></p>
 
-      <form th:action="@{/signup/step2}" method="post" th:object="${signupForm}">
+      <form th:action="@{/signup/step2}" method="post" th:object="${signupForm}" onsubmit="return validateForm(event)">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
         <div class="space-y-5">
           <!-- 로그인 정보 -->
           <h3 class="text-lg text-gray-800">로그인 정보</h3>
 
+          <!-- 아이디 -->
           <div>
-            <label class="block text-gray-800 mb-2">아이디</label>
-            <input type="text" th:field="*{userId}"
-                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                   placeholder="영문, 숫자 조합 4-20자"
-                   minlength="4" maxlength="20"
-                   oninput="updateCharCount(this, 'userIdCount', 4, 20)"/>
-            <div class="flex justify-between items-center mt-1">
-              <p class="text-sm text-red-500" th:if="${#fields.hasErrors('userId')}" th:errors="*{userId}"></p>
-              <p class="text-xs text-gray-400 ml-auto">최소 4자 · 최대 20자 · <span id="userIdCount">0</span>/20</p>
+            <label class="block text-gray-800 mb-2">아이디 <span class="text-red-500">*</span></label>
+            <div class="flex gap-2">
+              <input type="text" th:field="*{userId}"
+                     class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
+                     placeholder="영문, 숫자 조합 4-20자"
+                     minlength="4" maxlength="20"
+                     oninput="updateCharCount(this, 'userIdCount', 4, 20); onUserIdChange()"/>
+              <button type="button" onclick="checkUserId()"
+                      class="px-5 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors whitespace-nowrap text-sm font-medium">
+                중복 확인
+              </button>
+            </div>
+            <div class="flex justify-between items-start mt-1">
+              <div>
+                <p id="userIdError" class="hidden text-sm text-red-500"></p>
+                <p id="userIdSuccess" class="hidden text-sm text-green-500"></p>
+              </div>
+              <p class="text-xs text-gray-400 ml-auto shrink-0">최소 4자 · 최대 20자 · <span id="userIdCount">0</span>/20</p>
             </div>
           </div>
 
+          <!-- 비밀번호 -->
           <div>
-            <label class="block text-gray-800 mb-2">비밀번호</label>
+            <label class="block text-gray-800 mb-2">비밀번호 <span class="text-red-500">*</span></label>
             <input type="password" th:field="*{password}"
                    class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
                    placeholder="영문, 숫자, 특수문자 조합 8-20자"
                    minlength="8" maxlength="20"
                    oninput="checkPasswordMatch(); updateCharCount(this, 'pwCount', 8, 20)"/>
-            <div class="flex justify-between items-center mt-1">
-              <p class="text-sm text-red-500" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
-              <p class="text-xs text-gray-400 ml-auto">최소 8자 · 최대 20자 · <span id="pwCount">0</span>/20</p>
+            <div class="flex justify-between items-start mt-1">
+              <p id="passwordError" class="hidden text-sm text-red-500"></p>
+              <p class="text-xs text-gray-400 ml-auto shrink-0">최소 8자 · 최대 20자 · <span id="pwCount">0</span>/20</p>
             </div>
           </div>
 
+          <!-- 비밀번호 확인 -->
           <div>
-            <label class="block text-gray-800 mb-2">비밀번호 확인</label>
+            <label class="block text-gray-800 mb-2">비밀번호 확인 <span class="text-red-500">*</span></label>
             <input type="password" th:field="*{passwordConfirm}"
                    class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none transition-colors"
                    placeholder="비밀번호를 다시 입력해주세요"
@@ -115,69 +127,85 @@
           <div class="space-y-5 pt-6 border-t border-gray-200">
             <h3 class="text-lg text-gray-800">개인 정보</h3>
 
+            <!-- 이름 -->
             <div>
-              <label class="block text-gray-800 mb-2">이름</label>
+              <label class="block text-gray-800 mb-2">이름 <span class="text-red-500">*</span></label>
               <input type="text" th:field="*{name}"
                      class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
                      placeholder="홍길동"
                      minlength="2" maxlength="20"
                      oninput="updateCharCount(this, 'nameCount', 2, 20)"/>
-              <p class="text-xs text-gray-400 mt-1 text-right">최소 2자 · 최대 20자 · <span id="nameCount">0</span>/20</p>
+              <div class="flex justify-between items-start mt-1">
+                <p id="nameError" class="hidden text-sm text-red-500"></p>
+                <p class="text-xs text-gray-400 ml-auto shrink-0">최소 2자 · 최대 20자 · <span id="nameCount">0</span>/20</p>
+              </div>
             </div>
 
+            <!-- 주민등록번호 -->
             <div>
-              <label class="block text-gray-800 mb-2">주민등록번호</label>
+              <label class="block text-gray-800 mb-2">주민등록번호 <span class="text-red-500">*</span></label>
               <div class="flex items-center gap-3">
                 <input type="text" th:field="*{residentNumberFront}" maxlength="6"
                        class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors text-center text-lg tracking-wider"
                        placeholder="앞 6자리"
-                       oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)"/>
+                       oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6); if(this.value.length===6) document.getElementById('residentNumberBack').focus()"/>
                 <span class="text-gray-400 text-2xl font-bold">-</span>
                 <input type="password" th:field="*{residentNumberBack}" maxlength="7"
                        class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors text-center text-lg tracking-wider"
                        placeholder="뒤 7자리"
                        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,7)"/>
               </div>
+              <p id="rrnError" class="hidden text-sm text-red-500 mt-1"></p>
             </div>
 
+            <!-- 영문 성 / 영문 이름 -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-gray-800 mb-2">영문 성</label>
+                <label class="block text-gray-800 mb-2">영문 성 <span class="text-red-500">*</span></label>
                 <input type="text" th:field="*{englishLastName}"
                        class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                       placeholder="Kim"/>
+                       placeholder="Kim"
+                       oninput="this.value=this.value.replace(/[^a-zA-Z]/g,'')"/>
+                <p id="engLastError" class="hidden text-sm text-red-500 mt-1"></p>
               </div>
               <div>
-                <label class="block text-gray-800 mb-2">영문 이름</label>
+                <label class="block text-gray-800 mb-2">영문 이름 <span class="text-red-500">*</span></label>
                 <input type="text" th:field="*{englishFirstName}"
                        class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                       placeholder="Gildong"/>
+                       placeholder="Gildong"
+                       oninput="this.value=this.value.replace(/[^a-zA-Z]/g,'')"/>
+                <p id="engFirstError" class="hidden text-sm text-red-500 mt-1"></p>
               </div>
             </div>
 
+            <!-- 이메일 -->
             <div>
-              <label class="block text-gray-800 mb-2">이메일</label>
+              <label class="block text-gray-800 mb-2">이메일 <span class="text-red-500">*</span></label>
               <input type="email" th:field="*{email}"
                      class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
                      placeholder="example@email.com"/>
+              <p id="emailError" class="hidden text-sm text-red-500 mt-1"></p>
             </div>
 
+            <!-- 휴대폰 번호 -->
             <div>
-              <label class="block text-gray-800 mb-2">휴대폰 번호</label>
+              <label class="block text-gray-800 mb-2">휴대폰 번호 <span class="text-red-500">*</span></label>
               <input type="tel" th:field="*{phone}"
                      class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
                      placeholder="010-1234-5678"
                      oninput="formatPhone(this)"
                      maxlength="13"/>
+              <p id="phoneError" class="hidden text-sm text-red-500 mt-1"></p>
             </div>
 
+            <!-- 주소 -->
             <div>
-              <label class="block text-gray-800 mb-2">주소</label>
+              <label class="block text-gray-800 mb-2">주소 <span class="text-red-500">*</span></label>
               <div class="space-y-3">
                 <div class="flex gap-3">
                   <input type="text" th:field="*{postalCode}" id="postalCode"
                          class="w-32 px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                         placeholder="우편번호" readonly/>
+                         placeholder="우편번호"/>
                   <button type="button" onclick="searchAddress()"
                           class="px-6 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors whitespace-nowrap">
                     주소 검색
@@ -185,11 +213,12 @@
                 </div>
                 <input type="text" th:field="*{address}" id="address"
                        class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                       placeholder="기본주소" readonly/>
+                       placeholder="기본주소"/>
                 <input type="text" th:field="*{addressDetail}"
                        class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
                        placeholder="상세주소"/>
               </div>
+              <p id="addressError" class="hidden text-sm text-red-500 mt-1"></p>
             </div>
           </div>
         </div>
@@ -223,6 +252,8 @@
   <script>
     lucide.createIcons();
 
+    let userIdChecked = false;
+
     function searchAddress() {
       new daum.Postcode({
         oncomplete: function(data) {
@@ -232,22 +263,206 @@
       }).open();
     }
 
-    /* 비밀번호 일치 여부 실시간 검사 + 다음 버튼 활성/비활성 */
+    /* 아이디 입력 변경 시 중복 확인 상태 초기화 */
+    function onUserIdChange() {
+      userIdChecked = false;
+      document.getElementById('userIdSuccess').classList.add('hidden');
+      document.getElementById('userIdError').classList.add('hidden');
+    }
+
+    /* 아이디 중복 확인 API 호출 */
+    async function checkUserId() {
+      const userId = document.getElementById('userId').value.trim();
+      const errorEl = document.getElementById('userIdError');
+      const successEl = document.getElementById('userIdSuccess');
+
+      errorEl.classList.add('hidden');
+      successEl.classList.add('hidden');
+      userIdChecked = false;
+
+      if (!userId) {
+        showError('userIdError', '아이디를 입력해주세요.');
+        return;
+      }
+      if (userId.length < 4) {
+        showError('userIdError', '아이디는 최소 4자 이상이어야 합니다.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/member/check-userid?userId=' + encodeURIComponent(userId));
+        const json = await res.json();
+        if (json.data === true) {
+          userIdChecked = true;
+          successEl.textContent = '사용 가능한 아이디입니다.';
+          successEl.classList.remove('hidden');
+        } else {
+          showError('userIdError', '이미 사용 중인 아이디입니다.');
+        }
+      } catch (e) {
+        showError('userIdError', '중복 확인 중 오류가 발생했습니다.');
+      }
+    }
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function clearError(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = '';
+      el.classList.add('hidden');
+    }
+
+    /* 폼 제출 전 전체 유효성 검사 */
+    function validateForm(event) {
+      let valid = true;
+
+      // 아이디
+      const userId = document.getElementById('userId').value.trim();
+      if (!userId) {
+        showError('userIdError', '아이디를 입력해주세요.');
+        valid = false;
+      } else if (!userIdChecked) {
+        showError('userIdError', '아이디 중복 확인을 해주세요.');
+        valid = false;
+      } else {
+        clearError('userIdError');
+      }
+
+      // 비밀번호
+      const password = document.getElementById('password').value;
+      if (!password) {
+        showError('passwordError', '비밀번호를 입력해주세요.');
+        valid = false;
+      } else if (password.length < 8) {
+        showError('passwordError', '비밀번호는 8자 이상이어야 합니다.');
+        valid = false;
+      } else {
+        clearError('passwordError');
+      }
+
+      // 비밀번호 확인
+      const passwordConfirm = document.getElementById('passwordConfirm').value;
+      const pwErrEl = document.getElementById('pwMatchError');
+      const pwOkEl = document.getElementById('pwMatchSuccess');
+      if (!passwordConfirm) {
+        pwErrEl.textContent = '비밀번호 확인을 입력해주세요.';
+        pwErrEl.classList.remove('hidden');
+        pwOkEl.classList.add('hidden');
+        valid = false;
+      } else if (password !== passwordConfirm) {
+        pwErrEl.textContent = '비밀번호가 일치하지 않습니다.';
+        pwErrEl.classList.remove('hidden');
+        pwOkEl.classList.add('hidden');
+        valid = false;
+      }
+
+      // 이름
+      const name = document.getElementById('name').value.trim();
+      if (!name) {
+        showError('nameError', '이름을 입력해주세요.');
+        valid = false;
+      } else if (name.length < 2) {
+        showError('nameError', '이름은 최소 2자 이상이어야 합니다.');
+        valid = false;
+      } else {
+        clearError('nameError');
+      }
+
+      // 주민등록번호
+      const rrnFront = document.getElementById('residentNumberFront').value;
+      const rrnBack = document.getElementById('residentNumberBack').value;
+      if (rrnFront.length !== 6 || rrnBack.length !== 7) {
+        if (rrnFront.length !== 6 && rrnBack.length !== 7) {
+          showError('rrnError', '주민등록번호 앞 6자리와 뒤 7자리를 모두 입력해주세요.');
+        } else if (rrnFront.length !== 6) {
+          showError('rrnError', '주민등록번호 앞 6자리를 입력해주세요.');
+        } else {
+          showError('rrnError', '주민등록번호 뒤 7자리를 입력해주세요.');
+        }
+        valid = false;
+      } else {
+        clearError('rrnError');
+      }
+
+      // 영문 성
+      const engLast = document.getElementById('englishLastName').value.trim();
+      if (!engLast) {
+        showError('engLastError', '영문 성을 입력해주세요.');
+        valid = false;
+      } else {
+        clearError('engLastError');
+      }
+
+      // 영문 이름
+      const engFirst = document.getElementById('englishFirstName').value.trim();
+      if (!engFirst) {
+        showError('engFirstError', '영문 이름을 입력해주세요.');
+        valid = false;
+      } else {
+        clearError('engFirstError');
+      }
+
+      // 이메일
+      const email = document.getElementById('email').value.trim();
+      if (!email) {
+        showError('emailError', '이메일을 입력해주세요.');
+        valid = false;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError('emailError', '올바른 이메일 형식으로 입력해주세요.');
+        valid = false;
+      } else {
+        clearError('emailError');
+      }
+
+      // 휴대폰 번호 (010-XXXX-XXXX = 13자)
+      const phone = document.getElementById('phone').value;
+      if (!phone) {
+        showError('phoneError', '휴대폰 번호를 입력해주세요.');
+        valid = false;
+      } else if (phone.length !== 13) {
+        showError('phoneError', '010-XXXX-XXXX 형식으로 입력해주세요. (13자리)');
+        valid = false;
+      } else {
+        clearError('phoneError');
+      }
+
+      // 주소
+      const postalCode = document.getElementById('postalCode').value;
+      const address = document.getElementById('address').value;
+      if (!postalCode || !address) {
+        showError('addressError', '주소 검색을 통해 주소를 입력해주세요.');
+        valid = false;
+      } else {
+        clearError('addressError');
+      }
+
+      if (!valid) {
+        event.preventDefault();
+        const firstError = document.querySelector('p.text-red-500:not(.hidden)');
+        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return valid;
+    }
+
+    /* 비밀번호 일치 실시간 확인 */
     function checkPasswordMatch() {
       const pw        = document.getElementById('password').value;
       const pwConfirm = document.getElementById('passwordConfirm').value;
       const input     = document.getElementById('passwordConfirm');
       const errMsg    = document.getElementById('pwMatchError');
       const okMsg     = document.getElementById('pwMatchSuccess');
-      const btn       = document.getElementById('submitBtn');
 
-      // 확인란이 비어 있으면 피드백 숨기고 버튼 유지
       if (!pwConfirm) {
         input.classList.remove('border-red-400', 'border-green-400');
         input.classList.add('border-gray-200');
         errMsg.classList.add('hidden');
         okMsg.classList.add('hidden');
-        setSubmitEnabled(true);
         return;
       }
 
@@ -256,33 +471,21 @@
         input.classList.add('border-green-400');
         errMsg.classList.add('hidden');
         okMsg.classList.remove('hidden');
-        setSubmitEnabled(true);
       } else {
         input.classList.remove('border-green-400', 'border-gray-200');
         input.classList.add('border-red-400');
+        errMsg.textContent = '비밀번호가 일치하지 않습니다.';
         errMsg.classList.remove('hidden');
         okMsg.classList.add('hidden');
-        setSubmitEnabled(false);
       }
     }
 
-    /* 다음 버튼 활성/비활성 토글 */
-    function setSubmitEnabled(enabled) {
-      const btn = document.getElementById('submitBtn');
-      if (enabled) {
-        btn.disabled = false;
-        btn.className = 'flex-1 py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors flex items-center justify-center gap-2 cursor-pointer';
-      } else {
-        btn.disabled = true;
-        btn.className = 'flex-1 py-4 bg-gray-200 text-gray-400 rounded-2xl transition-colors flex items-center justify-center gap-2 cursor-not-allowed';
-      }
-    }
-
-    /* 글자 수 카운터 업데이트 — 최소 미달 시 빨간색, 충족 시 초록색 */
+    /* 글자 수 카운터 */
     function updateCharCount(input, counterId, min, max) {
       const len  = input.value.length;
       const span = document.getElementById(counterId);
-      if (span) span.textContent = len;
+      if (!span) return;
+      span.textContent = len;
       if (len >= min && len <= max) {
         span.classList.remove('text-red-400');
         span.classList.add('text-green-500');
@@ -292,7 +495,7 @@
       }
     }
 
-    /* 휴대폰 번호 자동 하이픈 포맷 (최대 11자리 숫자 기준) */
+    /* 휴대폰 번호 자동 하이픈 포맷 */
     function formatPhone(input) {
       const digits = input.value.replace(/[^0-9]/g, '').slice(0, 11);
       if (digits.length < 4)       input.value = digits;
