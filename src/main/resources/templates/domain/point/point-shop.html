@@ -32,7 +32,7 @@
             <div>
               <p class="text-gray-600 mb-1">내 포인트</p>
               <p class="text-4xl text-gray-800">
-                <span id="pointDisplay" th:text="${#numbers.formatInteger(userPoints, 0, 'COMMA')}">12,450</span>P
+                <span id="pointDisplay" th:text="${#numbers.formatInteger(couplePoints, 0, 'COMMA')}">12,450</span>P
               </p>
             </div>
           </div>
@@ -81,7 +81,7 @@
             <div class="p-5">
               <h3 class="text-lg text-gray-800 mb-2" th:text="${product.name}">봄날의 벚꽃 핑크</h3>
               <p class="text-2xl text-[#F5A5A5]">
-                <span th:text="${#numbers.formatInteger(product.price, 0, 'COMMA')}">1,500</span>P
+                <span th:text="${#numbers.formatInteger(product.pointCost, 0, 'COMMA')}">1,500</span>P
               </p>
             </div>
           </a>
@@ -148,7 +148,7 @@
   <script th:inline="javascript">
     const serverProducts   = /*[[${products}]]*/ null;
     const serverHistory    = /*[[${pointHistory}]]*/ null;
-    const userPoints       = /*[[${userPoints}]]*/ 12450;
+    const userPoints       = /*[[${couplePoints}]]*/ 12450;
     const serverMainTab    = /*[[${selectedMainTab}]]*/ 'products';
     const serverCategory   = /*[[${selectedCategory}]]*/ 'all';
 
@@ -178,7 +178,7 @@
       { id:10, type:'USE',  amt:500,  aftBal:9650,  descrip:'계좌 이체 수수료 결제',        createdAt:'2026.05.08 10:05', isNew:false, isSpecial:false },
     ];
 
-    const ITEMS_PER_PAGE   = 6;
+    const ITEMS_PER_PAGE   = 8;
     const HISTORY_PER_PAGE = 8;
 
     let currentMainTab   = 'products';
@@ -240,7 +240,7 @@
           </div>
           <div class="p-5">
             <h3 class="text-lg text-gray-800 mb-2">${p.name}</h3>
-            <p class="text-2xl text-[#F5A5A5]">${p.price.toLocaleString()}P</p>
+            <p class="text-2xl text-[#F5A5A5]">${p.pointCost.toLocaleString()}P</p>
           </div>
         </a>
       `).join('');
@@ -267,6 +267,18 @@
         : item.isNew ? 'bg-blue-50 hover:bg-blue-100 border border-blue-100' : 'hover:bg-gray-50';
       const amtColor = (item) => item.isSpecial
         ? 'text-[#F5A5A5]' : item.type === 'EARN' ? 'text-green-600' : 'text-red-600';
+
+      if (slice.length === 0) {
+        document.getElementById('historyList').innerHTML = `
+          <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+            <i data-lucide="inbox" class="w-16 h-16 mb-4 text-gray-300"></i>
+            <p class="text-lg font-medium text-gray-500 mb-1">적립 내역이 없습니다</p>
+            <p class="text-sm text-gray-400">포인트를 적립하면 여기에 내역이 표시됩니다</p>
+          </div>`;
+        lucide.createIcons();
+        document.getElementById('historyPagination').innerHTML = '';
+        return;
+      }
 
       document.getElementById('historyList').innerHTML = slice.map(item => `
         <div class="flex items-center justify-between p-5 rounded-2xl transition-colors ${rowBg(item)}">
@@ -342,19 +354,13 @@
           (p) => { productPage = p; renderProducts(); });
       }
 
-      if (!hasServerHistory) {
-        allHistory = serverHistory || defaultHistory;
-      } else {
-        allHistory = serverHistory || defaultHistory;
-      }
+      allHistory = serverHistory || defaultHistory;
+      document.querySelectorAll('.server-history-item').forEach(el => el.remove());
 
       // 서버 데이터 없을 때 완전히 교체
       if (serverProducts === null) {
         document.querySelectorAll('.server-product-card').forEach(el => el.remove());
         renderProducts();
-      }
-      if (serverHistory === null) {
-        document.querySelectorAll('.server-history-item').forEach(el => el.remove());
       }
 
       lucide.createIcons();

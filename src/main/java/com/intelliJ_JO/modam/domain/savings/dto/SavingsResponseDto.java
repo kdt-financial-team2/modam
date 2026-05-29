@@ -9,21 +9,46 @@ import java.time.LocalDateTime;
 @Getter
 public class SavingsResponseDto {
     private Long savingsId;
-    private String saveType;       // 저축 유형 (여행, 선물 등)
-    private Long targetAmount;     // 목표 금액
-    private Long currentAmount;    // 현재 모인 금액
-    private LocalDate targetDate;  // D-Day (없을 수도 있음)
-    private String isAuto;         // 자동저축 여부 (Y/N)
+    private String goalName;       // 🔥 [추가됨] 목표 이름
+    private String saveType;       // 저축 유형 (travel, gift 등)
+    private Long targetAmount;
+    private Long currentAmount;
+    private LocalDate targetDate;
+    private String isAuto;
     private LocalDateTime createdAt;
+    private int progressPercent;
 
-    // Entity를 받아서 DTO로 변환하는 마법의 생성자
     public SavingsResponseDto(Savings savings) {
         this.savingsId = savings.getId();
+        this.goalName = savings.getGoalName(); // 🔥 [추가됨]
         this.saveType = savings.getSaveType();
         this.targetAmount = savings.getTargetAmount();
         this.currentAmount = savings.getCurrentAmount();
         this.targetDate = savings.getTargetDate();
         this.isAuto = savings.getIsAuto();
         this.createdAt = savings.getCreatedAt();
+
+        this.progressPercent = savings.getTargetAmount() > 0
+                ? (int) Math.min(((double) savings.getCurrentAmount() / savings.getTargetAmount()) * 100, 100)
+                : 0;
+    }
+
+    // 🔥 [추가됨] HTML 렌더링을 위한 아이콘 및 한글 라벨 변환 로직
+    public String getTypeLabel() {
+        return switch (saveType) {
+            case "travel" -> "여행";
+            case "gift" -> "선물";
+            case "automatic" -> "자동저축";
+            default -> "자유";
+        };
+    }
+
+    public String getIconName() {
+        return switch (saveType) {
+            case "travel" -> "plane";
+            case "gift" -> "gift";
+            case "automatic" -> "zap";
+            default -> "sparkles";
+        };
     }
 }

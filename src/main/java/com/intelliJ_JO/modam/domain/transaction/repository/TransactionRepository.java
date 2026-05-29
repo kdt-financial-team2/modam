@@ -70,4 +70,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Object[]> sumSpendGroupByMonth(@Param("accountId") Long accountId,
                                         @Param("start") LocalDateTime start,
                                         @Param("end") LocalDateTime end);
+
+    boolean existsByAccountId(Long accountId);
 }

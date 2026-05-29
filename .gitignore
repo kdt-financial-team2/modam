@@ -40,4 +40,19 @@ out/
 ### H2 Database ###
 data/*.mv.db
 data/*.trace.db
-/logs/modam.log
+
+### Claude
+
+.claude/
+
+
+### logs
+logs
+modam.log
+
+# ==========================================
+# Local Upload Files
+# ==========================================
+# 사용자가 업로드한 로컬 이미지 및 첨부파일 추적 제외 (프로필 사진 등)
+# 실행 환경(로컬/서버)에 따라 동적으로 생성되는 파일이므로 제외함
+/uploads/

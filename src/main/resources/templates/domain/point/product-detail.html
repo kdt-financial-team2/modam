@@ -40,7 +40,7 @@
             <h1 class="text-4xl text-gray-800 mb-4"
                 th:text="${product.name}" id="productName">봄날의 벚꽃 핑크</h1>
             <p class="text-5xl text-[#F5A5A5] mb-6">
-              <span th:text="${#numbers.formatInteger(product.price, 0, 'COMMA')}"
+              <span th:text="${#numbers.formatInteger(product.pointCost, 0, 'COMMA')}"
                     id="productPrice">1,500</span>P
             </p>
             <p class="text-gray-600 text-lg leading-relaxed"
@@ -76,14 +76,14 @@
             <div class="flex items-center justify-between mb-4">
               <span class="text-gray-700">내 포인트</span>
               <span class="text-2xl text-gray-800">
-                <span th:text="${#numbers.formatInteger(userPoints, 0, 'COMMA')}"
+                <span th:text="${#numbers.formatInteger(couplePoints, 0, 'COMMA')}"
                       id="myPoints">12,450</span>P
               </span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-gray-700">구매 후 잔액</span>
               <span class="text-2xl text-[#F5A5A5]">
-                <span th:text="${#numbers.formatInteger(userPoints - product.price, 0, 'COMMA')}"
+                <span th:text="${#numbers.formatInteger(couplePoints - product.pointCost, 0, 'COMMA')}"
                       id="afterPoints">10,950</span>P
               </span>
             </div>
@@ -91,7 +91,7 @@
 
           <!-- 구매 버튼 -->
           <!-- 포인트 충분 -->
-          <a th:if="${userPoints >= product.price}"
+          <a th:if="${couplePoints >= product.pointCost}"
              th:href="@{/point-shop/purchase/{id}(id=${product.id})}"
              href="/point-shop/purchase/1"
              id="purchaseBtn"
@@ -100,7 +100,7 @@
             <span>구매하기</span>
           </a>
           <!-- 포인트 부족 -->
-          <button th:unless="${userPoints >= product.price}"
+          <button th:unless="${couplePoints >= product.pointCost}"
                   id="purchaseBtnDisabled"
                   disabled
                   class="w-full py-4 rounded-2xl text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center gap-2">
@@ -118,7 +118,7 @@
 
   <script th:inline="javascript">
     const serverProduct = /*[[${product}]]*/ null;
-    const serverPoints  = /*[[${userPoints}]]*/ 12450;
+    const serverPoints  = /*[[${couplePoints}]]*/ 12450;
 
     const defaultProducts = {
       1:  { id:1,  name:'봄날의 벚꽃 핑크',    price:1500, category:'theme',    image:'🌸', description:'따뜻한 봄날의 벚꽃을 담은 핑크 테마입니다. 부드럽고 로맨틱한 분위기를 연출하며, 사랑스러운 감성으로 앱을 꾸밀 수 있습니다.' },

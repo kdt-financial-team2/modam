@@ -1,7 +1,6 @@
 package com.intelliJ_JO.modam.domain.transaction.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
-import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
