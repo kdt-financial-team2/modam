@@ -5,25 +5,31 @@ import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
+import com.intelliJ_JO.modam.domain.card.dto.CardCreateRequestDto;
+import com.intelliJ_JO.modam.domain.card.dto.CardIssueSessionDto;
+import com.intelliJ_JO.modam.domain.card.entity.Card; // 🔥 임포트 추가
+import com.intelliJ_JO.modam.domain.card.repository.CardRepository; // 🔥 임포트 추가
+import com.intelliJ_JO.modam.domain.card.service.CardService;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.member.service.MemberService;
 import com.intelliJ_JO.modam.domain.member.service.MyPageService;
-import com.intelliJ_JO.modam.global.view.DashboardService;
+import com.intelliJ_JO.modam.global.util.AES256Util; // 🔥 임포트 추가
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
+@SessionAttributes("cardIssueSession")
 public class MypageViewController {
 
     private final AccountMemberRepository accountMemberRepository;
@@ -31,8 +37,15 @@ public class MypageViewController {
     private final DashboardService dashboardService;
     private final MemberService memberService;
     private final MyPageService myPageService;
+    private final CardService cardService;
+    private final CardRepository cardRepository; // 🔥 카드 조회를 위한 레포지토리
+    private final AES256Util aes256Util; // 🔥 카드 번호 복호화를 위한 유틸
 
-    // 세션 캐시 방지 및 최신 DB 데이터 조회를 위한 헬퍼 메서드
+    @ModelAttribute("cardIssueSession")
+    public CardIssueSessionDto cardIssueSession() {
+        return new CardIssueSessionDto();
+    }
+
     private Member getFreshMember(Long memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
@@ -50,7 +63,6 @@ public class MypageViewController {
     public String profilePage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         dashboardService.populateHeader(freshMember, model);
-
         model.addAttribute("member", freshMember);
         model.addAttribute("activeMenu", "profile");
         return "domain/mypage/profile";
@@ -58,22 +70,15 @@ public class MypageViewController {
 
     @PostMapping("/mypage/profile/update")
     public String updateProfile(
-            @RequestParam String name,
-            @RequestParam String phoneNo,
-            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage, // 🔥 이미지 파일 수신 파라미터 통합 추가
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            RedirectAttributes rttr) {
+            @RequestParam String name, @RequestParam String phoneNo,
+            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
+            @AuthenticationPrincipal CustomUserDetails userDetails, RedirectAttributes rttr) {
         try {
             Long memberId = userDetails.getMember().getId();
-
-            // 1. 이름 및 휴대폰 번호 텍스트 정보 업데이트
             memberService.updateMyPageProfile(memberId, name, phoneNo);
-
-            // 2. 🔥 사용자가 프로필 사진을 새로 선택하여 전송한 경우 서버 로컬 저장 및 DB 갱신 수행
             if (profileImage != null && !profileImage.isEmpty()) {
                 myPageService.uploadProfileImage(memberId, profileImage);
             }
-
             rttr.addFlashAttribute("successMsg", "프로필 정보가 성공적으로 수정되었습니다.");
         } catch (Exception e) {
             rttr.addFlashAttribute("errorMsg", "프로필 수정 중 오류가 발생했습니다: " + e.getMessage());
@@ -83,10 +88,8 @@ public class MypageViewController {
 
     @PostMapping("/mypage/password/update")
     public String updatePassword(
-            @RequestParam String currentPassword,
-            @RequestParam String newPassword,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            RedirectAttributes rttr) {
+            @RequestParam String currentPassword, @RequestParam String newPassword,
+            @AuthenticationPrincipal CustomUserDetails userDetails, RedirectAttributes rttr) {
         try {
             memberService.updateMyPagePassword(userDetails.getMember().getId(), currentPassword, newPassword);
             rttr.addFlashAttribute("successMsg", "비밀번호가 성공적으로 변경되었습니다.");
@@ -97,7 +100,7 @@ public class MypageViewController {
     }
 
     // =========================================================================
-    // 2. 연결 계좌
+    // 2. 연결 계좌 관리
     // =========================================================================
     @GetMapping("/mypage/accounts")
     public String accountsPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -108,13 +111,12 @@ public class MypageViewController {
     }
 
     // =========================================================================
-    // 3. 알림 설정
+    // 3. 알림 설정 관리
     // =========================================================================
     @GetMapping("/mypage/notifications")
     public String notificationsPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         dashboardService.populateHeader(freshMember, model);
-
         model.addAttribute("noti", freshMember);
         model.addAttribute("activeMenu", "notifications");
         return "domain/mypage/notifications";
@@ -122,16 +124,10 @@ public class MypageViewController {
 
     @PostMapping("/mypage/notifications/update")
     public String updateNotifications(
-            @RequestParam(defaultValue = "N") String depositAlert,
-            @RequestParam(defaultValue = "N") String withdrawalAlert,
-            @RequestParam(defaultValue = "N") String weeklyReport,
-            @RequestParam(defaultValue = "N") String monthlyReport,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            RedirectAttributes rttr) {
-
-        myPageService.updateNotificationSettings(
-                userDetails.getMember().getId(), depositAlert, withdrawalAlert, weeklyReport, monthlyReport
-        );
+            @RequestParam(defaultValue = "N") String depositAlert, @RequestParam(defaultValue = "N") String withdrawalAlert,
+            @RequestParam(defaultValue = "N") String weeklyReport, @RequestParam(defaultValue = "N") String monthlyReport,
+            @AuthenticationPrincipal CustomUserDetails userDetails, RedirectAttributes rttr) {
+        myPageService.updateNotificationSettings(userDetails.getMember().getId(), depositAlert, withdrawalAlert, weeklyReport, monthlyReport);
         rttr.addFlashAttribute("successMsg", "알림 설정이 성공적으로 저장되었습니다.");
         return "redirect:/mypage/notifications";
     }
@@ -143,7 +139,6 @@ public class MypageViewController {
     public String itemsPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         dashboardService.populateHeader(freshMember, model);
-
         model.addAttribute("purchasedThemes", myPageService.getPurchasedThemes(freshMember.getId()));
         model.addAttribute("purchasedEmoticons", myPageService.getPurchasedEmoticons(freshMember.getId()));
         model.addAttribute("activeMenu", "items");
@@ -162,30 +157,76 @@ public class MypageViewController {
     }
 
     // =========================================================================
-    // 5. 카드 관리
+    // 5. 카드 관리 (메인 뷰 - 🔥 실제 DB 연동)
     // =========================================================================
     @GetMapping("/mypage/cards")
     public String cardsPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         populateAccountData(freshMember, model);
-
         model.addAttribute("userName", freshMember.getName());
-        model.addAttribute("cardIssued", false);
-        model.addAttribute("cardDesign", "pink");
-        model.addAttribute("cardType", "domestic");
-        model.addAttribute("cardStatus", "ACTIVE");
+
+        boolean isIssued = false;
+        Long accountId = null;
+
+        // 1) 내 공동 계좌 ID 찾기
+        List<AccountMember> memberships = accountMemberRepository.findByMemberId(freshMember.getId());
+        for (AccountMember am : memberships) {
+            if (am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name())) {
+                accountId = am.getAccount().getId();
+                break;
+            }
+        }
+
+        // 2) DB에서 해당 계좌의 '나의 최신 카드' 불러오기
+        if (accountId != null) {
+            List<Card> accountCards = cardRepository.findByAccountId(accountId);
+            Card myLatestCard = accountCards.stream()
+                    .filter(c -> c.getMember().getId().equals(freshMember.getId()))
+                    .max(Comparator.comparing(Card::getCreatedAt))
+                    .orElse(null);
+
+            if (myLatestCard != null) {
+                isIssued = true;
+                model.addAttribute("cardIssued", true);
+                model.addAttribute("cardDesign", myLatestCard.getCardDesign() != null ? myLatestCard.getCardDesign() : "pink");
+                model.addAttribute("cardType", myLatestCard.getCardType() != null ? myLatestCard.getCardType() : "domestic");
+                model.addAttribute("cardStatus", myLatestCard.getStatus().name());
+                model.addAttribute("expiryDate", myLatestCard.getExpiryDate());
+
+                try {
+                    // 암호화된 카드번호 복호화 후 마스킹 (1234 5678 9012 3456 -> **** **** **** 3456)
+                    String decrypted = aes256Util.decrypt(myLatestCard.getCardNumber());
+                    model.addAttribute("fullCardNumber", decrypted.replace("-", " "));
+                    model.addAttribute("maskedCardNumber", "**** **** **** " + decrypted.substring(decrypted.length() - 4));
+                } catch (Exception e) {
+                    model.addAttribute("fullCardNumber", "1234 5678 9012 3456");
+                    model.addAttribute("maskedCardNumber", "**** **** **** 3456");
+                }
+            }
+        }
+
+        // 3) 카드가 없는 경우 기본값 세팅
+        if (!isIssued) {
+            model.addAttribute("cardIssued", false);
+            model.addAttribute("cardDesign", "pink");
+            model.addAttribute("cardType", "domestic");
+            model.addAttribute("cardStatus", "ACTIVE");
+            model.addAttribute("fullCardNumber", "1234 5678 9012 3456");
+            model.addAttribute("maskedCardNumber", "**** **** **** 3456");
+            model.addAttribute("expiryDate", "12/29");
+        }
+
         model.addAttribute("activeMenu", "cards");
         return "domain/mypage/cards";
     }
 
     // =========================================================================
-    // 6. 계좌 해지
+    // 6. 계좌 해지 관리
     // =========================================================================
     @GetMapping("/mypage/close-account")
     public String closeAccountPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         populateAccountData(freshMember, model);
-
         model.addAttribute("userName", freshMember.getName());
         model.addAttribute("userPoints", 0);
         model.addAttribute("accountClosureStatus", "none");
@@ -195,16 +236,14 @@ public class MypageViewController {
     }
 
     // =========================================================================
-    // 7. 회원 탈퇴
+    // 7. 회원 탈퇴 관리
     // =========================================================================
     @GetMapping("/mypage/withdrawal")
     public String withdrawalPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         dashboardService.populateHeader(freshMember, model);
-
         boolean hasActiveAccount = accountMemberRepository.findByMemberId(freshMember.getId()).stream()
                 .anyMatch(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()));
-
         model.addAttribute("hasActiveAccount", hasActiveAccount);
         model.addAttribute("activeMenu", "withdrawal");
         return "domain/mypage/withdrawal";
@@ -216,33 +255,24 @@ public class MypageViewController {
         return "redirect:/";
     }
 
-    // =========================================================================
-    // 공통 금융 데이터 추출 헬퍼 메서드
-    // =========================================================================
     private void populateAccountData(Member member, Model model) {
         dashboardService.populateHeader(member, model);
-
         List<AccountMember> memberships = accountMemberRepository.findByMemberId(member.getId());
         AccountMember myMembership = memberships.stream()
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
                 .filter(am -> "GROUP".equals(am.getAccount().getAccountType().name()))
-                .findFirst()
-                .orElse(null);
+                .findFirst().orElse(null);
 
         if (myMembership != null) {
             Account account = myMembership.getAccount();
             Long accountId = account.getId();
-
             model.addAttribute("accountBalance", account.getBalance());
             model.addAttribute("accountNumber", account.getAccountNumber());
             model.addAttribute("hasActiveAccount", true);
-
             AccountMember partner = accountMemberRepository.findByAccountId(accountId).stream()
                     .filter(am -> !am.getMember().getId().equals(member.getId()))
                     .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
-                    .findFirst()
-                    .orElse(null);
-
+                    .findFirst().orElse(null);
             model.addAttribute("partnerName", partner != null ? partner.getMember().getName() : "");
             model.addAttribute("myDeposit", 0L);
             model.addAttribute("partnerDeposit", 0L);
@@ -264,13 +294,127 @@ public class MypageViewController {
         }
     }
 
-    // 카드 발급 워크플로우 전용 스텝 라우터 경로 매핑
-    @GetMapping("/mypage/card/step1") public String cardStep1() { return "domain/mypage/card-step1"; }
+    // =========================================================================
+    // 🔥 8. 카드 발급 워크플로우 (1단계 ~ 8단계 라우팅 및 세션 적재)
+    // =========================================================================
+
+    @GetMapping("/mypage/card/step1")
+    public String cardStep1(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        Member freshMember = getFreshMember(userDetails.getMember().getId());
+        populateAccountData(freshMember, model);
+        return "domain/mypage/card-step1";
+    }
+
+    @PostMapping("/mypage/card/step1")
+    public String processStep1(@ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto,
+                               @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long accountId = accountMemberRepository.findByMemberId(userDetails.getMember().getId()).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("연결된 공동 계좌가 없습니다."))
+                .getAccount().getId();
+        sessionDto.setTargetAccountId(accountId);
+        return "redirect:/mypage/card/step2";
+    }
+
     @GetMapping("/mypage/card/step2") public String cardStep2() { return "domain/mypage/card-step2"; }
+    @PostMapping("/mypage/card/step2")
+    public String processStep2(@RequestParam String cardDesign, @ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto) {
+        sessionDto.setCardDesign(cardDesign);
+        return "redirect:/mypage/card/step3";
+    }
+
     @GetMapping("/mypage/card/step3") public String cardStep3() { return "domain/mypage/card-step3"; }
+    @PostMapping("/mypage/card/step3")
+    public String processStep3(@RequestParam String cardType, @ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto) {
+        sessionDto.setCardType(cardType);
+        return "redirect:/mypage/card/step4";
+    }
+
     @GetMapping("/mypage/card/step4") public String cardStep4() { return "domain/mypage/card-step4"; }
+    @PostMapping("/mypage/card/step4")
+    public String processStep4(@ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto) {
+        sessionDto.setTermsAgreed(true);
+        return "redirect:/mypage/card/step5";
+    }
+
     @GetMapping("/mypage/card/step5") public String cardStep5() { return "domain/mypage/card-step5"; }
+
     @GetMapping("/mypage/card/step6") public String cardStep6() { return "domain/mypage/card-step6"; }
-    @GetMapping("/mypage/card/step7") public String cardStep7() { return "domain/mypage/card-step7"; }
-    @GetMapping("/mypage/card/step8") public String cardStep8() { return "domain/mypage/card-step8"; }
+    @PostMapping("/mypage/card/step6")
+    public String processStep6(@RequestParam String cardPassword, @ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto) {
+        sessionDto.setCardPassword(cardPassword);
+        return "redirect:/mypage/card/step7";
+    }
+
+    @GetMapping("/mypage/card/step7")
+    public String cardStep7(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        model.addAttribute("user", getFreshMember(userDetails.getMember().getId()));
+        return "domain/mypage/card-step7";
+    }
+
+    // 🔥 최종 DB 저장 단계
+    @PostMapping("/mypage/card/step7")
+    public String processStep7(
+            @RequestParam String recipientName, @RequestParam String address, @RequestParam String contactNumber,
+            @ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            RedirectAttributes rttr) {
+
+        try {
+            if (sessionDto.getCardPassword() == null || sessionDto.getCardDesign() == null) {
+                rttr.addFlashAttribute("errorMsg", "세션이 만료되었습니다. 안전을 위해 처음부터 다시 진행해주세요.");
+                return "redirect:/mypage/card/step1";
+            }
+
+            sessionDto.setRecipientName(recipientName);
+            sessionDto.setShippingAddress(address);
+            sessionDto.setContactNumber(contactNumber);
+
+            Long accountId = accountMemberRepository.findByMemberId(userDetails.getMember().getId()).stream()
+                    .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()))
+                    .findFirst().orElseThrow(() -> new IllegalArgumentException("연결된 공동 계좌가 없습니다."))
+                    .getAccount().getId();
+
+            // 💡 [재발급 핵심 로직] 새 카드를 발급받으면 기존 카드는 DB에서 삭제합니다!
+            List<Card> existingCards = cardRepository.findByAccountId(accountId).stream()
+                    .filter(c -> c.getMember().getId().equals(userDetails.getMember().getId()))
+                    .collect(Collectors.toList());
+            if (!existingCards.isEmpty()) {
+                cardRepository.deleteAll(existingCards);
+            }
+
+            // 난수 카드 정보 생성
+            String randomCardNum = String.format("%04d-%04d-%04d-%04d",
+                    (int)(Math.random()*10000), (int)(Math.random()*10000),
+                    (int)(Math.random()*10000), (int)(Math.random()*10000));
+            java.time.LocalDate now = java.time.LocalDate.now();
+            String expiryDate = String.format("%02d/%02d", now.getMonthValue(), (now.getYear() + 5) % 100);
+
+            // DTO 포장 및 저장
+            CardCreateRequestDto requestDto = new CardCreateRequestDto();
+            requestDto.setAccountId(accountId);
+            requestDto.setMemberId(userDetails.getMember().getId());
+            requestDto.setCardNumber(randomCardNum);
+            requestDto.setExpiryDate(expiryDate);
+            requestDto.setCardDesign(sessionDto.getCardDesign());
+            requestDto.setCardType(sessionDto.getCardType());
+            requestDto.setPassword(sessionDto.getCardPassword());
+
+            cardService.issueCard(requestDto);
+
+            return "redirect:/mypage/card/step8";
+
+        } catch (Exception e) {
+            rttr.addFlashAttribute("errorMsg", "카드 발급 중 오류가 발생했습니다: " + e.getMessage());
+            return "redirect:/mypage/card/step1";
+        }
+    }
+
+    @GetMapping("/mypage/card/step8")
+    public String cardStep8(@ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto, Model model, org.springframework.web.bind.support.SessionStatus status) {
+        model.addAttribute("cardDesign", sessionDto.getCardDesign());
+        model.addAttribute("cardAddress", sessionDto.getShippingAddress());
+        status.setComplete();
+        return "domain/mypage/card-step8";
+    }
 }

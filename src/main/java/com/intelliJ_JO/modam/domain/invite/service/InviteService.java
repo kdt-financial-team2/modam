@@ -28,6 +28,7 @@ public class InviteService {
     private final AccountMemberRepository accountMemberRepository;
     private final NotificationService notificationService;
     private final CoupleRepository coupleRepository;
+    private final EmailService emailService;
 
     @Transactional
     public InviteResponseDto invite(Long accountId, InviteRequestDto request) {
@@ -93,6 +94,15 @@ public class InviteService {
                     coupleRepository.save(newCouple);
                     return newCode;
                 });
+    }
+
+    @Transactional
+    public void sendInviteCodeByEmail(Long accountId, String email) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
+
+        String inviteCode = generateInviteCode(accountId);
+        emailService.sendInviteCode(email, account.getAccountNumber(), inviteCode);
     }
 
     // 보안이 강화된(SecureRandom) 6자리 난수 생성기 내부 메서드

@@ -29,14 +29,16 @@ public class CoupleViewController {
     // 1. 초대장 발송 화면 (랜덤 코드 생성 및 화면 표시)
     @GetMapping("/invite")
     public String invite(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        GroupAccountStatusDto status = accountService.getGroupAccountStatus(userDetails.getMember());
-        if (!status.isHasGroupAccount()) {
-            return "redirect:/account-setup";
-        }
-
-        String inviteCode = inviteService.generateInviteCode(status.getAccountId());
         dashboardService.populateHeader(userDetails.getMember(), model);
-        model.addAttribute("inviteCode", inviteCode);
+
+        GroupAccountStatusDto status = accountService.getGroupAccountStatus(userDetails.getMember());
+        if (status.isHasGroupAccount()) {
+            String inviteCode = inviteService.generateInviteCode(status.getAccountId());
+            model.addAttribute("inviteCode", inviteCode);
+            model.addAttribute("hasGroupAccount", true);
+        } else {
+            model.addAttribute("hasGroupAccount", false);
+        }
 
         return "domain/couple/invite";
     }
@@ -78,14 +80,27 @@ public class CoupleViewController {
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
-            return "redirect:/account-setup";
+            return "redirect:/invite";
         }
     }
 
     // 3. 이메일 초대 폼 제출 처리
     @PostMapping("/invite/send")
-    public String sendInviteEmail(@RequestParam String partnerEmail, RedirectAttributes redirectAttributes) {
-        redirectAttributes.addFlashAttribute("inviteSent", true);
+    public String sendInviteEmail(
+            @RequestParam String partnerEmail,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            RedirectAttributes redirectAttributes) {
+        try {
+            GroupAccountStatusDto status = accountService.getGroupAccountStatus(userDetails.getMember());
+            if (!status.isHasGroupAccount()) {
+                redirectAttributes.addFlashAttribute("inviteError", "모임통장이 없습니다.");
+                return "redirect:/invite";
+            }
+            inviteService.sendInviteCodeByEmail(status.getAccountId(), partnerEmail);
+            redirectAttributes.addFlashAttribute("inviteSent", true);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("inviteError", "이메일 발송에 실패했습니다: " + e.getMessage());
+        }
         return "redirect:/invite";
     }
 }
