@@ -9,114 +9,100 @@
 </head>
 <body class="min-h-screen bg-[#FCE8E3] flex flex-col">
 
-  <!-- ===== 헤더 ===== -->
-  <nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
-    <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
-      <a th:href="@{/}" href="/" class="flex-shrink-0 hover:opacity-80 transition-opacity">
-        <div class="flex items-center gap-2">
-          <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
-            <i data-lucide="heart" class="w-6 h-6 text-white"></i>
-          </div>
-          <span class="text-2xl font-bold text-gray-900">모담</span>
+<nav class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
+  <div class="w-full max-w-[1440px] mx-auto px-8 h-24 flex items-center justify-between">
+    <a th:href="@{/}" class="flex-shrink-0 hover:opacity-80 transition-opacity">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-gradient-to-br from-[#F5A5A5] to-[#F28B8B] rounded-2xl flex items-center justify-center shadow-md">
+          <i data-lucide="heart" class="w-6 h-6 text-white"></i>
         </div>
-      </a>
+        <span class="text-2xl font-bold text-gray-900">모담</span>
+      </div>
+    </a>
+  </div>
+</nav>
+
+<div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
+  <div class="w-full max-w-2xl">
+    <div class="flex items-center justify-center gap-3 mb-12">
+      <div class="w-12 h-12 rounded-full bg-[#F5A5A5] flex items-center justify-center shadow-md"><span class="text-white font-bold">1</span></div>
+      <div class="w-16 h-0.5 bg-gray-300"></div>
+      <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-md"><span class="text-gray-400 font-bold">2</span></div>
+      <div class="w-16 h-0.5 bg-gray-300"></div>
+      <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-md"><span class="text-gray-400 font-bold">3</span></div>
     </div>
-  </nav>
 
-  <!-- ===== 메인 콘텐츠 ===== -->
-  <div class="flex-1 flex flex-col items-center justify-center px-8 py-12">
-    <div class="w-full max-w-2xl">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl text-gray-800 mb-3">계좌 확인</h1>
+      <p class="text-gray-600 text-lg">카드와 연결될 계좌 정보를 확인해주세요</p>
+    </div>
 
-      <!-- 진행 인디케이터 -->
-      <div class="flex items-center justify-center gap-3 mb-12">
-        <div class="w-12 h-12 rounded-full bg-[#F5A5A5] flex items-center justify-center shadow-md">
-          <span class="text-white font-bold">1</span>
+    <div class="bg-white rounded-3xl shadow-lg p-8 mb-8">
+      <h2 class="text-xl text-gray-800 mb-6">연결 계좌 정보</h2>
+      <div class="space-y-4 mb-8">
+        <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
+          <span class="text-gray-600">계좌번호</span>
+          <span class="text-gray-800 font-mono" th:text="${accountNumber}" id="accountNumber">110-123456789-012</span>
         </div>
-        <div class="w-16 h-0.5 bg-gray-300"></div>
-        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-md">
-          <span class="text-gray-400 font-bold">2</span>
+        <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
+          <span class="text-gray-600">잔액</span>
+          <span class="text-xl text-gray-800">₩<span th:text="${#numbers.formatInteger(accountBalance, 0, 'COMMA')}" id="accountBalance">1,245,000</span></span>
         </div>
-        <div class="w-16 h-0.5 bg-gray-300"></div>
-        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-md">
-          <span class="text-gray-400 font-bold">3</span>
-        </div>
-      </div>
-
-      <!-- 타이틀 -->
-      <div class="text-center mb-10">
-        <h1 class="text-4xl text-gray-800 mb-3">계좌 확인</h1>
-        <p class="text-gray-600 text-lg">카드와 연결될 계좌 정보를 확인해주세요</p>
-      </div>
-
-      <!-- 계좌 정보 카드 -->
-      <div class="bg-white rounded-3xl shadow-lg p-8 mb-8">
-        <h2 class="text-xl text-gray-800 mb-6">연결 계좌 정보</h2>
-
-        <div class="space-y-4 mb-8">
-          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
-            <span class="text-gray-600">계좌번호</span>
-            <span class="text-gray-800 font-mono"
-                  th:text="${accountNumber}" id="accountNumber">110-123456789-012</span>
-          </div>
-          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
-            <span class="text-gray-600">잔액</span>
-            <span class="text-xl text-gray-800">
-              ₩<span th:text="${#numbers.formatInteger(accountBalance, 0, 'COMMA')}" id="accountBalance">1,245,000</span>
-            </span>
-          </div>
-          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
-            <span class="text-gray-600">계좌 상태</span>
-            <div class="flex items-center gap-2">
-              <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span class="text-gray-800">정상</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-[#FCE8E3] rounded-2xl p-5">
-          <div class="flex items-start gap-3">
-            <i data-lucide="info" class="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5"></i>
-            <p class="text-sm text-gray-700 leading-relaxed">
-              발급된 카드는 위 계좌와 연결됩니다. 카드 결제 금액은 연결된 계좌에서 차감됩니다.
-            </p>
+        <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
+          <span class="text-gray-600">계좌 상태</span>
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-gray-800">정상</span>
           </div>
         </div>
       </div>
-
-      <!-- 버튼 -->
-      <div class="flex gap-4">
-        <a th:href="@{/mypage?section=cards}" href="/mypage?section=cards"
-           class="flex-1 py-4 bg-white border-2 border-gray-300 text-gray-700 text-lg rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-          <i data-lucide="chevron-left" class="w-5 h-5"></i>
-          <span>취소</span>
-        </a>
-        <a th:href="@{/card-step2}" href="card-step2.html"
-           class="flex-1 py-4 bg-[#F5A5A5] text-white text-lg rounded-2xl hover:bg-[#F28B8B] shadow-md transition-all flex items-center justify-center gap-2">
-          <span>다음</span>
-          <i data-lucide="chevron-right" class="w-5 h-5"></i>
-        </a>
+      <div class="bg-[#FCE8E3] rounded-2xl p-5">
+        <div class="flex items-start gap-3">
+          <i data-lucide="info" class="w-5 h-5 text-gray-700 flex-shrink-0 mt-0.5"></i>
+          <p class="text-sm text-gray-700 leading-relaxed">발급된 카드는 위 계좌와 연결됩니다. 카드 결제 금액은 연결된 계좌에서 차감됩니다.</p>
+        </div>
       </div>
+    </div>
+
+    <div class="flex gap-4">
+      <a th:href="@{/mypage?section=cards}" class="flex-1 py-4 bg-white border-2 border-gray-300 text-gray-700 text-lg rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+        <i data-lucide="chevron-left" class="w-5 h-5"></i><span>취소</span>
+      </a>
+      <button type="button" onclick="goNext()" class="flex-1 py-4 bg-[#F5A5A5] text-white text-lg rounded-2xl hover:bg-[#F28B8B] shadow-md transition-all flex items-center justify-center gap-2">
+        <span>다음</span><i data-lucide="chevron-right" class="w-5 h-5"></i>
+      </button>
     </div>
   </div>
+</div>
 
-  <!-- ===== 푸터 ===== -->
-  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+<th:block th:replace="~{common/layout/footer :: footer}"></th:block>
 
-  <script th:inline="javascript">
-    const serverAccountNumber  = /*[[${accountNumber}]]*/  null;
-    const serverAccountBalance = /*[[${accountBalance}]]*/ null;
+<script th:inline="javascript">
+  const serverAccountNumber  = /*[[${accountNumber}]]*/  null;
+  const serverAccountBalance = /*[[${accountBalance}]]*/ null;
 
-    window.addEventListener('DOMContentLoaded', function() {
-      if (serverAccountNumber === null) {
-        const num = localStorage.getItem('accountNumber') || '110-123456789-012';
-        document.getElementById('accountNumber').textContent = num;
-      }
-      if (serverAccountBalance === null) {
-        const bal = parseInt(localStorage.getItem('accountBalance') || '1245000');
-        document.getElementById('accountBalance').textContent = bal.toLocaleString();
-      }
-      lucide.createIcons();
-    });
-  </script>
+  function goNext() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/mypage/card/step1';
+
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden'; csrf.name = '_csrf'; csrf.value = /*[[${_csrf.token}]]*/ '';
+    form.appendChild(csrf);
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  window.addEventListener('DOMContentLoaded', function() {
+    if (serverAccountNumber === null) {
+      document.getElementById('accountNumber').textContent = localStorage.getItem('accountNumber') || '110-123456789-012';
+    }
+    if (serverAccountBalance === null) {
+      const bal = parseInt(localStorage.getItem('accountBalance') || '1245000');
+      document.getElementById('accountBalance').textContent = bal.toLocaleString();
+    }
+    lucide.createIcons();
+  });
+</script>
 </body>
 </html>
