@@ -1,12 +1,15 @@
 server:
   port: 8080
 
+app:
+  base-url: http://localhost:8080
+
 spring:
   application:
     name: modam
 
   datasource:
-    url: jdbc:h2:file:./data/modamdb
+    url: jdbc:h2:file:./data/modamdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
     driver-class-name: org.h2.Driver
     username: test
     password: 1234
@@ -30,7 +33,21 @@ spring:
   security:
     user:
       name: test
-      password: 12
+      password: 1234
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: kbh02180@gmail.com   # Gmail 주소로 교체
+    password: pjgj apso hthq trvi              # Gmail 앱 비밀번호로 교체
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
 logging:
   file:
     name: logs/modam.log

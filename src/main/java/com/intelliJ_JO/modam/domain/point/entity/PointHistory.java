@@ -1,6 +1,6 @@
 package com.intelliJ_JO.modam.domain.point.entity;
 
-import com.intelliJ_JO.modam.domain.member.entity.Member;
+import com.intelliJ_JO.modam.domain.couple.entity.Couple;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -52,13 +52,9 @@ public class PointHistory {
     )
     private Long id;
 
-    // =========================================
-    // 회원 (N:1)
-    // 한 명의 회원은 여러 포인트 내역 보유 가능
-    // =========================================
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mem_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "couple_id", nullable = false)
+    private Couple couple;
 
     // =========================================
     // 포인트 유형

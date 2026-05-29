@@ -30,27 +30,26 @@ public class CardService {
     private final MemberRepository memberRepository;
     private final AES256Util aes256Util;
 
-    /**
-     * 1. 카드 발급 (Create)
-     */
     @Transactional
     public void issueCard(CardCreateRequestDto requestDto) {
-
-        // 1) 계좌와 멤버가 실제로 존재하는지 검증
+        // 1) 계좌 및 멤버 조회
         Account account = accountRepository.findById(requestDto.getAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 모임 통장을 찾을 수 없습니다."));
         Member member = memberRepository.findById(requestDto.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
-        // 2) 해당 멤버가 계좌의 ACCEPT 구성원인지 검증
+        // 2) 해당 계좌의 구성원인지 확인
         accountMemberRepository.findByAccountIdAndMemberId(requestDto.getAccountId(), requestDto.getMemberId())
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
                 .orElseThrow(() -> new IllegalArgumentException("해당 계좌의 구성원만 카드를 발급받을 수 있습니다."));
 
-        // 3) 💡 프론트에서 넘어온 평문 카드 번호를 AES-256으로 암호화
+        // 3) 카드 번호 암호화
         String encryptedCardNumber = aes256Util.encrypt(requestDto.getCardNumber());
 
-        // 4) 중복된 카드 번호가 있는지 한 번 더 방어 (DB에는 암호화되어 저장되므로, 암호화된 값으로 비교해야 함)
+        // 🔥 [추가] 4자리 비밀번호 암호화 처리
+        String encryptedPassword = requestDto.getPassword() != null ? aes256Util.encrypt(requestDto.getPassword()) : null;
+
+        // 4) 카드 중복 번호 검증 한 번 더 방어 (DB에는 암호화되어 저장되므로, 암호화된 값으로 비교해야 함)
         if (cardRepository.findByCardNumber(encryptedCardNumber).isPresent()) {
             throw new IllegalArgumentException("이미 등록된 카드 번호입니다.");
         }
@@ -61,6 +60,9 @@ public class CardService {
                 .member(member)
                 .cardNumber(encryptedCardNumber) // 🔥 DB에는 암호화된 번호가 들어갑니다!
                 .expiryDate(requestDto.getExpiryDate())
+                .cardDesign(requestDto.getCardDesign()) // 🔥 [추가] 디자인 저장
+                .cardType(requestDto.getCardType())     // 🔥 [추가] 타입 저장
+                .password(encryptedPassword)            // 🔥 [추가] 암호화된 비밀번호 저장
                 // status는 @Builder.Default 처리가 되어 있으므로 자동으로 ACTIVE가 들어갑니다.
                 .build();
 

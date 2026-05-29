@@ -6,6 +6,7 @@ import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
 import com.intelliJ_JO.modam.domain.card.entity.Card;
 import com.intelliJ_JO.modam.domain.card.repository.CardRepository;
+import com.intelliJ_JO.modam.domain.spendinglimit.repository.SpendingLimitRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.notification.entity.NotificationType;
@@ -38,6 +39,7 @@ public class TransactionService {
     private final MemberRepository memberRepository;
     private final CardRepository cardRepository;
     private final NotificationService notificationService;
+    private final SpendingLimitRepository spendingLimitRepository;
 
     private static final List<TransactionType> WITHDRAW_TYPES =
             List.of(TransactionType.WITHDRAW, TransactionType.PAYMENT);
@@ -105,6 +107,9 @@ public class TransactionService {
 
         TransactionResponseDto result = new TransactionResponseDto(transactionRepository.save(transaction));
         sendTransactionNotifications(account, member, type, amount, result.getAfterBalance());
+        if (WITHDRAW_TYPES.contains(type) && request.getCategory() != null) {
+            checkSpendingLimits(account, member, request.getCategory(), amount);
+        }
         return result;
     }
 
@@ -141,6 +146,35 @@ public class TransactionService {
                 }
             }
         }
+    }
+
+    private void checkSpendingLimits(Account account, Member actor, String category, Long amount) {
+        spendingLimitRepository.findByAccountIdAndCategory(account.getId(), category).ifPresent(limit -> {
+            if (limit.getBudgetAmount() <= 0) return;
+
+            LocalDateTime start = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+            LocalDateTime end = start.plusMonths(1);
+
+            Long totalSpent = transactionRepository.sumSpendByCategoryAndMember(
+                    actor.getId(), WITHDRAW_TYPES, category, start, end);
+
+            int percentage = (int) (totalSpent * 100 / limit.getBudgetAmount());
+            String accountPath = "/accounts/" + account.getId();
+
+            if (limit.isEveryTransaction()) {
+                String msg = String.format("[%s] %,d원 결제. 이번 달 소비: %,d원 / 한도: %,d원 (%d%%)",
+                        category, amount, totalSpent, limit.getBudgetAmount(), percentage);
+                notificationService.send(actor, NotificationType.LIMIT_WARNING, msg, accountPath);
+            }
+
+            if (limit.isAlertAt100() && percentage >= 100) {
+                String msg = String.format("[%s] 이번 달 소비 한도(%,d원)를 초과했습니다.", category, limit.getBudgetAmount());
+                notificationService.send(actor, NotificationType.LIMIT_WARNING, msg, accountPath);
+            } else if (limit.isAlertAt80() && percentage >= 80) {
+                String msg = String.format("[%s] 이번 달 소비 한도(%,d원)의 80%%에 도달했습니다.", category, limit.getBudgetAmount());
+                notificationService.send(actor, NotificationType.LIMIT_WARNING, msg, accountPath);
+            }
+        });
     }
 
     // 커서 기반 페이지네이션으로 거래 내역 조회 — lastTransactionId 없으면 최신순 첫 페이지
