@@ -35,4 +35,6 @@ public class SavingsCreateRequestDto {
     private String isAuto;
     private Long autoAmount;
     private AutoCycle autoCycle;
+    private Long myContribution;
+    private Long partnerContribution;
 }
