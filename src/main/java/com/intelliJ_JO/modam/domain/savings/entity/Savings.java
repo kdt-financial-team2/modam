@@ -52,6 +52,12 @@ public class Savings {
     @Column(name = "auto_cycle", length = 20)
     private AutoCycle autoCycle;
 
+    @Column(name = "my_contribution")
+    private Long myContribution;
+
+    @Column(name = "partner_contribution")
+    private Long partnerContribution;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;

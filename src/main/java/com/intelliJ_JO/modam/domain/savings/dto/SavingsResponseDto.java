@@ -17,16 +17,24 @@ public class SavingsResponseDto {
     private String isAuto;
     private LocalDateTime createdAt;
     private int progressPercent;
+    private Long myContribution;
+    private Long partnerContribution;
+    private Long autoAmount;
+    private String autoCycle;
 
     public SavingsResponseDto(Savings savings) {
         this.savingsId = savings.getId();
-        this.goalName = savings.getGoalName(); // 🔥 [추가됨]
+        this.goalName = savings.getGoalName();
         this.saveType = savings.getSaveType();
         this.targetAmount = savings.getTargetAmount();
         this.currentAmount = savings.getCurrentAmount();
         this.targetDate = savings.getTargetDate();
         this.isAuto = savings.getIsAuto();
         this.createdAt = savings.getCreatedAt();
+        this.myContribution = savings.getMyContribution() != null ? savings.getMyContribution() : 0L;
+        this.partnerContribution = savings.getPartnerContribution() != null ? savings.getPartnerContribution() : 0L;
+        this.autoAmount = savings.getAutoAmount();
+        this.autoCycle  = savings.getAutoCycle() != null ? savings.getAutoCycle().name() : null;
 
         this.progressPercent = savings.getTargetAmount() > 0
                 ? (int) Math.min(((double) savings.getCurrentAmount() / savings.getTargetAmount()) * 100, 100)
@@ -40,6 +48,15 @@ public class SavingsResponseDto {
             case "gift" -> "선물";
             case "automatic" -> "자동저축";
             default -> "자유";
+        };
+    }
+
+    public String getCycleLabel() {
+        if (autoCycle == null) return "매월";
+        return switch (autoCycle) {
+            case "DAILY"   -> "매일";
+            case "WEEKLY"  -> "매주";
+            default        -> "매월";
         };
     }
 

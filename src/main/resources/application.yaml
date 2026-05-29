@@ -30,8 +30,7 @@ spring:
   security:
     user:
       name: test
-      password: 1234
-
+      password: 12
 logging:
   file:
     name: logs/modam.log
