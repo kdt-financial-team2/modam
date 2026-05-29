@@ -84,8 +84,21 @@ public class CoupleViewController {
 
     // 3. 이메일 초대 폼 제출 처리
     @PostMapping("/invite/send")
-    public String sendInviteEmail(@RequestParam String partnerEmail, RedirectAttributes redirectAttributes) {
-        redirectAttributes.addFlashAttribute("inviteSent", true);
+    public String sendInviteEmail(
+            @RequestParam String partnerEmail,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            RedirectAttributes redirectAttributes) {
+        try {
+            GroupAccountStatusDto status = accountService.getGroupAccountStatus(userDetails.getMember());
+            if (!status.isHasGroupAccount()) {
+                redirectAttributes.addFlashAttribute("inviteError", "모임통장이 없습니다.");
+                return "redirect:/invite";
+            }
+            inviteService.sendInviteCodeByEmail(status.getAccountId(), partnerEmail);
+            redirectAttributes.addFlashAttribute("inviteSent", true);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("inviteError", "이메일 발송에 실패했습니다: " + e.getMessage());
+        }
         return "redirect:/invite";
     }
 }
