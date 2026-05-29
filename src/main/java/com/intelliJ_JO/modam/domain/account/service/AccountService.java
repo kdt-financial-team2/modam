@@ -147,7 +147,7 @@ public class AccountService {
                 .collect(Collectors.toList());
     }
 
-    // 계좌 번호 생성 (1100-XXXXXXXX-XXX 형식, 중복 시 재생성)
+    // 계좌 번호 생성 (5050-XXXXXXXX-XXX 형식, 중복 시 재생성)
     private String generateAccountNumber() {
         Random rnd = new Random();
         String candidate;
@@ -155,7 +155,7 @@ public class AccountService {
             // 8자리 + 3자리 랜덤 숫자
             String mid   = String.format("%08d", rnd.nextInt(100_000_000));
             String check = String.format("%03d", rnd.nextInt(1_000));
-            candidate = "1100-" + mid + "-" + check;
+            candidate = "5050-" + mid + "-" + check;
         } while (accountRepository.existsByAccountNumber(candidate));
         return candidate;
     }
