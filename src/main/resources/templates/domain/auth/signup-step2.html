@@ -100,12 +100,35 @@
           <!-- 비밀번호 -->
           <div>
             <label class="block text-gray-800 mb-2">비밀번호 <span class="text-red-500">*</span></label>
-            <input type="password" th:field="*{password}"
-                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
-                   placeholder="영문, 숫자, 특수문자 조합 8-20자"
-                   minlength="8" maxlength="20"
-                   oninput="checkPasswordMatch(); updateCharCount(this, 'pwCount', 8, 20)"/>
-            <div class="flex justify-between items-start mt-1">
+            <div class="relative">
+              <input type="password" th:field="*{password}"
+                     class="w-full px-5 py-4 pr-14 border-2 border-gray-200 rounded-2xl focus:border-[#FCE8E3] focus:outline-none transition-colors"
+                     placeholder="영문 대/소문자, 숫자, 특수문자 조합 8-20자"
+                     minlength="8" maxlength="20"
+                     oninput="checkPasswordStrength(this.value); checkPasswordMatch(); updateCharCount(this, 'pwCount', 8, 20)"/>
+              <button type="button" onclick="togglePassword('password', 'eyeIcon1')"
+                      class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                <i id="eyeIcon1" data-lucide="eye" class="w-5 h-5"></i>
+              </button>
+            </div>
+            <!-- 비밀번호 강도 표시 -->
+            <div class="mt-2">
+              <div class="flex gap-1.5 mb-1">
+                <div id="strengthBar1" class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all duration-300"></div>
+                <div id="strengthBar2" class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all duration-300"></div>
+                <div id="strengthBar3" class="h-1.5 flex-1 rounded-full bg-gray-200 transition-all duration-300"></div>
+              </div>
+              <p id="strengthText" class="text-xs text-gray-400 h-4"></p>
+            </div>
+            <!-- 비밀번호 요구사항 체크리스트 -->
+            <ul class="mt-2 space-y-1">
+              <li id="req-len"     class="flex items-center gap-1.5 text-xs text-gray-400 transition-colors"><span class="req-icon font-bold">○</span> 8자 이상 20자 이하</li>
+              <li id="req-upper"   class="flex items-center gap-1.5 text-xs text-gray-400 transition-colors"><span class="req-icon font-bold">○</span> 영문 대문자 포함 (A-Z)</li>
+              <li id="req-lower"   class="flex items-center gap-1.5 text-xs text-gray-400 transition-colors"><span class="req-icon font-bold">○</span> 영문 소문자 포함 (a-z)</li>
+              <li id="req-num"     class="flex items-center gap-1.5 text-xs text-gray-400 transition-colors"><span class="req-icon font-bold">○</span> 숫자 포함 (0-9)</li>
+              <li id="req-special" class="flex items-center gap-1.5 text-xs text-gray-400 transition-colors"><span class="req-icon font-bold">○</span> 특수문자 포함 (!@#$%^&amp;* 등)</li>
+            </ul>
+            <div class="flex justify-between items-start mt-2">
               <p id="passwordError" class="hidden text-sm text-red-500"></p>
               <p class="text-xs text-gray-400 ml-auto shrink-0">최소 8자 · 최대 20자 · <span id="pwCount">0</span>/20</p>
             </div>
@@ -114,11 +137,17 @@
           <!-- 비밀번호 확인 -->
           <div>
             <label class="block text-gray-800 mb-2">비밀번호 확인 <span class="text-red-500">*</span></label>
-            <input type="password" th:field="*{passwordConfirm}"
-                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none transition-colors"
-                   placeholder="비밀번호를 다시 입력해주세요"
-                   maxlength="20"
-                   oninput="checkPasswordMatch()"/>
+            <div class="relative">
+              <input type="password" th:field="*{passwordConfirm}"
+                     class="w-full px-5 py-4 pr-14 border-2 border-gray-200 rounded-2xl focus:outline-none transition-colors"
+                     placeholder="비밀번호를 다시 입력해주세요"
+                     maxlength="20"
+                     oninput="checkPasswordMatch()"/>
+              <button type="button" onclick="togglePassword('passwordConfirm', 'eyeIcon2')"
+                      class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                <i id="eyeIcon2" data-lucide="eye" class="w-5 h-5"></i>
+              </button>
+            </div>
             <p id="pwMatchError" class="hidden text-sm text-red-500 mt-1">비밀번호가 일치하지 않습니다.</p>
             <p id="pwMatchSuccess" class="hidden text-sm text-green-500 mt-1">비밀번호가 일치합니다.</p>
           </div>
@@ -336,11 +365,18 @@
 
       // 비밀번호
       const password = document.getElementById('password').value;
+      const pwHasUpper   = /[A-Z]/.test(password);
+      const pwHasLower   = /[a-z]/.test(password);
+      const pwHasNum     = /[0-9]/.test(password);
+      const pwHasSpecial = /[!@#$%^&*()\-_=+\[\]{};:'",.<>/?\\|`~]/.test(password);
       if (!password) {
         showError('passwordError', '비밀번호를 입력해주세요.');
         valid = false;
       } else if (password.length < 8) {
         showError('passwordError', '비밀번호는 8자 이상이어야 합니다.');
+        valid = false;
+      } else if (!pwHasUpper || !pwHasLower || !pwHasNum || !pwHasSpecial) {
+        showError('passwordError', '영문 대/소문자, 숫자, 특수문자를 모두 포함해야 합니다.');
         valid = false;
       } else {
         clearError('passwordError');
@@ -448,6 +484,84 @@
         if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
       return valid;
+    }
+
+    /* 비밀번호 보이기/숨기기 토글 */
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon  = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    /* 요구사항 항목 상태 업데이트 */
+    function updateReq(id, met) {
+      const el   = document.getElementById(id);
+      if (!el) return;
+      const icon = el.querySelector('.req-icon');
+      if (met) {
+        el.classList.remove('text-gray-400');
+        el.classList.add('text-green-500');
+        icon.textContent = '✓';
+      } else {
+        el.classList.remove('text-green-500');
+        el.classList.add('text-gray-400');
+        icon.textContent = '○';
+      }
+    }
+
+    /* 비밀번호 강도 및 요구사항 체크 */
+    function checkPasswordStrength(pw) {
+      const hasLen     = pw.length >= 8 && pw.length <= 20;
+      const hasUpper   = /[A-Z]/.test(pw);
+      const hasLower   = /[a-z]/.test(pw);
+      const hasNum     = /[0-9]/.test(pw);
+      const hasSpecial = /[!@#$%^&*()\-_=+\[\]{};:'",.<>/?\\|`~]/.test(pw);
+
+      updateReq('req-len',     hasLen);
+      updateReq('req-upper',   hasUpper);
+      updateReq('req-lower',   hasLower);
+      updateReq('req-num',     hasNum);
+      updateReq('req-special', hasSpecial);
+
+      const score = [hasLen, hasUpper, hasLower, hasNum, hasSpecial].filter(Boolean).length;
+      const bar1  = document.getElementById('strengthBar1');
+      const bar2  = document.getElementById('strengthBar2');
+      const bar3  = document.getElementById('strengthBar3');
+      const text  = document.getElementById('strengthText');
+
+      const reset = 'h-1.5 flex-1 rounded-full bg-gray-200 transition-all duration-300';
+      if (!pw) {
+        [bar1, bar2, bar3].forEach(b => b.className = reset);
+        text.textContent = '';
+        return;
+      }
+
+      if (score <= 2) {
+        bar1.className = 'h-1.5 flex-1 rounded-full bg-red-400 transition-all duration-300';
+        bar2.className = reset;
+        bar3.className = reset;
+        text.textContent = '약함';
+        text.className = 'text-xs text-red-400 h-4';
+      } else if (score <= 4) {
+        bar1.className = 'h-1.5 flex-1 rounded-full bg-yellow-400 transition-all duration-300';
+        bar2.className = 'h-1.5 flex-1 rounded-full bg-yellow-400 transition-all duration-300';
+        bar3.className = reset;
+        text.textContent = '보통';
+        text.className = 'text-xs text-yellow-500 h-4';
+      } else {
+        bar1.className = 'h-1.5 flex-1 rounded-full bg-green-400 transition-all duration-300';
+        bar2.className = 'h-1.5 flex-1 rounded-full bg-green-400 transition-all duration-300';
+        bar3.className = 'h-1.5 flex-1 rounded-full bg-green-400 transition-all duration-300';
+        text.textContent = '강함';
+        text.className = 'text-xs text-green-500 h-4';
+      }
     }
 
     /* 비밀번호 일치 실시간 확인 */
