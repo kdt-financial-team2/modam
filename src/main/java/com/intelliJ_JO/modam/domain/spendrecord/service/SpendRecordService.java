@@ -109,4 +109,9 @@ public class SpendRecordService {
 
         spendRecordRepository.delete(spendRecord);
     }
+
+    public SpendRecord getSpendRecordEntityById(Long recordId) {
+        return spendRecordRepository.findById(recordId)
+                .orElseThrow(() -> new IllegalArgumentException("소비 기록을 찾을 수 없습니다."));
+    }
 }
