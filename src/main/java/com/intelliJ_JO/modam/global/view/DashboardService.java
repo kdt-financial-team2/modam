@@ -155,6 +155,7 @@ public class DashboardService {
                 .orElse(null);
         model.addAttribute("partnerConnected", partner != null);
         model.addAttribute("partnerName", partner != null ? partner.getMember().getName() : "");
+        model.addAttribute("partnerProfileImg", partner != null ? partner.getMember().getProfileImg() : null);
 
         // 10. 알림
         List<Notification> notifications = notificationRepository
@@ -272,6 +273,7 @@ public class DashboardService {
         model.addAttribute("coupleAcctAlias",   "");
         model.addAttribute("partnerConnected",  false);
         model.addAttribute("partnerName",       "");
+        model.addAttribute("partnerProfileImg", null);
         model.addAttribute("isCheckedIn",       false);
         model.addAttribute("notifications",     List.of());
         model.addAttribute("unreadCount",       0);

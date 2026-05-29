@@ -26,7 +26,7 @@ public class SpendingLimit {
 
     // 커플 통장
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
+    @JoinColumn(name = "account_id")
     private Account account;
 
     // 카테고리

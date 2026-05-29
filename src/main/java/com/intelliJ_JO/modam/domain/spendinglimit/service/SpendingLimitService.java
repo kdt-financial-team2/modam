@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.domain.spendinglimit.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.spendinglimit.dto.SpendingLimitDto;
@@ -17,7 +18,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,18 +28,22 @@ public class SpendingLimitService {
     private final SpendingLimitRepository spendingLimitRepository;
     private final TransactionRepository transactionRepository;
     private final MemberRepository memberRepository;
+    private final AccountMemberRepository accountMemberRepository;
 
     // =========================
     // 소비 제한 조회
     // =========================
     public List<SpendingLimitDto> getSpendingLimits(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "존재하지 않는 회원입니다."
-                        ));
+        Account account = accountMemberRepository
+                .findFirstByMemberId(memberId)
+                .map(am -> am.getAccount())
+                .orElse(null);
 
-        Account account = member.getAccount();
+        if (account == null) {
+            return CATEGORIES.stream()
+                    .map(cat -> new SpendingLimitDto(cat[0], cat[1], 0L, 0L, 0))
+                    .collect(Collectors.toList());
+        }
 
         LocalDateTime start =
                 LocalDate.now()
@@ -106,76 +110,59 @@ public class SpendingLimitService {
     // =========================
     @Transactional
     public String saveSpendingLimits(Long memberId, SpendingLimitSaveRequest request) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        // account 조회
-        Account account = member.getAccount();
+        Account account = accountMemberRepository
+                .findFirstByMemberId(memberId)
+                .map(am -> am.getAccount())
+                .orElseThrow(() -> new IllegalArgumentException("연결된 커플 통장이 없습니다."));
 
-        // account 연결 안 된 경우
-        if (account == null) {
-            throw new IllegalArgumentException(
-                    "연결된 커플 통장이 없습니다."
-            );
-        }
-
-        // 선택 카테고리 합치기
-        String joinedCategories;
-
-        // 카테고리 선택 안 하면 전체 소비
-        if (request.getCategories() == null
-                || request.getCategories().isEmpty()) {
-
-            joinedCategories = "전체";
-
+        // 카테고리 미선택 시 전체 카테고리에 적용
+        List<String> categories;
+        if (request.getCategories() == null || request.getCategories().isEmpty()) {
+            categories = CATEGORIES.stream()
+                    .map(c -> c[0])
+                    .collect(Collectors.toList());
         } else {
-
-            joinedCategories =
-                    String.join(",", request.getCategories());
+            categories = request.getCategories();
         }
-        // 기존 제한 조회
-        Optional<SpendingLimit> existingLimit =
-                spendingLimitRepository
-                        .findByAccountIdAndCategory(
-                                account.getId(),
-                                joinedCategories
-                        );
 
-        // 이미 존재하면 프론트에 상태값 전달
-        if (existingLimit.isPresent()) {
+        // 이미 존재하는 카테고리가 있으면 EXISTS 반환
+        boolean anyExists = categories.stream()
+                .anyMatch(cat -> spendingLimitRepository
+                        .findByAccountIdAndCategory(account.getId(), cat)
+                        .isPresent());
+
+        if (anyExists) {
             return "EXISTS";
         }
 
-        // 신규 생성
-        SpendingLimit limit =
-                SpendingLimit.builder()
-                        .member(member)
-                        .account(account)
-                        .category(joinedCategories)
-                        .build();
+        // 카테고리별 개별 레코드 생성
+        for (String category : categories) {
+            SpendingLimit limit = SpendingLimit.builder()
+                    .member(member)
+                    .account(account)
+                    .category(category)
+                    .build();
 
-        // 소비 한도 저장
-        limit.updateBudget(
-                request.getBudgetAmount()
-        );
+            limit.updateBudget(request.getBudgetAmount());
 
-        // 알림 설정 저장
-        limit.updateSettings(
+            limit.updateSettings(
+                    request.isAlertAt80(),
+                    request.isAlertAt100(),
+                    request.isEveryTransaction(),
+                    request.isDailyLimit(),
+                    request.isWeeklyLimit(),
+                    request.isLargeAmount(),
+                    request.isPushAlert(),
+                    request.isEmailAlert(),
+                    request.isSmsAlert(),
+                    request.isKakaoAlert()
+            );
 
-                request.isAlertAt80(),
-                request.isAlertAt100(),
-
-                request.isEveryTransaction(),
-                request.isDailyLimit(),
-                request.isWeeklyLimit(),
-                request.isLargeAmount(),
-
-                request.isPushAlert(),
-                request.isEmailAlert(),
-                request.isSmsAlert(),
-                request.isKakaoAlert()
-        );
-
-        spendingLimitRepository.save(limit);
+            spendingLimitRepository.save(limit);
+        }
 
         return "SUCCESS";
     }
@@ -188,64 +175,50 @@ public class SpendingLimitService {
             Long memberId,
             SpendingLimitSaveRequest request
     ) {
-        Member member =
-                memberRepository.findById(memberId)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "존재하지 않는 회원입니다."
-                                ));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        Account account = member.getAccount();
-
-        if (account == null) {
-            throw new IllegalArgumentException(
-                    "연결된 커플 통장이 없습니다."
-            );
-        }
-        // 카테고리 문자열 생성
-        String joinedCategories;
-        if (request.getCategories() == null
-                || request.getCategories().isEmpty()) {
-            joinedCategories = "전체";
+        Account account = accountMemberRepository
+                .findFirstByMemberId(memberId)
+                .map(am -> am.getAccount())
+                .orElseThrow(() -> new IllegalArgumentException("연결된 커플 통장이 없습니다."));
+        // 카테고리 미선택 시 전체 카테고리에 적용
+        List<String> categories;
+        if (request.getCategories() == null || request.getCategories().isEmpty()) {
+            categories = CATEGORIES.stream()
+                    .map(c -> c[0])
+                    .collect(Collectors.toList());
         } else {
-            joinedCategories =
-                    String.join(",", request.getCategories());
+            categories = request.getCategories();
         }
 
-        // 기존 제한 조회
-        SpendingLimit limit =
-                spendingLimitRepository
-                        .findByAccountIdAndCategory(
-                                account.getId(),
-                                joinedCategories
-                        )
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "수정할 소비 제한이 없습니다."
-                                ));
+        // 카테고리별 개별 수정 (없으면 신규 생성)
+        for (String category : categories) {
+            SpendingLimit limit = spendingLimitRepository
+                    .findByAccountIdAndCategory(account.getId(), category)
+                    .orElseGet(() -> SpendingLimit.builder()
+                            .member(member)
+                            .account(account)
+                            .category(category)
+                            .build());
 
-        // 소비 한도 수정
-        limit.updateBudget(
-                request.getBudgetAmount()
-        );
+            limit.updateBudget(request.getBudgetAmount());
 
-        // 알림 설정 수정
-        limit.updateSettings(
-                request.isAlertAt80(),
-                request.isAlertAt100(),
+            limit.updateSettings(
+                    request.isAlertAt80(),
+                    request.isAlertAt100(),
+                    request.isEveryTransaction(),
+                    request.isDailyLimit(),
+                    request.isWeeklyLimit(),
+                    request.isLargeAmount(),
+                    request.isPushAlert(),
+                    request.isEmailAlert(),
+                    request.isSmsAlert(),
+                    request.isKakaoAlert()
+            );
 
-                request.isEveryTransaction(),
-                request.isDailyLimit(),
-                request.isWeeklyLimit(),
-                request.isLargeAmount(),
-
-                request.isPushAlert(),
-                request.isEmailAlert(),
-                request.isSmsAlert(),
-                request.isKakaoAlert()
-        );
-
-        spendingLimitRepository.save(limit);
+            spendingLimitRepository.save(limit);
+        }
 
         return "UPDATED";
     }
