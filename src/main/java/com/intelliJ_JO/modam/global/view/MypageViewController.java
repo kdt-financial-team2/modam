@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.global.view;
 
 import com.intelliJ_JO.modam.config.security.CustomUserDetails;
+import com.intelliJ_JO.modam.domain.account.dto.AccountUpdateRequestDto; // 🔥 DTO 임포트 추가
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
@@ -104,7 +105,7 @@ public class MypageViewController {
     }
 
     // =========================================================================
-    // 2. 연결 계좌 관리
+    // 2. 연결 계좌 관리 (이체 한도 변경 API 추가)
     // =========================================================================
     @GetMapping("/mypage/accounts")
     public String accountsPage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -112,6 +113,37 @@ public class MypageViewController {
         populateAccountData(freshMember, model);
         model.addAttribute("activeMenu", "accounts");
         return "domain/mypage/accounts";
+    }
+
+    // 🔥 [추가됨] 이체 한도 변경 폼 전송을 처리하는 POST API
+    @PostMapping("/mypage/accounts/limit")
+    public String updateAccountLimit(
+            @RequestParam(required = false) Long onceTransferLimit,
+            @RequestParam(required = false) Long dailyTransferLimit,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            RedirectAttributes rttr) {
+        try {
+            Long memberId = userDetails.getMember().getId();
+
+            // 현재 회원의 활성화된 커플 통장 찾기
+            Long accountId = accountMemberRepository.findByMemberId(memberId).stream()
+                    .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()))
+                    .findFirst().orElseThrow(() -> new IllegalArgumentException("활성 공동 계좌가 존재하지 않습니다."))
+                    .getAccount().getId();
+
+            // 기존에 만들어둔 DTO 재활용
+            AccountUpdateRequestDto requestDto = new AccountUpdateRequestDto();
+            requestDto.setOnceTransferLimit(onceTransferLimit);
+            requestDto.setDailyTransferLimit(dailyTransferLimit);
+
+            // 기존 AccountService의 업데이트 로직 호출
+            accountService.updateAccount(accountId, requestDto);
+
+            rttr.addFlashAttribute("successMsg", "이체 한도가 성공적으로 변경되었습니다.");
+        } catch (Exception e) {
+            rttr.addFlashAttribute("errorMsg", "이체 한도 변경 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        return "redirect:/mypage/accounts";
     }
 
     // =========================================================================
@@ -291,7 +323,6 @@ public class MypageViewController {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         dashboardService.populateHeader(freshMember, model);
 
-        // 🔥 [수정됨] 계좌가 CLOSED 상태가 "아닐 때만" 탈퇴를 막도록 로직 개조
         boolean hasActiveAccount = accountMemberRepository.findByMemberId(freshMember.getId()).stream()
                 .anyMatch(am -> am.getInviteStatus() == InviteStatus.ACCEPT
                         && "GROUP".equals(am.getAccount().getAccountType().name())
@@ -333,7 +364,7 @@ public class MypageViewController {
     }
 
     // =========================================================================
-    // 🔥 [수정] 헬퍼 메서드: 계좌의 CLOSED 상태 판별 로직 추가
+    // 헬퍼 메서드: 계좌 정보 주입
     // =========================================================================
     private void populateAccountData(Member member, Model model) {
         dashboardService.populateHeader(member, model);
@@ -353,6 +384,10 @@ public class MypageViewController {
             model.addAttribute("accountNumber", account.getAccountNumber());
             model.addAttribute("hasActiveAccount", true);
             model.addAttribute("isAccountClosed", isClosed);
+
+            // 🔥 [추가됨] 계좌 한도 정보 추출
+            model.addAttribute("onceLimit", account.getOnceTransferLimit());
+            model.addAttribute("dailyLimit", account.getDailyTransferLimit());
 
             AccountMember partner = accountMemberRepository.findByAccountId(accountId).stream()
                     .filter(am -> !am.getMember().getId().equals(member.getId()))
@@ -431,6 +466,10 @@ public class MypageViewController {
             model.addAttribute("partnerRefund", 0L);
             model.addAttribute("myContribution", 0.0);
             model.addAttribute("partnerContribution", 0.0);
+
+            // 🔥 [추가됨] 한도 정보 초기화
+            model.addAttribute("onceLimit", null);
+            model.addAttribute("dailyLimit", null);
         }
     }
 
