@@ -166,6 +166,7 @@
 
 <th:block th:fragment="scripts">
   <script>
+    /* ===== 드롭다운 토글 ===== */
     function toggleNotifications() {
       const panel = document.getElementById('notificationPanel');
       const dropdown = document.getElementById('profileDropdown');
@@ -178,18 +179,128 @@
       panel.classList.add('hidden');
       dropdown.classList.toggle('hidden');
     }
+
+    /* ===== 읽음 처리 ===== */
+
+    // 전체 읽음 — API 호출 후 UI 동기화
     function markAllRead() {
-      document.querySelectorAll('[id^="noti-"]').forEach(el => {
-        el.classList.remove('bg-[#FFF7F5]', 'hover:bg-[#FFE4E8]');
-        el.classList.add('hover:bg-gray-50');
-        const dot = el.querySelector('.w-2.h-2.bg-\\[\\#F5A5A5\\]');
-        if (dot) dot.remove();
+      fetch('/api/notifications/read-all', {
+        method: 'PATCH',
+        headers: { 'X-CSRF-TOKEN': document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || '' }
+      }).then(() => {
+        document.querySelectorAll('[id^="noti-"]').forEach(el => applyReadStyle(el));
+        // 미읽음 뱃지 제거
+        const badge = document.querySelector('button[onclick="toggleNotifications()"] .bg-\\[\\#F5A5A5\\]');
+        if (badge) badge.remove();
       });
     }
+
+    // 단건 읽음 — API 호출 후 UI 동기화
     function markRead(el) {
+      const notiId = el.id.replace('noti-', '');
+      fetch(`/api/notifications/${notiId}/read`, {
+        method: 'PATCH',
+        headers: { 'X-CSRF-TOKEN': document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || '' }
+      }).then(() => applyReadStyle(el));
+    }
+
+    // 읽음 UI 상태 적용 (공통)
+    function applyReadStyle(el) {
       el.classList.remove('bg-[#FFF7F5]', 'hover:bg-[#FFE4E8]');
       el.classList.add('hover:bg-gray-50');
+      const dot = el.querySelector('.w-2.h-2');
+      if (dot) dot.remove();
     }
+
+    /* ===== SSE 실시간 알림 구독 ===== */
+    (function initSSE() {
+      // 로그인 여부 확인 — 비로그인 페이지에서는 구독 안 함
+      const bellBtn = document.querySelector('button[onclick="toggleNotifications()"]');
+      if (!bellBtn) return;
+
+      const evtSource = new EventSource('/api/notifications/subscribe');
+
+      // 서버에서 'notification' 이벤트가 오면 드롭다운에 새 항목 추가
+      evtSource.addEventListener('notification', function(e) {
+        const noti = JSON.parse(e.data);
+        addNotificationItem(noti);
+        updateUnreadBadge(1);
+      });
+
+      evtSource.onerror = function() {
+        evtSource.close();
+      };
+    })();
+
+    // 새 알림 항목을 드롭다운 목록 맨 위에 삽입
+    function addNotificationItem(noti) {
+      const container = document.querySelector('#notificationPanel .p-2');
+      // "알림 없음" 빈 상태 안내문이 있으면 제거
+      const empty = document.querySelector('#notificationPanel .text-center.py-12');
+      if (empty) empty.remove();
+
+      const el = document.createElement('div');
+      el.id = 'noti-' + noti.id;
+      el.onclick = function() { markRead(this); };
+      el.className = 'w-full text-left px-4 py-3 rounded-xl mb-1 transition-colors relative cursor-pointer bg-[#FFF7F5] hover:bg-[#FFE4E8]';
+      el.innerHTML = `
+        <div class="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-[#F5A5A5] rounded-full"></div>
+        <div class="ml-3 flex items-start gap-3">
+          <div class="w-10 h-10 bg-[#FCE8E3] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <i data-lucide="${resolveNotiIcon(noti.notiType)}" class="w-5 h-5 text-[#F5A5A5]"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-800 mb-0.5">${resolveNotiTitle(noti.notiType)}</p>
+            <p class="text-xs text-gray-500 mb-1">${noti.message}</p>
+            <p class="text-xs text-gray-400">${formatNotiTime(noti.createdAt)}</p>
+          </div>
+        </div>`;
+
+      if (container) {
+        container.prepend(el);
+        if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [el] });
+      }
+    }
+
+    // 미읽음 뱃지 숫자 갱신
+    function updateUnreadBadge(delta) {
+      const bellBtn = document.querySelector('button[onclick="toggleNotifications()"]');
+      if (!bellBtn) return;
+      let badge = bellBtn.querySelector('.bg-\\[\\#F5A5A5\\]');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.className = 'absolute -top-1 -right-1 w-5 h-5 bg-[#F5A5A5] rounded-full flex items-center justify-center';
+        badge.innerHTML = '<span class="text-white text-xs font-bold">0</span>';
+        bellBtn.appendChild(badge);
+      }
+      const span = badge.querySelector('span');
+      span.textContent = (parseInt(span.textContent || '0') + delta);
+    }
+
+    // 알림 유형 → 아이콘 이름 매핑
+    function resolveNotiIcon(type) {
+      const map = { DEPOSIT: 'arrow-down-circle', WITHDRAW: 'arrow-up-circle',
+                    LIMIT_WARNING: 'alert-triangle', INVITE: 'heart-handshake', SAVINGS_GOAL: 'trophy' };
+      return map[type] || 'bell';
+    }
+    // 알림 유형 → 제목 매핑
+    function resolveNotiTitle(type) {
+      const map = { DEPOSIT: '입금 알림', WITHDRAW: '출금 알림',
+                    LIMIT_WARNING: '예산 경고', INVITE: '파트너 초대', SAVINGS_GOAL: '저축 달성' };
+      return map[type] || '알림';
+    }
+    // ISO 날짜 → MM.dd HH:mm 형식
+    function formatNotiTime(isoStr) {
+      if (!isoStr) return '';
+      const d = new Date(isoStr);
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mi = String(d.getMinutes()).padStart(2, '0');
+      return `${mm}.${dd} ${hh}:${mi}`;
+    }
+
+    /* ===== 로그아웃 모달 ===== */
     function showLogoutModal() {
       document.getElementById('profileDropdown').classList.add('hidden');
       document.getElementById('logoutOverlay').classList.remove('hidden');
@@ -199,6 +310,8 @@
       document.getElementById('logoutOverlay').classList.add('hidden');
       document.getElementById('logoutModal').classList.add('hidden');
     }
+
+    /* ===== 외부 클릭 시 드롭다운 닫기 ===== */
     document.addEventListener('click', function(e) {
       if (!e.target.closest('#notificationPanel') && !e.target.closest('button[onclick="toggleNotifications()"]')) {
         document.getElementById('notificationPanel').classList.add('hidden');
