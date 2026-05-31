@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.domain.transaction.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
@@ -56,7 +57,8 @@ public class TransactionService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // 2. 요청한 회원이 해당 계좌의 구성원(ACCEPT)인지 검증 — WAIT/REJECT 상태면 거래 불가
-        accountMemberRepository.findByAccountIdAndMemberId(request.getAccountId(), memberId)
+        // 🔥 조장님의 권한 검증 로직을 유지하면서, 우리의 기여도 누적을 위해 객체를 currentAccountMember 변수에 담아둡니다.
+        AccountMember currentAccountMember = accountMemberRepository.findByAccountIdAndMemberId(request.getAccountId(), memberId)
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
                 .orElseThrow(() -> new IllegalArgumentException("해당 계좌에 대한 접근 권한이 없습니다."));
 
@@ -106,10 +108,13 @@ public class TransactionService {
                 .build();
 
         TransactionResponseDto result = new TransactionResponseDto(transactionRepository.save(transaction));
+
+        // 조장님의 알림 및 소비 한도 체크 로직 100% 유지
         sendTransactionNotifications(account, member, type, amount, result.getAfterBalance());
         if (WITHDRAW_TYPES.contains(type) && request.getCategory() != null) {
             checkSpendingLimits(account, member, request.getCategory(), amount);
         }
+
         return result;
     }
 
@@ -190,7 +195,7 @@ public class TransactionService {
         List<Transaction> transactions = (lastTransactionId == null)
                 ? transactionRepository.findByAccountIdOrderByIdDesc(accountId, pageable)
                 : transactionRepository.findByAccountIdAndIdLessThanOrderByIdDesc(
-                        accountId, lastTransactionId, pageable);
+                accountId, lastTransactionId, pageable);
 
         return transactions.stream()
                 .map(TransactionResponseDto::new)
