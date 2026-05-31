@@ -2,9 +2,15 @@ package com.intelliJ_JO.modam.global.view;
 
 import com.intelliJ_JO.modam.config.security.CustomUserDetails;
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
+import com.intelliJ_JO.modam.domain.comment.dto.request.CommentCreateRequestDto;
+import com.intelliJ_JO.modam.domain.comment.dto.response.CommentResponseDto;
+import com.intelliJ_JO.modam.domain.comment.service.CommentService;
+import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
+import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.spendrecord.dto.ConsumptionDetailDto;
 import com.intelliJ_JO.modam.domain.spendrecord.dto.ConsumptionHistoryItemDto;
 import com.intelliJ_JO.modam.domain.spendrecord.entity.SpendRecord;
@@ -24,7 +30,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,26 +46,63 @@ public class SpendingViewController {
     private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
     private final AccountMemberRepository accountMemberRepository;
+    private final CoupleRepository coupleRepository;
+    private final CommentService commentService;
     private final SpendRecordRepository spendRecordRepository;
     private final SpendRecordService spendRecordService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy.MM.dd");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
-    // ===== 소비기록 목록 =====
+    // ===== 소비기록 목록 (인스타그램 스타일 그리드) =====
     @GetMapping("/consumption-history")
     public String consumptionHistory(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         dashboardService.populateHeader(userDetails.getMember(), model);
-        model.addAttribute("currentPage", "consumption");
+        model.addAttribute("currentPage", "story");
 
-        Account account = getGroupAccount(userDetails.getMember().getId());
+        Member member = userDetails.getMember();
+
+        // 내 프로필 정보
+        model.addAttribute("myName", member.getName());
+        model.addAttribute("myProfileImg", member.getProfileImg());
+
+        Account account = getGroupAccount(member.getId());
         if (account == null) {
+            // 커플 프로필 기본값
+            model.addAttribute("partnerName", "");
+            model.addAttribute("partnerProfileImg", null);
+            model.addAttribute("daysTogether", 0L);
+            model.addAttribute("coupleStartDate", "");
+            model.addAttribute("coupleAcctAlias", "");
             model.addAttribute("records", List.of());
+            model.addAttribute("storyRecords", List.of());
             model.addAttribute("totalAmount", 0L);
             model.addAttribute("writtenCount", 0L);
             model.addAttribute("totalCount", 0);
             return "domain/spendrecord/consumption-history";
         }
+
+        // 파트너 정보
+        AccountMember partnerMembership = accountMemberRepository.findByAccountId(account.getId()).stream()
+                .filter(am -> !am.getMember().getId().equals(member.getId()))
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .findFirst()
+                .orElse(null);
+        model.addAttribute("partnerName", partnerMembership != null ? partnerMembership.getMember().getName() : "");
+        model.addAttribute("partnerProfileImg", partnerMembership != null ? partnerMembership.getMember().getProfileImg() : null);
+
+        // 커플 D-Day 정보
+        coupleRepository.findByAccountId(account.getId()).ifPresentOrElse(couple -> {
+            model.addAttribute("coupleStartDate", couple.getDDay() != null
+                    ? couple.getDDay().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")) : "");
+            model.addAttribute("daysTogether", couple.getDDay() != null
+                    ? ChronoUnit.DAYS.between(couple.getDDay(), LocalDate.now()) : 0L);
+            model.addAttribute("coupleAcctAlias", couple.getAccountAlias() != null ? couple.getAccountAlias() : "");
+        }, () -> {
+            model.addAttribute("coupleStartDate", "");
+            model.addAttribute("daysTogether", 0L);
+            model.addAttribute("coupleAcctAlias", "");
+        });
 
         // 최근 50건 트랜잭션 (PAYMENT/WITHDRAW만)
         List<TransactionResponseDto> txList = transactionService.getTransactions(account.getId(), null, 50)
@@ -88,6 +133,7 @@ public class SpendingViewController {
                             .isUpdated(record != null && record.getUpdatedAt() != null
                                     && !record.getCreatedAt().equals(record.getUpdatedAt()))
                             .hasImage(hasImage)
+                            .imageUrl(record != null ? record.getImageUrl() : null)
                             .imageDesc(hasImage ? "[사진]" : null)
                             .hasRecord(record != null)
                             .commentCount(0)
@@ -96,10 +142,16 @@ public class SpendingViewController {
                 })
                 .collect(Collectors.toList());
 
-        long totalAmount   = records.stream().mapToLong(ConsumptionHistoryItemDto::getAmount).sum();
-        long writtenCount  = records.stream().filter(ConsumptionHistoryItemDto::isHasRecord).count();
+        long totalAmount  = records.stream().mapToLong(ConsumptionHistoryItemDto::getAmount).sum();
+        long writtenCount = records.stream().filter(ConsumptionHistoryItemDto::isHasRecord).count();
+
+        // 스토리가 있는 기록만 그리드용으로 분리
+        List<ConsumptionHistoryItemDto> storyRecords = records.stream()
+                .filter(ConsumptionHistoryItemDto::isHasRecord)
+                .collect(Collectors.toList());
 
         model.addAttribute("records", records);
+        model.addAttribute("storyRecords", storyRecords);
         model.addAttribute("totalAmount", totalAmount);
         model.addAttribute("writtenCount", writtenCount);
         model.addAttribute("totalCount", records.size());
@@ -110,7 +162,7 @@ public class SpendingViewController {
     @GetMapping("/consumption-select")
     public String consumptionSelect(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         dashboardService.populateHeader(userDetails.getMember(), model);
-        model.addAttribute("currentPage", "consumption");
+        model.addAttribute("currentPage", "story");
 
         Account account = getGroupAccount(userDetails.getMember().getId());
         if (account == null) {
@@ -183,7 +235,7 @@ public class SpendingViewController {
         }
 
         dashboardService.populateHeader(userDetails.getMember(), model);
-        model.addAttribute("currentPage", "consumption");
+        model.addAttribute("currentPage", "story");
 
         transactionRepository.findById(txId).ifPresent(tx -> {
             model.addAttribute("txId", tx.getId());
@@ -243,8 +295,7 @@ public class SpendingViewController {
             @PathVariable Long id,
             Model model) {
         dashboardService.populateHeader(userDetails.getMember(), model);
-        model.addAttribute("currentPage", "consumption");
-
+        model.addAttribute("currentPage", "story");
         SpendRecord record = spendRecordService.getSpendRecordEntityById(id);
         var tx = record.getTransaction();
 
@@ -263,8 +314,12 @@ public class SpendingViewController {
                 .likes(0)
                 .build();
 
+        // 댓글 목록 실제 조회
+        List<CommentResponseDto> comments = commentService.getComments(
+                userDetails.getMember().getId(), record.getId());
+
         model.addAttribute("consumption", consumption);
-        model.addAttribute("comments", List.of());
+        model.addAttribute("comments", comments);
         model.addAttribute("liked", false);
         model.addAttribute("currentUsername", userDetails.getMember().getName());
         return "domain/spendrecord/consumption-detail";
@@ -276,10 +331,17 @@ public class SpendingViewController {
         return "redirect:/consumption-detail/" + id;
     }
 
-    // ===== 댓글 (스텁) =====
+    // ===== 댓글 저장 =====
     @PostMapping("/consumption-detail/{id}/comment")
-    public String consumptionComment(@PathVariable Long id,
-                                     @RequestParam(required = false) String content) {
+    public String consumptionComment(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") Long id,
+            @RequestParam(value = "content", required = false) String content) {
+        if (content != null && !content.isBlank()) {
+            CommentCreateRequestDto dto = new CommentCreateRequestDto();
+            dto.setContent(content);
+            commentService.createComment(userDetails.getMember().getId(), id, dto);
+        }
         return "redirect:/consumption-detail/" + id;
     }
 
@@ -302,7 +364,7 @@ public class SpendingViewController {
     @GetMapping("/spend-record")
     public String spendRecord(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         dashboardService.populateHeader(userDetails.getMember(), model);
-        model.addAttribute("currentPage", "consumption");
+        model.addAttribute("currentPage", "story");
         Account account = getGroupAccount(userDetails.getMember().getId());
         model.addAttribute("accountId", account != null ? account.getId() : null);
         return "redirect:/consumption-history";
@@ -332,6 +394,7 @@ public class SpendingViewController {
                 return;
             }
 
+            Long memberId = userDetails.getMember().getId();
             List<TransactionResponseDto> transactions =
                     transactionService.getTransactionsByMember(memberId, null, 500);
 

@@ -54,7 +54,8 @@
       <!-- SSR 초기 목록 (JS 로드 전 표시) -->
       <div id="ssrList" class="flex flex-col gap-3">
         <th:block th:each="tx : ${transactions}">
-          <a th:href="@{/consumption-upload(txId=${tx.transactionId})}"
+          <!-- 기록 완료 항목 → 상세, 미기록 항목 → 작성 -->
+          <a th:href="${tx.hasRecord} ? @{/consumption-detail/{id}(id=${tx.id})} : @{/consumption-upload(txId=${tx.transactionId})}"
              th:attr="data-place=${tx.place},data-category=${tx.category},data-date=${tx.date}"
              class="tx-row bg-white rounded-2xl px-6 py-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-between group border border-transparent hover:border-[#F5D5CD]">
             <div class="flex items-center gap-4">
@@ -183,7 +184,7 @@
       }
 
       container.innerHTML = filtered.map(r => `
-        <a href="/consumption-upload?txId=${r.transactionId}"
+        <a href="${r.hasRecord ? '/consumption-detail/' + r.id : '/consumption-upload?txId=' + r.transactionId}"
            class="bg-white rounded-2xl px-6 py-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-between group border border-transparent hover:border-[#F5D5CD]">
           <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-full bg-[#FFF1ED] flex items-center justify-center flex-shrink-0 text-lg">

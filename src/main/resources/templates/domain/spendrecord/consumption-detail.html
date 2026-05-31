@@ -118,8 +118,9 @@
                     </div>
                     <div class="flex-1">
                       <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm text-[#6E5A55] font-semibold" th:text="${comment.author}">작성자</span>
-                        <span class="text-xs text-[#A89089]" th:text="${comment.timestamp}">방금 전</span>
+                        <span class="text-sm text-[#6E5A55] font-semibold" th:text="${comment.memberName}">작성자</span>
+                        <span class="text-xs text-[#A89089]"
+                              th:text="${#temporals.format(comment.createdAt, 'MM.dd HH:mm')}">방금 전</span>
                       </div>
                       <p class="text-[#6E5A55] leading-relaxed" th:text="${comment.content}">댓글 내용</p>
                     </div>

@@ -22,6 +22,7 @@ public class ConsumptionHistoryItemDto {
     private boolean isUpdated;
 
     private boolean hasImage;
+    private String imageUrl;
     private String imageDesc;
     private boolean hasRecord;
     private int commentCount;
