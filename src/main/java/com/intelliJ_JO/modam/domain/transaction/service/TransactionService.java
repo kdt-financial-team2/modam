@@ -201,4 +201,19 @@ public class TransactionService {
                 .map(TransactionResponseDto::new)
                 .collect(Collectors.toList());
     }
+
+    // 로그인 멤버의 GROUP 계좌를 자동으로 찾아 거래 내역 조회 (/transaction-history 용)
+    public List<TransactionResponseDto> getTransactionsByMember(Long memberId,
+                                                                Long lastTransactionId,
+                                                                int size) {
+        // 멤버가 ACCEPT 상태로 소속된 GROUP 계좌 ID 조회
+        Long accountId = accountMemberRepository.findByMemberId(memberId).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .filter(am -> "GROUP".equals(am.getAccount().getAccountType().name()))
+                .map(am -> am.getAccount().getId())
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("공동계좌를 찾을 수 없습니다."));
+
+        return getTransactions(accountId, lastTransactionId, size);
+    }
 }

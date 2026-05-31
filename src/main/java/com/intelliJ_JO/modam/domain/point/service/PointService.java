@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -83,6 +84,23 @@ public class PointService {
         Couple couple = coupleRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new IllegalStateException("공동 계좌가 없습니다."));
         return savePointForCouple(couple, request);
+    }
+
+    /**
+     * 이번 달 1일 00:00 ~ 말일 23:59 사이에 적립된 포인트 합계를 반환합니다.
+     * SAVE 타입(적립)만 집계하며, 사용(SPEND)은 포함하지 않습니다.
+     */
+    public int getMonthlyEarnedPoints(Long memberId) {
+        return findCoupleByMemberId(memberId).<Integer>map(couple -> {
+            LocalDate now = LocalDate.now();
+            LocalDateTime monthStart = now.withDayOfMonth(1).atStartOfDay();
+            LocalDateTime monthEnd   = monthStart.plusMonths(1);
+            return pointRepository.findByCoupleIdAndCreatedAtBetween(couple.getId(), monthStart, monthEnd)
+                    .stream()
+                    .filter(p -> p.getType() == PointType.SAVE)
+                    .mapToInt(PointHistory::getAmt)
+                    .sum();
+        }).orElse(0);
     }
 
     public boolean isCheckedIn(Long memberId) {

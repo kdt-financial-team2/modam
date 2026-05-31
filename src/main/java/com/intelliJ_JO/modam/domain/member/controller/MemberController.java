@@ -48,13 +48,13 @@ public class MemberController {
 
     @Operation(summary = "아이디 중복 확인 (true = 사용 가능)")
     @GetMapping("/check-userid")
-    public GlobalResponse<Boolean> checkUserIdDuplicate(@RequestParam String userId) {
+    public GlobalResponse<Boolean> checkUserIdDuplicate(@RequestParam("userId") String userId) {
         return GlobalResponse.ok(memberService.checkUserIdAvailable(userId));
     }
 
     @Operation(summary = "계좌번호 중복 확인 (true = 사용 가능)")
     @GetMapping("/check-account")
-    public GlobalResponse<Boolean> checkAccountDuplicate(@RequestParam String accountNumber) {
+    public GlobalResponse<Boolean> checkAccountDuplicate(@RequestParam("accountNumber") String accountNumber) {
         return GlobalResponse.ok(memberService.checkAccountAvailable(accountNumber));
     }
 
