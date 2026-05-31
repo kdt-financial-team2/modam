@@ -7,53 +7,61 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="min-h-screen bg-gray-50 flex flex-col">
+<body class="h-screen overflow-hidden bg-gray-50 flex flex-col">
 
   <!-- ===== 헤더 ===== -->
   <th:block th:replace="~{common/layout/header :: nav}"></th:block>
 
-  <!-- ===== 메인 콘텐츠 ===== -->
-  <main class="flex-1">
-    <div class="w-full max-w-[1440px] mx-auto px-8 py-12">
+  <!-- ===== 메인 콘텐츠: 상단 고정 + 하단 스크롤 ===== -->
+  <main class="flex-1 overflow-hidden flex flex-col">
+    <div class="w-full max-w-[1440px] mx-auto px-8 flex flex-col flex-1 overflow-hidden">
 
-      <!-- 페이지 헤더 -->
-      <div class="mb-12">
-        <h1 class="text-4xl font-bold text-gray-900 mb-3">포인트 상점</h1>
-        <p class="text-gray-600 text-lg">모은 포인트로 다양한 상품을 구매하세요</p>
-      </div>
+      <!-- ===== 고정 상단: 페이지 헤더 + 포인트 카드 + 메인 탭 ===== -->
+      <div class="flex-shrink-0 pt-12 pb-0">
 
-      <!-- 포인트 카드 -->
-      <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-3xl border border-gray-100 shadow-sm p-8 mb-8">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-              <i data-lucide="gift" class="w-8 h-8 text-[#F5A5A5]"></i>
-            </div>
-            <div>
-              <p class="text-gray-600 mb-1">내 포인트</p>
-              <p class="text-4xl text-gray-800">
-                <span id="pointDisplay" th:text="${#numbers.formatInteger(couplePoints, 0, 'COMMA')}">12,450</span>P
-              </p>
-            </div>
-          </div>
-          <a th:href="@{/savings}" href="/savings"
-             class="px-6 py-3 bg-white text-gray-800 rounded-2xl hover:bg-gray-50 transition-colors">
-            포인트 적립하기
-          </a>
+        <!-- 페이지 헤더 -->
+        <div class="mb-8">
+          <h1 class="text-4xl font-bold text-gray-900 mb-3">포인트 상점</h1>
+          <p class="text-gray-600 text-lg">모은 포인트로 다양한 상품을 구매하세요</p>
         </div>
-      </div>
 
-      <!-- 메인 탭 (상품 / 내역) -->
-      <div class="flex gap-4 mb-8">
-        <button id="tabProducts" onclick="switchMainTab('products')"
-                class="px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]">
-          상품
-        </button>
-        <button id="tabHistory" onclick="switchMainTab('history')"
-                class="px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent">
-          내역
-        </button>
-      </div>
+        <!-- 포인트 카드 -->
+        <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-3xl border border-gray-100 shadow-sm p-8 mb-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                <i data-lucide="gift" class="w-8 h-8 text-[#F5A5A5]"></i>
+              </div>
+              <div>
+                <p class="text-gray-600 mb-1">내 포인트</p>
+                <p class="text-4xl text-gray-800">
+                  <span id="pointDisplay" th:text="${#numbers.formatInteger(couplePoints, 0, 'COMMA')}">12,450</span>P
+                </p>
+              </div>
+            </div>
+            <a th:href="@{/savings}" href="/savings"
+               class="px-6 py-3 bg-white text-gray-800 rounded-2xl hover:bg-gray-50 transition-colors">
+              포인트 적립하기
+            </a>
+          </div>
+        </div>
+
+        <!-- 메인 탭 (상품 / 내역) -->
+        <div class="flex gap-4 mb-4">
+          <button id="tabProducts" onclick="switchMainTab('products')"
+                  class="px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]">
+            상품
+          </button>
+          <button id="tabHistory" onclick="switchMainTab('history')"
+                  class="px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent">
+            내역
+          </button>
+        </div>
+
+      </div><!-- /고정 상단 -->
+
+      <!-- ===== 스크롤 영역: 상품 / 내역 콘텐츠 ===== -->
+      <div class="flex-1 overflow-y-auto pb-8">
 
       <!-- ===== 상품 탭 콘텐츠 ===== -->
       <div id="productsSection">
@@ -138,6 +146,8 @@
         <!-- 내역 페이지네이션 -->
         <div id="historyPagination" class="flex justify-center gap-2 mb-8"></div>
       </div>
+
+      </div><!-- /스크롤 영역 -->
 
     </div>
   </main>
