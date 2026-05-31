@@ -2,6 +2,8 @@ package com.intelliJ_JO.modam.global.view;
 
 import com.intelliJ_JO.modam.config.security.CustomUserDetails;
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
+import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,7 +30,10 @@ public class AnalysisViewController {
 
         Long memberId = userDetails.getMember().getId();
         Account account = accountMemberRepository
-                .findFirstByMemberId(memberId)
+                .findByMemberId(memberId).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
+                .findFirst()
                 .map(am -> am.getAccount())
                 .orElse(null);
 
@@ -38,6 +43,7 @@ public class AnalysisViewController {
                 ? month
                 : YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
+        model.addAttribute("currentPage", "analysis");
         model.addAttribute("accountId", accountId);
         model.addAttribute("selectedMonth", selectedMonth);
 

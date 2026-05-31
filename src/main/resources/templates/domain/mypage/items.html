@@ -19,6 +19,15 @@
         <div id="section-items" class="max-w-4xl">
             <h1 class="text-2xl font-bold text-gray-800 mb-8">아이템 관리</h1>
 
+            <div th:if="${successMsg}" class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-center gap-2">
+                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                <span th:text="${successMsg}"></span>
+            </div>
+            <div th:if="${errorMsg}" class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-2">
+                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                <span th:text="${errorMsg}"></span>
+            </div>
+
             <div class="bg-white rounded-3xl shadow-sm p-8 mb-6">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-bold text-gray-800">보유 테마</h2>
@@ -27,7 +36,8 @@
                 </div>
                 <div class="grid grid-cols-3 gap-4">
                     <th:block th:each="theme : ${purchasedThemes}">
-                        <div th:class="${theme.isActive} ? 'relative bg-gradient-to-br from-[#FFB6D9] to-[#FFE4F0] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5]' : 'relative bg-gradient-to-br from-[#FFB6D9] to-[#FFE4F0] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer'">
+                        <div th:onclick="|equipItem(${theme.id})|"
+                             th:class="${theme.isActive} ? 'relative bg-gradient-to-br from-[#FFB6D9] to-[#FFE4F0] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5] cursor-pointer' : 'relative bg-gradient-to-br from-[#FFB6D9] to-[#FFE4F0] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer'">
                             <div th:if="${theme.isActive}" class="absolute top-2 right-2 px-3 py-1 bg-[#F5A5A5] text-white text-xs rounded-full">사용 중</div>
                             <div class="text-6xl mb-3" th:text="${theme.image}">🌸</div>
                             <p class="text-sm text-gray-800 text-center font-medium" th:text="${theme.name}">테마 이름</p>
@@ -46,11 +56,6 @@
                             <p class="text-sm text-white text-center font-medium">다크 모드 감성</p>
                             <p class="text-xs text-gray-400 mt-1">2025.11.05</p>
                         </div>
-                        <div class="static-theme-item bg-gradient-to-br from-[#4ECDC4] to-[#E0F7F6] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer">
-                            <div class="text-6xl mb-3">🍃</div>
-                            <p class="text-sm text-gray-800 text-center font-medium">시원한 민트 브리즈</p>
-                            <p class="text-xs text-gray-600 mt-1">2025.06.18</p>
-                        </div>
                     </th:block>
                 </div>
             </div>
@@ -63,7 +68,8 @@
                 </div>
                 <div class="grid grid-cols-4 gap-4">
                     <th:block th:each="emoticon : ${purchasedEmoticons}">
-                        <div th:class="${emoticon.isActive} ? 'relative bg-[#FCE8E3] rounded-2xl p-5 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5] hover:scale-105 transition-transform cursor-pointer' : 'bg-white border-2 border-gray-200 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer'">
+                        <div th:onclick="|equipItem(${emoticon.id})|"
+                             th:class="${emoticon.isActive} ? 'relative bg-[#FCE8E3] rounded-2xl p-5 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5] cursor-pointer' : 'bg-white border-2 border-gray-200 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer'">
                             <div th:if="${emoticon.isActive}" class="absolute top-1 right-1 px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">사용 중</div>
                             <div class="text-5xl mb-2" th:text="${emoticon.image}">🐶</div>
                             <p class="text-xs text-gray-800 text-center font-medium" th:text="${emoticon.name}">이모티콘</p>
@@ -82,16 +88,6 @@
                             <p class="text-xs text-gray-800 text-center font-medium">월급날 기분 최고</p>
                             <p class="text-xs text-gray-500 mt-1">2026.01.12</p>
                         </div>
-                        <div class="static-emoticon-item bg-white border-2 border-gray-200 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer">
-                            <div class="text-5xl mb-2">🐰</div>
-                            <p class="text-xs text-gray-800 text-center font-medium">귀요미 토끼 세트</p>
-                            <p class="text-xs text-gray-500 mt-1">2026.04.05</p>
-                        </div>
-                        <div class="static-emoticon-item bg-white border-2 border-gray-200 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer">
-                            <div class="text-5xl mb-2">🐻</div>
-                            <p class="text-xs text-gray-800 text-center font-medium">행복한 곰돌이 친구들</p>
-                            <p class="text-xs text-gray-500 mt-1">2026.05.01</p>
-                        </div>
                     </th:block>
                 </div>
             </div>
@@ -102,10 +98,33 @@
 
 <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
 
-<script>
+<script th:inline="javascript">
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
     });
+
+    function equipItem(invId) {
+        if(!confirm('해당 아이템을 장착하시겠습니까?')) return;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/mypage/items/equip';
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_csrf';
+        csrf.value = /*[[${_csrf.token}]]*/ '';
+        form.appendChild(csrf);
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'itemId';
+        input.value = invId;
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
 </script>
 <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
 </body>

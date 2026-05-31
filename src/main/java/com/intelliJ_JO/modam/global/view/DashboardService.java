@@ -7,7 +7,7 @@ import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.notification.entity.Notification;
 import com.intelliJ_JO.modam.domain.notification.repository.NotificationRepository;
-import com.intelliJ_JO.modam.domain.point.repository.PointRepository;
+import com.intelliJ_JO.modam.domain.point.service.PointService;
 import com.intelliJ_JO.modam.domain.savings.entity.Savings;
 import com.intelliJ_JO.modam.domain.savings.repository.SavingsRepository;
 import com.intelliJ_JO.modam.domain.transaction.entity.Transaction;
@@ -15,6 +15,7 @@ import com.intelliJ_JO.modam.domain.transaction.entity.TransactionType;
 import com.intelliJ_JO.modam.domain.transaction.repository.TransactionRepository;
 import com.intelliJ_JO.modam.global.view.dto.BalanceDataItem;
 import com.intelliJ_JO.modam.global.view.dto.RecentTransactionDto;
+import com.intelliJ_JO.modam.global.view.dto.SavingsGoalDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -23,10 +24,8 @@ import org.springframework.ui.Model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import com.intelliJ_JO.modam.domain.point.entity.PointReason;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +37,7 @@ public class DashboardService {
     private final AccountMemberRepository accountMemberRepository;
     private final TransactionRepository transactionRepository;
     private final SavingsRepository savingsRepository;
-    private final PointRepository pointRepository;
+    private final PointService pointService;
     private final CoupleRepository coupleRepository;
     private final NotificationRepository notificationRepository;
 
@@ -79,6 +78,8 @@ public class DashboardService {
         Long accountId = myMembership.getAccount().getId();
         long accountBalance = myMembership.getAccount().getBalance();
         model.addAttribute("accountBalance", accountBalance);
+        // 공동 통장 계좌번호 (표시용)
+        model.addAttribute("groupAccountNumber", myMembership.getAccount().getAccountNumber());
 
         // 2. 이번 달 기간 설정
         LocalDate now = LocalDate.now();
@@ -102,36 +103,41 @@ public class DashboardService {
                 .findByAccountIdOrderByIdDesc(accountId, PageRequest.of(0, 5));
         model.addAttribute("recentTransactions", toRecentDtos(recent));
 
-        // 6. 저축 목표 (첫 번째)
+        // 6. 저축 목표 전체 리스트 — 목표가 없으면 hasSavingsGoal=false로 빈 상태 표시
         List<Savings> savingsList = savingsRepository.findByAccountId(accountId);
         if (!savingsList.isEmpty()) {
-            Savings s = savingsList.get(0);
-            long percent = s.getTargetAmount() > 0
-                    ? s.getCurrentAmount() * 100 / s.getTargetAmount() : 0;
-            model.addAttribute("savingsGoalName",    s.getSaveType());
-            model.addAttribute("savingsGoalTarget",  s.getTargetAmount());
-            model.addAttribute("savingsGoalCurrent", s.getCurrentAmount());
-            model.addAttribute("savingsGoalPercent", percent);
+            List<SavingsGoalDto> savingsGoals = savingsList.stream().map(s -> {
+                long percent = s.getTargetAmount() > 0
+                        ? s.getCurrentAmount() * 100 / s.getTargetAmount() : 0;
+                return new SavingsGoalDto(
+                        s.getGoalName(),
+                        s.getTargetAmount(),
+                        s.getCurrentAmount(),
+                        percent
+                );
+            }).toList();
+            model.addAttribute("hasSavingsGoal", true);
+            model.addAttribute("savingsGoals",   savingsGoals);
         } else {
-            model.addAttribute("savingsGoalName",    "");
-            model.addAttribute("savingsGoalTarget",  0);
-            model.addAttribute("savingsGoalCurrent", 0);
-            model.addAttribute("savingsGoalPercent", 0);
+            model.addAttribute("hasSavingsGoal", false);
+            model.addAttribute("savingsGoals",   List.of());
         }
 
-        // 6-2. 오늘 출석 체크 여부 — 오늘 00:00 ~ 23:59:59 사이 ATTENDANCE 적립 내역 존재 시 true
-        LocalDate today = LocalDate.now();
-        boolean isCheckedIn = pointRepository.existsByMemberIdAndReasonAndCreatedAtBetween(
-                member.getId(), PointReason.ATTENDANCE,
-                today.atStartOfDay(), today.atTime(LocalTime.MAX));
-        model.addAttribute("isCheckedIn", isCheckedIn);
+        // 6-2. 오늘 출석 체크 여부
+        model.addAttribute("isCheckedIn", pointService.isCheckedIn(member.getId()));
 
-        // 7. 커플 포인트 (멤버 개인 포인트 최신 잔액)
-        int couplePoints = pointRepository
-                .findTopByMemberIdOrderByCreatedAtDesc(member.getId())
-                .map(ph -> ph.getAftBal())
-                .orElse(0);
-        model.addAttribute("couplePoints", couplePoints);
+        // 7. 커플 포인트 (총 보유량 + 이번 달 적립 + 다음 리워드까지)
+        model.addAttribute("couplePoints", pointService.getCurrentPoint(member.getId()));
+
+        // 이번 달 적립 포인트 계산
+        int monthlyEarned = pointService.getMonthlyEarnedPoints(member.getId());
+        // 다음 리워드 기준: 매달 2,000P 달성 시 리워드 지급
+        final int REWARD_THRESHOLD = 2000;
+        int nextRewardPoints = Math.max(0, REWARD_THRESHOLD - monthlyEarned);
+        int rewardProgressPercent = Math.min(100, monthlyEarned * 100 / REWARD_THRESHOLD);
+        model.addAttribute("monthlyEarnedPoints",   monthlyEarned);
+        model.addAttribute("nextRewardPoints",       nextRewardPoints);
+        model.addAttribute("rewardProgressPercent",  rewardProgressPercent);
 
         // 8. 커플 정보
         coupleRepository.findByAccountId(accountId).ifPresentOrElse(couple -> {
@@ -244,11 +250,7 @@ public class DashboardService {
 
     // 대시보드 외 페이지에서 header-dashboard에 필요한 최소 속성만 채움
     public void populateHeader(Member member, Model model) {
-        int couplePoints = pointRepository
-                .findTopByMemberIdOrderByCreatedAtDesc(member.getId())
-                .map(ph -> ph.getAftBal())
-                .orElse(0);
-        model.addAttribute("couplePoints", couplePoints);
+        model.addAttribute("couplePoints", pointService.getCurrentPoint(member.getId()));
 
         List<Notification> notifications = notificationRepository
                 .findByMemberIdOrderByCreatedAtDesc(member.getId(), PageRequest.of(0, 10));
@@ -259,14 +261,16 @@ public class DashboardService {
 
     private void populateEmpty(Member member, Model model) {
         model.addAttribute("accountBalance",     0);
+        model.addAttribute("groupAccountNumber", "");
         model.addAttribute("totalExpense",      0);
         model.addAttribute("balanceData",       List.of());
         model.addAttribute("recentTransactions",List.of());
-        model.addAttribute("savingsGoalName",   "");
-        model.addAttribute("savingsGoalTarget", 0);
-        model.addAttribute("savingsGoalCurrent",0);
-        model.addAttribute("savingsGoalPercent",0);
-        model.addAttribute("couplePoints",      0);
+        model.addAttribute("hasSavingsGoal", false);
+        model.addAttribute("savingsGoals",   List.of());
+        model.addAttribute("couplePoints",          0);
+        model.addAttribute("monthlyEarnedPoints",   0);
+        model.addAttribute("nextRewardPoints",       2000);
+        model.addAttribute("rewardProgressPercent",  0);
         model.addAttribute("isCoupleInfoSaved", false);
         model.addAttribute("coupleStartDate",   "");
         model.addAttribute("daysTogether",      0);

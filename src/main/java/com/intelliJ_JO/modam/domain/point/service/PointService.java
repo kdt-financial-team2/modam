@@ -1,7 +1,10 @@
 package com.intelliJ_JO.modam.domain.point.service;
 
-import com.intelliJ_JO.modam.domain.member.entity.Member;
-import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
+import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
+import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
+import com.intelliJ_JO.modam.domain.couple.entity.Couple;
+import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
 import com.intelliJ_JO.modam.domain.point.dto.response.PointResponse;
 import com.intelliJ_JO.modam.domain.point.dto.request.PointSaveRequest;
 import com.intelliJ_JO.modam.domain.point.dto.request.PointSpendRequest;
@@ -18,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,10 +30,12 @@ import java.util.stream.Collectors;
 public class PointService {
 
     private final PointRepository pointRepository;
-    private final MemberRepository memberRepository;
+    private final CoupleRepository coupleRepository;
+    private final AccountMemberRepository accountMemberRepository;
 
     public List<PointResponse> getPointHistories(Long memberId) {
-        return pointRepository.findByMemberIdOrderByCreatedAtDesc(memberId)
+        Couple couple = getCoupleByMemberId(memberId);
+        return pointRepository.findByCoupleIdOrderByCreatedAtDesc(couple.getId())
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -37,59 +43,15 @@ public class PointService {
 
     @Transactional
     public PointResponse savePoint(Long memberId, PointSaveRequest request) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-
-        // 비관적 락으로 현재 잔액 조회 — 동시 요청 시 Race Condition 방지
-        int currentBalance = pointRepository
-                .findLatestByMemberIdWithLock(memberId, PageRequest.of(0, 1))
-                .stream().findFirst()
-                .map(PointHistory::getAftBal)
-                .orElse(0);
-
-        if (request.getReason() == PointReason.ATTENDANCE) {
-            LocalDate today = LocalDate.now();
-            LocalDateTime startOfDay = today.atStartOfDay();
-            LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
-
-            boolean alreadyAttendance = pointRepository
-                    .existsByMemberIdAndReasonAndCreatedAtBetween(
-                            memberId, PointReason.ATTENDANCE, startOfDay, endOfDay);
-
-            if (alreadyAttendance) {
-                throw new IllegalStateException("오늘 이미 출석 포인트를 지급받았습니다.");
-            }
-        }
-
-        if (request.getReason() == PointReason.INVITE_SUCCESS) {
-            boolean alreadyRewarded = pointRepository
-                    .existsByMemberIdAndReason(memberId, PointReason.INVITE_SUCCESS);
-
-            if (alreadyRewarded) {
-                throw new IllegalStateException("이미 초대 보상을 지급받았습니다.");
-            }
-        }
-
-        PointHistory pointHistory = PointHistory.builder()
-                .member(member)
-                .type(PointType.SAVE)
-                .reason(request.getReason())
-                .amt(request.getAmt())
-                .aftBal(currentBalance + request.getAmt())
-                .descrip(request.getDescrip())
-                .build();
-
-        return toResponse(pointRepository.save(pointHistory));
+        return savePointForCouple(getCoupleByMemberId(memberId), request);
     }
 
     @Transactional
     public PointResponse spendPoint(Long memberId, PointSpendRequest request) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        Couple couple = getCoupleByMemberId(memberId);
 
-        // 비관적 락으로 현재 잔액 조회 — 동시 요청 시 Race Condition 방지
         int currentBalance = pointRepository
-                .findLatestByMemberIdWithLock(memberId, PageRequest.of(0, 1))
+                .findLatestByCoupleIdWithLock(couple.getId(), PageRequest.of(0, 1))
                 .stream().findFirst()
                 .map(PointHistory::getAftBal)
                 .orElse(0);
@@ -99,7 +61,7 @@ public class PointService {
         }
 
         PointHistory pointHistory = PointHistory.builder()
-                .member(member)
+                .couple(couple)
                 .type(PointType.SPEND)
                 .reason(request.getReason())
                 .amt(-request.getAmt())
@@ -111,16 +73,98 @@ public class PointService {
     }
 
     public Integer getCurrentPoint(Long memberId) {
-        return pointRepository
-                .findTopByMemberIdOrderByCreatedAtDesc(memberId)
+        return findCoupleByMemberId(memberId)
+                .flatMap(c -> pointRepository.findTopByCoupleIdOrderByCreatedAtDesc(c.getId()))
                 .map(PointHistory::getAftBal)
                 .orElse(0);
+    }
+
+    @Transactional
+    public PointResponse savePointByAccountId(Long accountId, PointSaveRequest request) {
+        Couple couple = coupleRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new IllegalStateException("공동 계좌가 없습니다."));
+        return savePointForCouple(couple, request);
+    }
+
+    /**
+     * 이번 달 1일 00:00 ~ 말일 23:59 사이에 적립된 포인트 합계를 반환합니다.
+     * SAVE 타입(적립)만 집계하며, 사용(SPEND)은 포함하지 않습니다.
+     */
+    public int getMonthlyEarnedPoints(Long memberId) {
+        return findCoupleByMemberId(memberId).<Integer>map(couple -> {
+            LocalDate now = LocalDate.now();
+            LocalDateTime monthStart = now.withDayOfMonth(1).atStartOfDay();
+            LocalDateTime monthEnd   = monthStart.plusMonths(1);
+            return pointRepository.findByCoupleIdAndCreatedAtBetween(couple.getId(), monthStart, monthEnd)
+                    .stream()
+                    .filter(p -> p.getType() == PointType.SAVE)
+                    .mapToInt(PointHistory::getAmt)
+                    .sum();
+        }).orElse(0);
+    }
+
+    public boolean isCheckedIn(Long memberId) {
+        return findCoupleByMemberId(memberId).map(couple -> {
+            LocalDate today = LocalDate.now();
+            return pointRepository.existsByCoupleIdAndReasonAndCreatedAtBetween(
+                    couple.getId(), PointReason.ATTENDANCE,
+                    today.atStartOfDay(), today.atTime(LocalTime.MAX));
+        }).orElse(false);
+    }
+
+    private Optional<Couple> findCoupleByMemberId(Long memberId) {
+        return accountMemberRepository.findByMemberId(memberId).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
+                .findFirst()
+                .flatMap(am -> coupleRepository.findByAccountId(am.getAccount().getId()));
+    }
+
+    private Couple getCoupleByMemberId(Long memberId) {
+        return findCoupleByMemberId(memberId)
+                .orElseThrow(() -> new IllegalStateException("공동 계좌가 없습니다."));
+    }
+
+    private PointResponse savePointForCouple(Couple couple, PointSaveRequest request) {
+        int currentBalance = pointRepository
+                .findLatestByCoupleIdWithLock(couple.getId(), PageRequest.of(0, 1))
+                .stream().findFirst()
+                .map(PointHistory::getAftBal)
+                .orElse(0);
+
+        if (request.getReason() == PointReason.ATTENDANCE) {
+            LocalDate today = LocalDate.now();
+            boolean alreadyAttendance = pointRepository
+                    .existsByCoupleIdAndReasonAndCreatedAtBetween(
+                            couple.getId(), PointReason.ATTENDANCE,
+                            today.atStartOfDay(), today.atTime(LocalTime.MAX));
+            if (alreadyAttendance) {
+                throw new IllegalStateException("오늘 이미 출석 포인트를 지급받았습니다.");
+            }
+        }
+
+        if (request.getReason() == PointReason.INVITE_SUCCESS) {
+            if (pointRepository.existsByCoupleIdAndReason(couple.getId(), PointReason.INVITE_SUCCESS)) {
+                throw new IllegalStateException("이미 초대 보상을 지급받았습니다.");
+            }
+        }
+
+        PointHistory pointHistory = PointHistory.builder()
+                .couple(couple)
+                .type(PointType.SAVE)
+                .reason(request.getReason())
+                .amt(request.getAmt())
+                .aftBal(currentBalance + request.getAmt())
+                .descrip(request.getDescrip())
+                .build();
+
+        return toResponse(pointRepository.save(pointHistory));
     }
 
     private PointResponse toResponse(PointHistory pointHistory) {
         return PointResponse.builder()
                 .id(pointHistory.getId())
-                .memberId(pointHistory.getMember().getId())
+                .coupleId(pointHistory.getCouple().getId())
                 .type(pointHistory.getType())
                 .reason(pointHistory.getReason())
                 .amt(pointHistory.getAmt())

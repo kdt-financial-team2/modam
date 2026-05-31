@@ -3,8 +3,10 @@ package com.intelliJ_JO.modam.domain.comment.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class CommentCreateRequestDto {
 
     @NotBlank(message = "댓글 내용을 입력해주세요.")

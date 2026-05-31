@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface AccountMemberRepository extends JpaRepository<AccountMember, Long> {
     List<AccountMember> findByAccountId(Long accountId);
     List<AccountMember> findByMemberId(Long memberId);
-    Optional<AccountMember> findFirstByMemberId(Long memberId); // sooah
+    Optional<AccountMember> findFirstByMemberId(Long memberId);
     Optional<AccountMember> findByAccountIdAndMemberId(Long accountId, Long memberId);
     long countByAccountIdAndInviteStatusNot(Long accountId, InviteStatus inviteStatus);
     List<AccountMember> findByAccountIdAndInviteStatus(Long accountId, InviteStatus inviteStatus);

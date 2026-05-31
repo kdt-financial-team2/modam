@@ -7,5 +7,7 @@ import java.util.Optional;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
     Optional<Account> findByAccountNumber(String accountNumber);
+
+    // 계좌 번호 중복 검사용 메서드 (AccountService에서 사용)
     boolean existsByAccountNumber(String accountNumber);
 }

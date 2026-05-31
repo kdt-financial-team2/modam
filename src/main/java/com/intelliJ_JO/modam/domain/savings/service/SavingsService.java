@@ -50,6 +50,8 @@ public class SavingsService {
                 .isAuto(requestDto.getIsAuto() != null ? requestDto.getIsAuto() : "N")
                 .autoAmount(requestDto.getAutoAmount())
                 .autoCycle(requestDto.getAutoCycle())
+                .myContribution(requestDto.getMyContribution())
+                .partnerContribution(requestDto.getPartnerContribution())
                 .build();
 
         savingsRepository.save(savings);
@@ -89,26 +91,33 @@ public class SavingsService {
         checkAndAwardPoints(savings, memberId);
     }
 
-    // 🔥 [추가됨] 프론트엔드의 모달창 데이터를 DB에 실제로 저장하는 로직
     @Transactional
     public void updateAutoTransfer(Long goalId, Long amount, String frequency, String startDate) {
         Savings savings = savingsRepository.findById(goalId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 저축 목표입니다."));
 
-        // HTML에서 넘어온 'monthly', 'weekly', 'daily'를 대문자로 변환하여 Enum과 매핑
         AutoCycle cycle = AutoCycle.valueOf(frequency.toUpperCase());
 
-        // 엔티티 값 업데이트 (Dirty Checking으로 자동 DB UPDATE 쿼리 발생)
         savings.updateAutoTransfer(amount, cycle);
+        savingsRepository.save(savings);
+    }
+
+    @Transactional
+    public void deleteSavings(Long savingsId) {
+        Savings savings = savingsRepository.findById(savingsId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 저축 목표입니다."));
+        savingsRepository.delete(savings);
     }
 
     private void checkAndAwardPoints(Savings savings, Long memberId) {
         long current = savings.getCurrentAmount();
         long target = savings.getTargetAmount();
 
+        Long accountId = savings.getAccount().getId();
+
         if (current >= (target / 2) && "N".equals(savings.getIsHalfAwarded())) {
             savings.completeHalfAward();
-            pointService.savePoint(memberId, PointSaveRequest.builder()
+            pointService.savePointByAccountId(accountId, PointSaveRequest.builder()
                     .reason(PointReason.SAVINGS_50)
                     .amt(100)
                     .descrip("저축 목표 50% 달성 보상")
@@ -117,7 +126,7 @@ public class SavingsService {
 
         if (current >= target && "N".equals(savings.getIsFullAwarded())) {
             savings.completeFullAward();
-            pointService.savePoint(memberId, PointSaveRequest.builder()
+            pointService.savePointByAccountId(accountId, PointSaveRequest.builder()
                     .reason(PointReason.SAVINGS_100)
                     .amt(500)
                     .descrip("저축 목표 100% 달성 보상")

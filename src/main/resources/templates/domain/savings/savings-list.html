@@ -57,8 +57,22 @@
     <div id="goalsGrid" class="grid grid-cols-3 gap-6" th:if="${not #lists.isEmpty(savingsGoals)}">
 
       <div th:each="goal : ${savingsGoals}"
-           class="bg-white rounded-3xl shadow-sm p-6 relative overflow-hidden goal-card"
-           th:attr="data-goal-id=${goal.savingsId}">
+           class="bg-white rounded-3xl shadow-sm p-6 relative overflow-hidden goal-card cursor-pointer"
+           onclick="showGoalDetailModal(this)"
+           th:attr="data-goal-id=${goal.savingsId},
+                    data-goal-name=${goal.goalName},
+                    data-icon-name=${goal.iconName},
+                    data-type-label=${goal.typeLabel},
+                    data-target-amount=${goal.targetAmount},
+                    data-current-amount=${goal.currentAmount},
+                    data-progress=${goal.progressPercent},
+                    data-target-date=${#temporals.format(goal.targetDate, 'yyyy.MM.dd')},
+                    data-created-at=${#temporals.format(goal.createdAt, 'yyyy.MM.dd')},
+                    data-is-auto=${goal.isAuto},
+                    data-my-contribution=${goal.myContribution},
+                    data-partner-contribution=${goal.partnerContribution},
+                    data-auto-amount=${goal.autoAmount != null ? goal.autoAmount : 0},
+                    data-auto-cycle=${goal.autoCycle != null ? goal.autoCycle : ''}">
 
         <div th:id="'badge-' + ${goal.savingsId}"
              th:class="${goal.progressPercent >= 100}
@@ -111,7 +125,7 @@
             <span class="text-sm text-gray-700">자동 이체</span>
             <button type="button"
                     th:id="'toggle-' + ${goal.savingsId}"
-                    th:attr="onclick='toggleAutoTransfer(' + ${goal.savingsId} + ')'"
+                    th:attr="onclick='event.stopPropagation(); toggleAutoTransfer(' + ${goal.savingsId} + ')'"
                     th:class="${goal.isAuto == 'Y'} ? 'relative w-12 h-6 rounded-full transition-colors bg-[#F5A5A5]' : 'relative w-12 h-6 rounded-full transition-colors bg-gray-300'">
               <div th:id="'toggleThumb-' + ${goal.savingsId}"
                    th:class="${goal.isAuto == 'Y'} ? 'absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform translate-x-6' : 'absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform translate-x-0'"></div>
@@ -128,12 +142,17 @@
               <i data-lucide="piggy-bank" class="w-3 h-3"></i>
               <span>저축 계좌</span>
             </div>
+            <div th:if="${goal.autoAmount != null and goal.autoAmount > 0}"
+                 class="flex items-center justify-between text-sm">
+              <span class="text-gray-600">이체 금액</span>
+              <span class="text-gray-800 font-medium">₩<th:block th:text="${#numbers.formatInteger(goal.autoAmount, 0, 'COMMA')}"></th:block></span>
+            </div>
             <div class="flex items-center justify-between text-sm">
               <span class="text-gray-600">주기</span>
-              <span class="text-gray-800">매월</span>
+              <span class="text-gray-800" th:text="${goal.cycleLabel}">매월</span>
             </div>
             <button type="button"
-                    th:attr="onclick='showAutoTransferModal(' + ${goal.savingsId} + ')'"
+                    th:attr="onclick='event.stopPropagation(); showAutoTransferModal(' + ${goal.savingsId} + ')'"
                     class="w-full mt-2 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm">
               설정 변경
             </button>
@@ -141,7 +160,7 @@
 
           <button th:id="'setupBtn-' + ${goal.savingsId}"
                   type="button"
-                  th:attr="onclick='showAutoTransferModal(' + ${goal.savingsId} + ')'"
+                  th:attr="onclick='event.stopPropagation(); showAutoTransferModal(' + ${goal.savingsId} + ')'"
                   th:classappend="${goal.isAuto == 'Y'} ? ' hidden' : ''"
                   class="w-full mt-2 py-2 bg-[#FCE8E3] text-gray-700 rounded-lg hover:bg-[#FBD5CE] transition-colors text-sm">
             자동 이체 설정하기
@@ -169,6 +188,109 @@
 
   </div>
 </main>
+
+<div id="goalDetailOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+     onclick="hideGoalDetailModal()"></div>
+<div id="goalDetailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[500px] p-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 id="detailGoalName" class="text-2xl text-gray-800">목표 이름</h2>
+      <button onclick="hideGoalDetailModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-[#FCE8E3] rounded-2xl flex items-center justify-center" id="detailIconContainer">
+        <i data-lucide="sparkles" class="w-6 h-6 text-[#F5A5A5]"></i>
+      </div>
+      <span id="detailTypeLabel" class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">저축</span>
+    </div>
+
+    <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-xl p-5 mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-sm text-gray-600 font-medium">현재 저축금액</span>
+        <span id="detailCurrentAmount" class="text-xl font-bold text-gray-900">₩0</span>
+      </div>
+      <div class="w-full bg-white/60 rounded-full h-3 mb-3">
+        <div id="detailProgressBar"
+             class="bg-gradient-to-r from-[#F5A5A5] to-[#FCE8E3] h-3 rounded-full transition-all duration-500"
+             style="width: 0%"></div>
+      </div>
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-gray-600">목표: <span id="detailTargetAmount" class="font-medium">₩0</span></span>
+        <span id="detailProgressPercent" class="font-bold text-[#F5A5A5]">0%</span>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <p id="detailContribLabel" class="text-sm font-medium text-gray-700 mb-3">기여 금액</p>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3">
+          <div class="w-24 px-3 py-2 bg-[#F0F9FF] border border-[#BAE6FD] rounded-xl text-center text-sm font-medium text-gray-800"
+               id="detailUserName">나</div>
+          <div class="flex-1 flex items-center justify-between px-4 py-2 bg-gray-50 rounded-xl">
+            <span id="detailContribSubLabel" class="text-xs text-gray-500">기여금</span>
+            <span id="detailMyContrib" class="text-sm font-bold text-gray-800">₩0</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between mt-3 px-4 py-3 bg-[#FCE8E3] rounded-xl">
+        <span id="detailTotalLabel" class="text-sm font-medium text-gray-700">모임 통장으로 모일 총액</span>
+        <span id="detailTotalContrib" class="text-base font-bold text-[#F5A5A5]">₩0</span>
+      </div>
+    </div>
+
+    <div class="space-y-0 mb-6 border border-gray-100 rounded-xl overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <span class="text-sm text-gray-500">시작일</span>
+        <span id="detailCreatedAt" class="text-sm font-medium text-gray-800">-</span>
+      </div>
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <span class="text-sm text-gray-500">목표 날짜</span>
+        <span id="detailTargetDate" class="text-sm font-medium text-gray-800">-</span>
+      </div>
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-sm text-gray-500">자동 이체</span>
+        <span id="detailIsAuto" class="text-sm font-medium">-</span>
+      </div>
+    </div>
+
+    <div class="flex gap-3">
+      <button onclick="hideGoalDetailModal()"
+              class="flex-1 py-3.5 bg-[#FCE8E3] text-gray-800 rounded-xl hover:bg-[#FBD5CE] transition-colors font-medium">
+        닫기
+      </button>
+      <button onclick="showDeleteConfirmModal()"
+              class="flex-1 py-3.5 bg-white border-2 border-[#F5A5A5] text-red-500 rounded-xl hover:bg-[#FCE8E3] transition-colors font-medium flex items-center justify-center gap-2">
+        <i data-lucide="trash-2" class="w-4 h-4"></i>
+        삭제
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="deleteConfirmOverlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+     onclick="hideDeleteConfirmModal()"></div>
+<div id="deleteConfirmModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[380px] p-8 text-center">
+    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="trash-2" class="w-8 h-8 text-red-400"></i>
+    </div>
+    <h3 class="text-xl font-bold text-gray-800 mb-2">정말 삭제하시겠어요?</h3>
+    <p class="text-sm text-gray-500 mb-8">이 저축 목표를 삭제하면 되돌릴 수 없어요.</p>
+    <div class="flex gap-3">
+      <button onclick="hideDeleteConfirmModal()"
+              class="flex-1 py-3.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium">
+        취소
+      </button>
+      <button onclick="confirmDeleteSavings()"
+              class="flex-1 py-3.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors font-medium">
+        삭제
+      </button>
+    </div>
+  </div>
+</div>
 
 <div id="autoTransferOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
      onclick="hideAutoTransferModal()"></div>
@@ -263,10 +385,101 @@
 <script th:inline="javascript">
   const linkedAccount = /*[[${linkedAccount}]]*/ '1002-9876-5432';
   const accountBalance = /*[[${accountBalance}]]*/ 15000000;
+  const userName = /*[[${userName}]]*/ '나';
+  const partnerName = /*[[${partnerName}]]*/ '파트너';
   let currentFrequency = 'monthly';
+  let pendingDeleteId = null;
 
   function formatWon(n) {
     return n.toLocaleString('ko-KR');
+  }
+
+  function showGoalDetailModal(card) {
+    const goalName       = card.dataset.goalName;
+    const iconName       = card.dataset.iconName;
+    const typeLabel      = card.dataset.typeLabel;
+    const targetAmt      = parseInt(card.dataset.targetAmount) || 0;
+    const currentAmt     = parseInt(card.dataset.currentAmount) || 0;
+    const progress       = parseInt(card.dataset.progress) || 0;
+    const targetDate     = card.dataset.targetDate;
+    const createdAt      = card.dataset.createdAt;
+    const isAuto         = card.dataset.isAuto;
+    const autoAmt        = parseInt(card.dataset.autoAmount) || 0;
+    const autoCycle      = card.dataset.autoCycle || '';
+
+    const cyclePrefix = autoCycle === 'DAILY' ? '일' : autoCycle === 'WEEKLY' ? '주' : autoCycle === 'MONTHLY' ? '월' : null;
+
+    // 기본 정보
+    document.getElementById('detailGoalName').textContent       = goalName;
+    document.getElementById('detailTypeLabel').textContent      = typeLabel;
+    document.getElementById('detailCurrentAmount').textContent  = '₩' + formatWon(currentAmt);
+    document.getElementById('detailTargetAmount').textContent   = '₩' + formatWon(targetAmt);
+    document.getElementById('detailProgressPercent').textContent = progress + '%';
+    document.getElementById('detailProgressBar').style.width    = Math.min(progress, 100) + '%';
+    document.getElementById('detailCreatedAt').textContent      = createdAt;
+    document.getElementById('detailTargetDate').textContent     = targetDate;
+
+    // 자동이체
+    const autoEl = document.getElementById('detailIsAuto');
+    if (isAuto === 'Y') {
+      autoEl.textContent = '설정됨';
+      autoEl.className   = 'text-sm font-medium text-[#F5A5A5]';
+    } else {
+      autoEl.textContent = '미설정';
+      autoEl.className   = 'text-sm font-medium text-gray-400';
+    }
+
+    // 기여금액 (autoAmount + autoCycle 기준)
+    const contribLabel    = cyclePrefix ? cyclePrefix + ' 기여 금액' : '기여 금액';
+    const contribSubLabel = cyclePrefix ? cyclePrefix + ' 기여금'    : '기여금';
+    const totalLabel      = cyclePrefix ? '모임 통장으로 모일 ' + cyclePrefix + ' 총액' : '모임 통장으로 모일 총액';
+    document.getElementById('detailContribLabel').textContent    = contribLabel;
+    document.getElementById('detailContribSubLabel').textContent = contribSubLabel;
+    document.getElementById('detailTotalLabel').textContent      = totalLabel;
+    document.getElementById('detailUserName').textContent        = userName;
+    document.getElementById('detailMyContrib').textContent       = '₩' + formatWon(autoAmt);
+    document.getElementById('detailTotalContrib').textContent    = '₩' + formatWon(autoAmt);
+
+    // 아이콘 재렌더
+    document.getElementById('detailIconContainer').innerHTML =
+      `<i data-lucide="${iconName}" class="w-6 h-6 text-[#F5A5A5]"></i>`;
+    lucide.createIcons();
+
+    pendingDeleteId = card.dataset.goalId;
+
+    document.getElementById('goalDetailOverlay').classList.remove('hidden');
+    document.getElementById('goalDetailModal').classList.remove('hidden');
+  }
+
+  function hideGoalDetailModal() {
+    document.getElementById('goalDetailOverlay').classList.add('hidden');
+    document.getElementById('goalDetailModal').classList.add('hidden');
+  }
+
+  function showDeleteConfirmModal() {
+    document.getElementById('deleteConfirmOverlay').classList.remove('hidden');
+    document.getElementById('deleteConfirmModal').classList.remove('hidden');
+  }
+
+  function hideDeleteConfirmModal() {
+    document.getElementById('deleteConfirmOverlay').classList.add('hidden');
+    document.getElementById('deleteConfirmModal').classList.add('hidden');
+  }
+
+  async function confirmDeleteSavings() {
+    if (!pendingDeleteId) return;
+    try {
+      const res = await fetch('/api/savings/' + pendingDeleteId, { method: 'DELETE' });
+      if (res.ok) {
+        location.reload();
+      } else {
+        alert('삭제 중 오류가 발생했습니다.');
+        hideDeleteConfirmModal();
+      }
+    } catch (e) {
+      alert('삭제 중 오류가 발생했습니다.');
+      hideDeleteConfirmModal();
+    }
   }
 
   function toggleAutoTransfer(goalId) {
@@ -277,6 +490,8 @@
     if (!toggleBtn) return;
 
     const isEnabled = toggleBtn.classList.contains('bg-[#F5A5A5]');
+    const autoEl = document.getElementById('detailIsAuto');
+
     if (isEnabled) {
       toggleBtn.classList.remove('bg-[#F5A5A5]');
       toggleBtn.classList.add('bg-gray-300');
@@ -286,6 +501,12 @@
       }
       if (autoDetails) autoDetails.classList.add('hidden');
       if (setupBtn)    setupBtn.classList.remove('hidden');
+      if (autoEl) {
+        autoEl.textContent = '미설정';
+        autoEl.className   = 'text-sm font-medium text-gray-400';
+      }
+      const card = toggleBtn.closest('[data-goal-id]');
+      if (card) card.dataset.isAuto = 'N';
     } else {
       toggleBtn.classList.remove('bg-gray-300');
       toggleBtn.classList.add('bg-[#F5A5A5]');
@@ -295,6 +516,12 @@
       }
       if (autoDetails) autoDetails.classList.remove('hidden');
       if (setupBtn)    setupBtn.classList.add('hidden');
+      if (autoEl) {
+        autoEl.textContent = '설정됨';
+        autoEl.className   = 'text-sm font-medium text-[#F5A5A5]';
+      }
+      const card = toggleBtn.closest('[data-goal-id]');
+      if (card) card.dataset.isAuto = 'Y';
     }
   }
 
@@ -335,8 +562,19 @@
     document.getElementById('formAutoAmount').value = raw;
   }
 
-  document.getElementById('autoTransferForm').addEventListener('submit', function() {
+  document.getElementById('autoTransferForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const raw = document.getElementById('modalAutoAmount').value.replace(/[^0-9]/g, '');
+    if (!raw) {
+      alert('이체 금액을 입력해주세요.');
+      return;
+    }
+
+    document.getElementById('formAutoAmount').value = raw;
     document.getElementById('formStartDate').value = document.getElementById('modalAutoStartDate').value;
+
+    document.getElementById('autoTransferForm').submit();
   });
 
   window.addEventListener('DOMContentLoaded', function() {

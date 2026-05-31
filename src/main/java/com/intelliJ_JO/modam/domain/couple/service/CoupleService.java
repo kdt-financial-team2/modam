@@ -114,6 +114,6 @@ public class CoupleService {
         pointRequest.setAmt(1000);
         pointRequest.setDescrip("초대 코드를 통해 파트너와 성공적으로 연결되었습니다!");
 
-        pointService.savePoint(inviteeMemberId, pointRequest);
+        pointService.savePointByAccountId(account.getId(), pointRequest);
     }
 }
