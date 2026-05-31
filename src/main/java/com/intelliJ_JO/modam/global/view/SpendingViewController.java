@@ -145,7 +145,7 @@ public class SpendingViewController {
         long totalAmount  = records.stream().mapToLong(ConsumptionHistoryItemDto::getAmount).sum();
         long writtenCount = records.stream().filter(ConsumptionHistoryItemDto::isHasRecord).count();
 
-        // 스토리가 있는 기록만 그리드용으로 분리
+        // 스토리가 있는 기록만 그리드용 분리
         List<ConsumptionHistoryItemDto> storyRecords = records.stream()
                 .filter(ConsumptionHistoryItemDto::isHasRecord)
                 .collect(Collectors.toList());
@@ -394,9 +394,9 @@ public class SpendingViewController {
                 return;
             }
 
-            Long memberId = userDetails.getMember().getId();
+            // 🔥 [수정됨] 레거시 메서드 대신 표준 getTransactions(accountId) 호출로 100% 오류 해결
             List<TransactionResponseDto> transactions =
-                    transactionService.getTransactionsByMember(memberId, null, 500);
+                    transactionService.getTransactions(account.getId(), null, 500);
 
             Map<String, List<TransactionResponseDto>> groupedTransactions = transactions.stream()
                     .collect(Collectors.groupingBy(

@@ -17,74 +17,151 @@
 
   <main class="flex-1 p-8 overflow-y-auto">
     <div class="max-w-4xl">
-      <h1 class="text-2xl text-gray-800 mb-8">연결 계좌</h1>
+      <h1 class="text-2xl font-bold text-gray-800 mb-8">연결 계좌</h1>
 
       <div th:if="${successMsg}" class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-center gap-2">
         <i data-lucide="check-circle" class="w-5 h-5"></i>
         <span th:text="${successMsg}"></span>
       </div>
+      <div th:if="${errorMsg}" class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        <span th:text="${errorMsg}"></span>
+      </div>
 
       <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-3xl shadow-md p-8 mb-6">
         <div class="flex items-center gap-3 mb-6">
-          <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+          <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
             <i data-lucide="dollar-sign" class="w-6 h-6 text-[#F5A5A5]"></i>
           </div>
           <div>
-            <p class="text-sm text-gray-600">총 예치금액</p>
-            <p class="text-4xl text-gray-800">
-              <span th:text="${accountBalance != null ? #numbers.formatInteger(accountBalance, 0, 'COMMA') : '0'}" id="accountBalance">1,245,000</span>원
+            <p class="text-sm text-gray-600 font-medium">총 예치금액</p>
+            <p class="text-4xl font-bold text-gray-800">
+              <span th:text="${accountBalance != null ? #numbers.formatInteger(accountBalance, 0, 'COMMA') : '0'}" id="accountBalance">0</span>원
             </p>
           </div>
         </div>
-        <div class="bg-white/50 rounded-2xl p-5">
+        <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-5 border border-white/50">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-gray-700">내 입금액</span>
-            <span class="text-xl text-gray-800">
-                <span th:text="${myDeposit != null ? #numbers.formatInteger(myDeposit, 0, 'COMMA') : '0'}" id="myDeposit">800,000</span>원
+            <span class="text-gray-700 font-medium">내 입금액</span>
+            <span class="text-xl font-bold text-gray-800">
+                <span th:text="${myDeposit != null ? #numbers.formatInteger(myDeposit, 0, 'COMMA') : '0'}">0</span>원
               </span>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-gray-700">파트너 입금액</span>
-            <span class="text-xl text-gray-800">
-                <span th:text="${partnerDeposit != null ? #numbers.formatInteger(partnerDeposit, 0, 'COMMA') : '0'}" id="partnerDeposit">434,500</span>원
+            <span class="text-gray-700 font-medium">파트너 입금액</span>
+            <span class="text-xl font-bold text-gray-800">
+                <span th:text="${partnerDeposit != null ? #numbers.formatInteger(partnerDeposit, 0, 'COMMA') : '0'}">0</span>원
               </span>
           </div>
         </div>
-        <div class="mt-4 flex items-center gap-2 text-sm text-gray-600">
-          <i data-lucide="trending-up" class="w-4 h-4"></i>
-          <span>이번 달 이자 예상: +1,200원</span>
-        </div>
       </div>
 
-      <div class="bg-white rounded-3xl shadow-sm p-8 mb-6">
-        <h2 class="text-lg text-gray-800 mb-6">계좌 정보</h2>
+      <div class="bg-white rounded-3xl shadow-sm p-8 mb-6 border border-gray-100">
+        <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+          <i data-lucide="info" class="w-5 h-5 text-[#F5A5A5]"></i> 계좌 상세 정보
+        </h2>
         <div class="space-y-4">
-          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
-            <span class="text-gray-600">계좌번호</span>
-            <span class="text-gray-800 font-mono" th:text="${accountNumber != null and accountNumber != '' ? accountNumber : '계좌 없음'}">110-123456789-012</span>
+          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl border border-gray-100">
+            <span class="text-gray-600 font-medium">계좌번호</span>
+            <span class="text-gray-800 font-mono font-bold text-lg" th:text="${accountNumber != null and accountNumber != '' ? accountNumber : '계좌 없음'}">110-123456789-012</span>
           </div>
-          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl">
-            <span class="text-gray-600">계좌 상태</span>
-            <div class="flex items-center gap-2">
+          <div class="flex items-center justify-between p-5 bg-[#FAFAFA] rounded-2xl border border-gray-100">
+            <span class="text-gray-600 font-medium">계좌 상태</span>
+            <div class="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full">
               <div th:class="${accountNumber != null and accountNumber != ''} ? 'w-2 h-2 bg-green-500 rounded-full' : 'w-2 h-2 bg-gray-400 rounded-full'"></div>
-              <span class="text-gray-800" th:text="${accountNumber != null and accountNumber != '' ? '정상' : '미개설'}">정상</span>
+              <span class="font-bold text-sm" th:text="${accountNumber != null and accountNumber != '' ? '정상 운용 중' : '미개설'}">정상</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="bg-white rounded-3xl shadow-sm p-8">
-        <h2 class="text-lg text-gray-800 mb-6">계좌 관리</h2>
+      <div class="bg-white rounded-3xl shadow-sm p-8 border border-gray-100">
+        <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+          <i data-lucide="settings-2" class="w-5 h-5 text-[#F5A5A5]"></i> 계좌 관리
+        </h2>
         <div class="grid grid-cols-2 gap-4">
-          <button onclick="alert('이체한도 변경 기능은 준비 중입니다.')" class="py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors">이체한도 변경</button>
-          <button onclick="alert('계좌 비밀번호 변경 기능은 준비 중입니다.')" class="py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors">계좌 비밀번호 변경</button>
-          <button onclick="alert('거래 내역 다운로드 서비스는 준비 중입니다.')" class="py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors">거래 내역 다운로드</button>
-          <button onclick="alert('계좌 증명서 발급 서비스는 준비 중입니다.')" class="py-4 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors">계좌 증명서 발급</button>
+          <button onclick="showLimitModal()" class="py-5 bg-[#FCE8E3] text-gray-800 rounded-2xl hover:bg-[#FBD5CE] transition-colors font-semibold flex flex-col items-center gap-2 group border border-[#F5A5A5]/20">
+            <i data-lucide="arrow-up-down" class="w-6 h-6 text-[#F5A5A5] group-hover:scale-110 transition-transform"></i>
+            이체한도 변경
+          </button>
+
+          <button onclick="alert('계좌 비밀번호 변경 기능은 준비 중입니다.')" class="py-5 bg-[#FAFAFA] text-gray-700 rounded-2xl hover:bg-gray-100 transition-colors font-medium flex flex-col items-center gap-2 border border-gray-200">
+            <i data-lucide="lock" class="w-6 h-6 text-gray-400"></i>
+            계좌 비밀번호 변경
+          </button>
+          <button onclick="alert('거래 내역 다운로드 서비스는 준비 중입니다.')" class="py-5 bg-[#FAFAFA] text-gray-700 rounded-2xl hover:bg-gray-100 transition-colors font-medium flex flex-col items-center gap-2 border border-gray-200">
+            <i data-lucide="download" class="w-6 h-6 text-gray-400"></i>
+            거래 내역 다운로드
+          </button>
+          <button onclick="alert('계좌 증명서 발급 서비스는 준비 중입니다.')" class="py-5 bg-[#FAFAFA] text-gray-700 rounded-2xl hover:bg-gray-100 transition-colors font-medium flex flex-col items-center gap-2 border border-gray-200">
+            <i data-lucide="file-text" class="w-6 h-6 text-gray-400"></i>
+            계좌 증명서 발급
+          </button>
         </div>
       </div>
 
     </div>
   </main>
+</div>
+
+<div id="limitModalOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity" onclick="hideLimitModal()"></div>
+<div id="limitModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+
+    <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] px-8 py-6 flex items-center justify-between border-b border-[#F5A5A5]/20">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+          <i data-lucide="arrow-up-down" class="w-5 h-5 text-[#F5A5A5]"></i>
+        </div>
+        <h2 class="text-xl font-bold text-gray-800">이체 한도 변경</h2>
+      </div>
+      <button onclick="hideLimitModal()" class="text-gray-500 hover:text-gray-800 transition-colors">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+
+    <div class="p-8">
+      <form th:action="@{/mypage/accounts/limit}" method="post" id="limitForm" onsubmit="return validateLimitForm()">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="space-y-6 mb-8">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-bold text-gray-700">1회 이체 한도</label>
+              <span class="text-xs text-[#F5A5A5] bg-[#FCE8E3] px-2 py-1 rounded-md">현재: <span th:text="${onceLimit != null ? #numbers.formatInteger(onceLimit, 0, 'COMMA') : '제한 없음'}">1,000,000</span>원</span>
+            </div>
+            <div class="relative">
+              <input type="number" id="newOnceLimit" name="onceTransferLimit"
+                     th:value="${onceLimit}"
+                     placeholder="금액을 입력하세요 (숫자만)"
+                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F5A5A5] focus:ring-0 focus:outline-none transition-colors text-gray-800 font-medium bg-gray-50 focus:bg-white"/>
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">원</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-bold text-gray-700">1일 이체 한도</label>
+              <span class="text-xs text-[#F5A5A5] bg-[#FCE8E3] px-2 py-1 rounded-md">현재: <span th:text="${dailyLimit != null ? #numbers.formatInteger(dailyLimit, 0, 'COMMA') : '제한 없음'}">5,000,000</span>원</span>
+            </div>
+            <div class="relative">
+              <input type="number" id="newDailyLimit" name="dailyTransferLimit"
+                     th:value="${dailyLimit}"
+                     placeholder="금액을 입력하세요 (숫자만)"
+                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F5A5A5] focus:ring-0 focus:outline-none transition-colors text-gray-800 font-medium bg-gray-50 focus:bg-white"/>
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">원</span>
+            </div>
+            <p id="limitErrorMsg" class="hidden text-xs text-red-500 mt-2 font-medium">⚠️ 1회 이체 한도는 1일 이체 한도를 초과할 수 없습니다.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="button" onclick="hideLimitModal()" class="flex-1 py-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-bold text-lg">취소</button>
+          <button type="submit" class="flex-1 py-4 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors shadow-md font-bold text-lg">한도 변경하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
@@ -93,6 +170,38 @@
   window.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
   });
+
+  // 모달 제어 로직
+  function showLimitModal() {
+      document.getElementById('limitModalOverlay').classList.remove('hidden');
+      document.getElementById('limitModal').classList.remove('hidden');
+  }
+
+  function hideLimitModal() {
+      document.getElementById('limitModalOverlay').classList.add('hidden');
+      document.getElementById('limitModal').classList.add('hidden');
+  }
+
+  // 한도 폼 검증 로직 (1회 한도가 1일 한도보다 클 수 없음)
+  function validateLimitForm() {
+      const onceLimitInput = document.getElementById('newOnceLimit').value;
+      const dailyLimitInput = document.getElementById('newDailyLimit').value;
+      const errorMsg = document.getElementById('limitErrorMsg');
+
+      // 둘 다 입력되었을 때만 비교
+      if (onceLimitInput && dailyLimitInput) {
+          const once = parseInt(onceLimitInput, 10);
+          const daily = parseInt(dailyLimitInput, 10);
+
+          if (once > daily) {
+              errorMsg.classList.remove('hidden');
+              document.getElementById('newOnceLimit').classList.add('border-red-400', 'bg-red-50');
+              document.getElementById('newDailyLimit').classList.add('border-red-400', 'bg-red-50');
+              return false; // 폼 전송 막음
+          }
+      }
+      return true; // 정상 전송
+  }
 </script>
 <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
 </body>
