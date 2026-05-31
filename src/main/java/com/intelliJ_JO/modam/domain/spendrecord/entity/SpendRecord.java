@@ -27,6 +27,9 @@ public class SpendRecord {
     @Column(name = "img_url", length = 500)
     private String imageUrl;
 
+    @Column(length = 100)
+    private String title;
+
     @Column(length = 1000)
     private String memo;
 
@@ -41,8 +44,9 @@ public class SpendRecord {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public void updateRecord(String imageUrl, String memo, String emoticon) {
+    public void updateRecord(String imageUrl, String title, String memo, String emoticon) {
         this.imageUrl = imageUrl;
+        this.title = title;
         this.memo = memo;
         this.emoticon = emoticon;
     }

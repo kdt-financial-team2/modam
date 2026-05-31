@@ -43,6 +43,7 @@ public class SpendRecordService {
         SpendRecord spendRecord = SpendRecord.builder()
                 .transaction(transaction)
                 .imageUrl(request.getImageUrl())
+                .title(request.getTitle())
                 .memo(request.getMemo())
                 .emoticon(request.getEmoticon())
                 .build();
@@ -91,6 +92,7 @@ public class SpendRecordService {
 
         spendRecord.updateRecord(
                 request.getImageUrl() != null ? request.getImageUrl() : spendRecord.getImageUrl(),
+                request.getTitle() != null ? request.getTitle() : spendRecord.getTitle(),
                 request.getMemo() != null ? request.getMemo() : spendRecord.getMemo(),
                 request.getEmoticon() != null ? request.getEmoticon() : spendRecord.getEmoticon()
         );
