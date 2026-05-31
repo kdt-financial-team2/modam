@@ -157,7 +157,22 @@
 <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
 
 <script>
-    window.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
+    function formatPhone(input) {
+      const digits = input.value.replace(/[^0-9]/g, '').slice(0, 11);
+      if (digits.length < 4)       input.value = digits;
+      else if (digits.length < 8)  input.value = digits.slice(0, 3) + '-' + digits.slice(3);
+      else                         input.value = digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+
+        // 🔥 [추가됨] 페이지 렌더링 즉시 서버에서 가져온 초기 전화번호에 하이픈 포맷 적용
+        const phoneInput = document.getElementById('profilePhone');
+        if (phoneInput && phoneInput.value) {
+            formatPhone(phoneInput);
+        }
+    });
 
     function togglePw(inputId, iconId) {
       const input = document.getElementById(inputId);
@@ -170,13 +185,6 @@
         icon.setAttribute('data-lucide', 'eye');
       }
       lucide.createIcons();
-    }
-
-    function formatPhone(input) {
-      const digits = input.value.replace(/[^0-9]/g, '').slice(0, 11);
-      if (digits.length < 4)       input.value = digits;
-      else if (digits.length < 8)  input.value = digits.slice(0, 3) + '-' + digits.slice(3);
-      else                         input.value = digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7);
     }
 
     function validatePasswordForm() {
@@ -239,7 +247,6 @@
         }
     }
 
-    // 파일 업로드 시 클라이언트 측 동적 이미지 프리뷰 반영 로직
     function previewImage(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];

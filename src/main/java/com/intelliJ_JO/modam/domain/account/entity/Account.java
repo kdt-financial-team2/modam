@@ -103,11 +103,13 @@ public class Account {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // [기존 코드 유지]
     public void updateBalance(Long amount) {
         this.balance += amount;
         this.availableBalance += amount;
     }
 
+    // [기존 코드 유지]
     public void updateDetails(String deliveryAddress, String jobInfo,
                               String tradePurpose, String fundSource,
                               Long spendLimitAmount, Long onceTransferLimit, Long dailyTransferLimit) {
@@ -120,7 +122,15 @@ public class Account {
         if (dailyTransferLimit != null) this.dailyTransferLimit = dailyTransferLimit;
     }
 
+    // [기존 코드 유지]
     public void close() {
         this.status = AccountStatus.CLOSED;
+    }
+
+    // 🔥 [추가] 계좌 애칭 수정을 위한 헬퍼 메서드 추가
+    public void updateAccountName(String accountAlias) {
+        if (accountAlias != null) {
+            this.acctAlias = accountAlias;
+        }
     }
 }

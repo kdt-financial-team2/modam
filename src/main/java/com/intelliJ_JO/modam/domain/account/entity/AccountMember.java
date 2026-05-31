@@ -66,7 +66,8 @@ public class AccountMember {
         this.totalDeposit += amount;
     }
 
-    public void agreeToClose() {
-        this.agreeClose = "Y";
+    // 🔥 [수정] 해지 요청 및 취소를 위해 상태를 동적으로 받도록 변경
+    public void updateAgreeClose(String agree) {
+        this.agreeClose = agree;
     }
 }

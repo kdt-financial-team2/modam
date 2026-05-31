@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.domain.transaction.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
@@ -56,7 +57,8 @@ public class TransactionService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // 2. 요청한 회원이 해당 계좌의 구성원(ACCEPT)인지 검증 — WAIT/REJECT 상태면 거래 불가
-        accountMemberRepository.findByAccountIdAndMemberId(request.getAccountId(), memberId)
+        // 🔥 조장님의 권한 검증 로직을 유지하면서, 우리의 기여도 누적을 위해 객체를 currentAccountMember 변수에 담아둡니다.
+        AccountMember currentAccountMember = accountMemberRepository.findByAccountIdAndMemberId(request.getAccountId(), memberId)
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
                 .orElseThrow(() -> new IllegalArgumentException("해당 계좌에 대한 접근 권한이 없습니다."));
 
@@ -93,6 +95,11 @@ public class TransactionService {
         long delta = (type == TransactionType.DEPOSIT) ? amount : -amount;
         account.updateBalance(delta);  // balance와 availableBalance 동시 변경
 
+        // 🔥 [병합 성공] 조장님의 기존 흐름을 방해하지 않고, 입금 시 기여도(totalDeposit) 누적 로직만 안전하게 추가 적용
+        if (type == TransactionType.DEPOSIT) {
+            currentAccountMember.addDeposit(amount);
+        }
+
         // 7. 거래 이력 저장 — afterBalance는 updateBalance() 직후 값을 스냅샷
         Transaction transaction = Transaction.builder()
                 .account(account)
@@ -106,10 +113,13 @@ public class TransactionService {
                 .build();
 
         TransactionResponseDto result = new TransactionResponseDto(transactionRepository.save(transaction));
+
+        // 조장님의 알림 및 소비 한도 체크 로직 100% 유지
         sendTransactionNotifications(account, member, type, amount, result.getAfterBalance());
         if (WITHDRAW_TYPES.contains(type) && request.getCategory() != null) {
             checkSpendingLimits(account, member, request.getCategory(), amount);
         }
+
         return result;
     }
 
@@ -190,25 +200,10 @@ public class TransactionService {
         List<Transaction> transactions = (lastTransactionId == null)
                 ? transactionRepository.findByAccountIdOrderByIdDesc(accountId, pageable)
                 : transactionRepository.findByAccountIdAndIdLessThanOrderByIdDesc(
-                        accountId, lastTransactionId, pageable);
+                accountId, lastTransactionId, pageable);
 
         return transactions.stream()
                 .map(TransactionResponseDto::new)
                 .collect(Collectors.toList());
-    }
-
-    // 로그인 멤버의 GROUP 계좌를 자동으로 찾아 거래 내역 조회 (/transaction-history 용)
-    public List<TransactionResponseDto> getTransactionsByMember(Long memberId,
-                                                                Long lastTransactionId,
-                                                                int size) {
-        // 멤버가 ACCEPT 상태로 소속된 GROUP 계좌 ID 조회
-        Long accountId = accountMemberRepository.findByMemberId(memberId).stream()
-                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
-                .filter(am -> "GROUP".equals(am.getAccount().getAccountType().name()))
-                .map(am -> am.getAccount().getId())
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("공동계좌를 찾을 수 없습니다."));
-
-        return getTransactions(accountId, lastTransactionId, size);
     }
 }

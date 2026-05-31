@@ -128,7 +128,7 @@
                     <div class="flex items-center gap-2 mb-1">
                       <p class="text-sm text-gray-600">CVV</p>
                       <button onclick="toggleCVV()" class="text-sm text-[#F5A5A5] hover:underline">
-                        <i data-lucide="eye" id="eyeCvv" class="w-4 h-4"></i>
+                        <i data-lucide="eye-off" id="eyeCvv" class="w-4 h-4"></i>
                       </button>
                     </div>
                     <p id="cvvDisplay" class="text-lg text-gray-800 font-mono">***</p>
@@ -222,7 +222,7 @@
           <div class="bg-gray-100 flex-1 h-12 flex items-center px-4 rounded shadow-inner overflow-hidden">
             <span class="text-gray-400 italic text-lg signature-font" style="font-family: cursive;" th:text="${userName}">김민수</span>
           </div>
-          <div class="bg-white px-4 flex items-center justify-center font-mono text-gray-800 text-lg font-bold rounded shadow-inner w-20">
+          <div class="bg-white px-4 flex items-center justify-center font-mono text-gray-800 text-lg font-bold rounded shadow-inner w-20" th:text="${cardCvv != null ? cardCvv : '123'}">
             123
           </div>
         </div>
@@ -247,6 +247,8 @@
 <script th:inline="javascript">
   const serverCardDesign = /*[[${cardDesign}]]*/ 'pink';
   const serverCardType   = /*[[${cardType}]]*/ 'domestic';
+  // 🔥 백엔드에서 주입한 동적 CVV 변수 받기
+  const serverCvv        = /*[[${cardCvv != null ? cardCvv : '123'}]]*/ '123';
   let cardStatus         = /*[[${cardStatus}]]*/ 'ACTIVE';
 
   const cardColors = {
@@ -346,11 +348,12 @@
     lucide.createIcons();
   }
 
+  // 🔥 [수정] 하드코딩 123 제거 후 동적 CVV 토글 적용
   function toggleCVV() {
     const el = document.getElementById('cvvDisplay');
     const icon = document.getElementById('eyeCvv');
-    const showing = el.textContent === '123';
-    el.textContent = showing ? '***' : '123';
+    const showing = el.textContent === serverCvv;
+    el.textContent = showing ? '***' : serverCvv;
     icon.setAttribute('data-lucide', showing ? 'eye' : 'eye-off');
     lucide.createIcons();
   }
