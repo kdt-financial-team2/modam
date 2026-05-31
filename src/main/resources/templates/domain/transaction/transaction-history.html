@@ -42,11 +42,11 @@
 
           <!-- 기간 선택 (시작일 ~ 종료일) -->
           <div class="flex items-center gap-2">
-            <input type="date" id="startDateInput" onchange="applyFilters()" onclick="this.showPicker()" readonly
-                   class="bg-white border-2 border-gray-200 rounded-2xl px-4 py-3 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors text-sm" />
+            <input type="date" id="startDateInput" onchange="applyFilters()" onclick="this.showPicker()" onkeydown="return false"
+                   class="bg-white border-2 border-gray-200 rounded-2xl px-4 py-3 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors text-sm select-none" />
             <span class="text-gray-400 font-semibold">~</span>
-            <input type="date" id="endDateInput" onchange="applyFilters()" onclick="this.showPicker()" readonly
-                   class="bg-white border-2 border-gray-200 rounded-2xl px-4 py-3 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors text-sm" />
+            <input type="date" id="endDateInput" onchange="applyFilters()" onclick="this.showPicker()" onkeydown="return false"
+                   class="bg-white border-2 border-gray-200 rounded-2xl px-4 py-3 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors text-sm select-none" />
           </div>
 
           <!-- 카테고리 필터 -->
