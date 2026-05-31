@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>소비 내역 선택 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{common/layout/header-dashboard :: nav}"></th:block>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1">
+    <div class="max-w-[900px] mx-auto px-8 py-12">
+
+      <!-- 페이지 헤더 -->
+      <div class="mb-8">
+        <a th:href="@{/consumption-history}"
+           class="inline-flex items-center gap-2 text-[#A89089] hover:text-[#6E5A55] transition-colors mb-6">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          <span>소비기록으로 돌아가기</span>
+        </a>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">어떤 소비를 기록할까요?</h1>
+        <p class="text-gray-500">기록하고 싶은 소비 내역을 선택하세요</p>
+      </div>
+
+      <!-- 필터 바 -->
+      <div class="flex items-center gap-4 mb-6 flex-wrap">
+        <!-- 검색 -->
+        <div class="relative flex-1 min-w-[200px]">
+          <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+          <input type="text" id="searchInput" oninput="applyFilter()"
+                 placeholder="장소 또는 카테고리 검색"
+                 class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors bg-white" />
+        </div>
+
+        <!-- 날짜 필터 -->
+        <div class="relative">
+          <i data-lucide="calendar" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
+          <input type="date" id="dateInput" onchange="applyFilter()"
+                 class="pl-12 pr-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors bg-white cursor-pointer hover:border-[#F5A5A5]" />
+        </div>
+
+        <!-- 날짜 초기화 -->
+        <button id="clearDateBtn" onclick="clearDate()"
+                class="hidden px-4 py-3 text-sm text-[#A89089] hover:text-[#6E5A55] border-2 border-gray-200 rounded-2xl hover:border-[#F5A5A5] transition-colors bg-white">
+          초기화
+        </button>
+      </div>
+
+      <!-- SSR 초기 목록 (JS 로드 전 표시) -->
+      <div id="ssrList" class="flex flex-col gap-3">
+        <th:block th:each="tx : ${transactions}">
+          <a th:href="@{/consumption-upload(txId=${tx.transactionId})}"
+             th:attr="data-place=${tx.place},data-category=${tx.category},data-date=${tx.date}"
+             class="tx-row bg-white rounded-2xl px-6 py-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-between group border border-transparent hover:border-[#F5D5CD]">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-[#FFF1ED] flex items-center justify-center flex-shrink-0">
+                <i th:attr="data-lucide=${tx.iconName}" class="w-6 h-6 text-[#D9B8AE]"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold text-[#6E5A55]" th:text="${tx.place}">장소</span>
+                  <span class="text-xs bg-[#FFF1ED] text-[#D09B8D] px-2 py-0.5 rounded-full" th:text="${tx.category}">카테고리</span>
+                  <span th:if="${tx.hasRecord}" class="text-xs bg-[#FCE8E3] text-[#C98F81] px-2 py-0.5 rounded-full">✏️ 수정</span>
+                </div>
+                <p class="text-sm text-[#A89089]">
+                  <span th:text="${tx.date}">날짜</span>
+                  <span class="mx-1">·</span>
+                  <span th:text="${tx.time}">시간</span>
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-xl font-bold text-[#6E5A55]">
+                -₩<span th:text="${#numbers.formatInteger(tx.amount, 0, 'COMMA')}">0</span>
+              </span>
+              <div class="w-9 h-9 rounded-full bg-[#FFF1ED] group-hover:bg-[#F5A5A5] flex items-center justify-center transition-colors">
+                <i data-lucide="chevron-right" class="w-5 h-5 text-[#D9B8AE] group-hover:text-white transition-colors"></i>
+              </div>
+            </div>
+          </a>
+        </th:block>
+
+        <div th:if="${#lists.isEmpty(transactions)}" class="py-20 text-center">
+          <div class="w-16 h-16 bg-[#FCE8E3] rounded-full flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="inbox" class="w-8 h-8 text-[#D9B8AE]"></i>
+          </div>
+          <p class="text-gray-500 text-lg">소비 내역이 없습니다</p>
+          <p class="text-gray-400 text-sm mt-2">공동 계좌에서 소비가 발생하면 여기에 표시됩니다</p>
+        </div>
+      </div>
+
+      <!-- JS 렌더링 목록 (필터 · 무한 스크롤 시 사용) -->
+      <div id="jsList" class="hidden flex flex-col gap-3"></div>
+
+      <!-- 검색 결과 없음 -->
+      <div id="emptyMsg" class="hidden py-20 text-center">
+        <div class="w-16 h-16 bg-[#FCE8E3] rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="search-x" class="w-8 h-8 text-[#D9B8AE]"></i>
+        </div>
+        <p class="text-gray-500 text-lg">검색 결과가 없습니다</p>
+        <p class="text-gray-400 text-sm mt-2">다른 조건으로 검색해보세요</p>
+      </div>
+
+      <!-- 로딩 스피너 (무한 스크롤) -->
+      <div id="loadingSpinner" class="hidden py-6 flex justify-center">
+        <div class="w-8 h-8 border-4 border-[#FCE8E3] border-t-[#F5A5A5] rounded-full animate-spin"></div>
+      </div>
+
+      <!-- 무한 스크롤 감지 sentinel -->
+      <div id="scrollSentinel" class="h-4"></div>
+
+    </div>
+  </main>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+  <script th:inline="javascript">
+    /* ===== 서버 주입 데이터 ===== */
+    let allItems   = /*[[${transactions}]]*/ [];
+    let hasMore    = /*[[${hasMore}]]*/ false;
+    let lastTxId   = /*[[${lastTxId}]]*/ null;
+    let loading    = false;
+
+    /* ===== 필터 상태 ===== */
+    let searchQuery = '';
+    let dateFilter  = '';
+
+    /* ===== 아이콘 매핑 ===== */
+    const iconMap = {
+      'utensils': '🍴', 'coffee': '☕', 'heart': '❤️',
+      'shopping-bag': '🛍️', 'car': '🚗', 'wallet': '👛',
+      'home': '🏠', 'gift': '🎁', 'music': '🎵'
+    };
+
+    /* ===== 필터 적용 ===== */
+    function applyFilter() {
+      searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+      dateFilter  = document.getElementById('dateInput').value; // YYYY-MM-DD
+
+      const clearBtn = document.getElementById('clearDateBtn');
+      clearBtn.classList.toggle('hidden', !dateFilter);
+
+      renderList();
+    }
+
+    function clearDate() {
+      document.getElementById('dateInput').value = '';
+      dateFilter = '';
+      document.getElementById('clearDateBtn').classList.add('hidden');
+      renderList();
+    }
+
+    /* ===== 렌더링 ===== */
+    function renderList() {
+      // SSR 목록 숨기고 JS 목록 표시
+      document.getElementById('ssrList').classList.add('hidden');
+      const container = document.getElementById('jsList');
+      container.classList.remove('hidden');
+
+      const filtered = allItems.filter(r => {
+        const matchSearch = !searchQuery
+          || (r.place || '').toLowerCase().includes(searchQuery)
+          || (r.category || '').toLowerCase().includes(searchQuery);
+
+        // r.date 형식: "2026.05.14" → "2026-05-14" 로 변환해 비교
+        const recordDate = (r.date || '').replace(/\./g, '-');
+        const matchDate  = !dateFilter || recordDate === dateFilter;
+
+        return matchSearch && matchDate;
+      });
+
+      document.getElementById('emptyMsg').classList.toggle('hidden', filtered.length > 0 || allItems.length === 0);
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      container.innerHTML = filtered.map(r => `
+        <a href="/consumption-upload?txId=${r.transactionId}"
+           class="bg-white rounded-2xl px-6 py-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-between group border border-transparent hover:border-[#F5D5CD]">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-[#FFF1ED] flex items-center justify-center flex-shrink-0 text-lg">
+              ${iconMap[r.iconName] || '💳'}
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-semibold text-[#6E5A55]">${r.place || ''}</span>
+                <span class="text-xs bg-[#FFF1ED] text-[#D09B8D] px-2 py-0.5 rounded-full">${r.category || ''}</span>
+                ${r.hasRecord ? '<span class="text-xs bg-[#FCE8E3] text-[#C98F81] px-2 py-0.5 rounded-full">✏️ 수정</span>' : ''}
+              </div>
+              <p class="text-sm text-[#A89089]">${r.date || ''} · ${r.time || ''}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="text-xl font-bold text-[#6E5A55]">-₩${(r.amount || 0).toLocaleString()}</span>
+            <div class="w-9 h-9 rounded-full bg-[#FFF1ED] group-hover:bg-[#F5A5A5] flex items-center justify-center transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   class="text-[#D9B8AE] group-hover:text-white transition-colors">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </div>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    /* ===== 무한 스크롤 더 불러오기 ===== */
+    async function loadMore() {
+      if (loading || !hasMore) return;
+      loading = true;
+      document.getElementById('loadingSpinner').classList.remove('hidden');
+
+      try {
+        const url = lastTxId
+          ? `/consumption-select/more?lastTxId=${lastTxId}`
+          : '/consumption-select/more';
+        const res  = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        const data = await res.json();
+
+        if (data.length > 0) {
+          allItems  = [...allItems, ...data];
+          lastTxId  = data[data.length - 1].transactionId;
+          hasMore   = data.length === 20;
+          renderList();
+        } else {
+          hasMore = false;
+        }
+      } catch (e) {
+        console.error('무한 스크롤 오류:', e);
+      } finally {
+        loading = false;
+        document.getElementById('loadingSpinner').classList.add('hidden');
+      }
+    }
+
+    /* ===== 초기화 ===== */
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+
+      // 첫 데이터가 있으면 JS 렌더링으로 전환
+      if (allItems && allItems.length > 0) {
+        renderList();
+      }
+
+      // 무한 스크롤 감지
+      const sentinel = document.getElementById('scrollSentinel');
+      if (sentinel) {
+        const observer = new IntersectionObserver(entries => {
+          if (entries[0].isIntersecting) loadMore();
+        }, { rootMargin: '100px' });
+        observer.observe(sentinel);
+      }
+    });
+  </script>
+  <th:block th:replace="~{common/layout/header-dashboard :: scripts}"></th:block>
+</body>
+</html>

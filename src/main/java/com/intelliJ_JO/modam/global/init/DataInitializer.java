@@ -2,6 +2,7 @@ package com.intelliJ_JO.modam.global.init;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
@@ -36,6 +37,7 @@ public class DataInitializer implements ApplicationRunner {
     private void seedTransactionsForNewAccounts() {
         List<Account> accounts = accountRepository.findAll();
         for (Account account : accounts) {
+            if (account.getAccountType() != AccountType.GROUP) continue;
             if (transactionRepository.existsByAccountId(account.getId())) continue;
 
             List<AccountMember> accepted = accountMemberRepository
