@@ -39,21 +39,22 @@
 
                 <!-- 아이콘 -->
                 <div class="w-12 h-12 bg-[#FCE8E3] rounded-full flex items-center justify-center flex-shrink-0">
-                    <!-- DEPOSIT -->
                     <i th:if="${noti.notiType.name() == 'DEPOSIT'}"
                        data-lucide="arrow-down-circle" class="w-6 h-6 text-green-500"></i>
-                    <!-- WITHDRAW -->
                     <i th:if="${noti.notiType.name() == 'WITHDRAW'}"
                        data-lucide="arrow-up-circle" class="w-6 h-6 text-red-400"></i>
-                    <!-- LIMIT_WARNING -->
                     <i th:if="${noti.notiType.name() == 'LIMIT_WARNING'}"
                        data-lucide="alert-triangle" class="w-6 h-6 text-yellow-500"></i>
-                    <!-- INVITE -->
                     <i th:if="${noti.notiType.name() == 'INVITE'}"
                        data-lucide="heart-handshake" class="w-6 h-6 text-[#F5A5A5]"></i>
-                    <!-- SAVINGS_GOAL -->
                     <i th:if="${noti.notiType.name() == 'SAVINGS_GOAL'}"
                        data-lucide="trophy" class="w-6 h-6 text-amber-500"></i>
+                    <i th:if="${noti.notiType.name() == 'STORY_CREATED'}"
+                       data-lucide="book-open" class="w-6 h-6 text-blue-400"></i>
+                    <i th:if="${noti.notiType.name() == 'FAVORITE'}"
+                       data-lucide="heart" class="w-6 h-6 text-[#F5A5A5]"></i>
+                    <i th:if="${noti.notiType.name() == 'POINT_SPEND'}"
+                       data-lucide="gift" class="w-6 h-6 text-purple-400"></i>
                 </div>
 
                 <!-- 내용 -->
@@ -66,7 +67,10 @@
                            th:text="${noti.notiType.name() == 'DEPOSIT' ? '입금 알림' :
                                       noti.notiType.name() == 'WITHDRAW' ? '출금 알림' :
                                       noti.notiType.name() == 'LIMIT_WARNING' ? '예산 경고' :
-                                      noti.notiType.name() == 'INVITE' ? '파트너 초대' : '저축 달성'}">
+                                      noti.notiType.name() == 'INVITE' ? '파트너 초대' :
+                                      noti.notiType.name() == 'SAVINGS_GOAL' ? '저축 달성' :
+                                      noti.notiType.name() == 'STORY_CREATED' ? '새 소비 스토리' :
+                                      noti.notiType.name() == 'FAVORITE' ? '즐겨찾기' : '포인트 사용'}">
                         </p>
                     </div>
                     <p class="text-sm text-gray-600 mb-2" th:text="${noti.message}"></p>

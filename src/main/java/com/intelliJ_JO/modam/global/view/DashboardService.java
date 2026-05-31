@@ -236,6 +236,9 @@ public class DashboardService {
             case LIMIT_WARNING -> "예산 경고";
             case INVITE        -> "파트너 초대";
             case SAVINGS_GOAL  -> "저축 달성";
+            case STORY_CREATED -> "새 소비 스토리";
+            case FAVORITE      -> "즐겨찾기";
+            case POINT_SPEND   -> "포인트 사용";
         };
     }
 
@@ -246,6 +249,9 @@ public class DashboardService {
             case LIMIT_WARNING -> "alert-triangle";
             case INVITE        -> "heart-handshake";
             case SAVINGS_GOAL  -> "trophy";
+            case STORY_CREATED -> "book-open";
+            case FAVORITE      -> "heart";
+            case POINT_SPEND   -> "gift";
         };
     }
 

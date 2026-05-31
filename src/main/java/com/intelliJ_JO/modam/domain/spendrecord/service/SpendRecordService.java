@@ -2,6 +2,8 @@ package com.intelliJ_JO.modam.domain.spendrecord.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
+import com.intelliJ_JO.modam.domain.notification.entity.NotificationType;
+import com.intelliJ_JO.modam.domain.notification.service.NotificationService;
 import com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto;
 import com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordResponseDto;
 import com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordUpdateRequestDto;
@@ -26,6 +28,7 @@ public class SpendRecordService {
     private final SpendRecordRepository spendRecordRepository;
     private final TransactionRepository transactionRepository;
     private final AccountMemberRepository accountMemberRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public SpendRecordResponseDto createSpendRecord(Long memberId, SpendRecordCreateRequestDto request) {
@@ -48,7 +51,21 @@ public class SpendRecordService {
                 .emoticon(request.getEmoticon())
                 .build();
 
-        return new SpendRecordResponseDto(spendRecordRepository.save(spendRecord));
+        SpendRecordResponseDto result = new SpendRecordResponseDto(spendRecordRepository.save(spendRecord));
+
+        // 파트너에게 새 스토리 등록 알림 발송
+        String creatorName = transaction.getMember().getName();
+        String recordTitle = spendRecord.getTitle() != null ? spendRecord.getTitle()
+                : (transaction.getMerchantName() != null ? transaction.getMerchantName() : "소비 기록");
+        String msg = String.format("%s님이 새 소비 스토리를 작성했습니다: %s", creatorName, recordTitle);
+
+        accountMemberRepository.findByAccountId(transaction.getAccount().getId()).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .filter(am -> !am.getMember().getId().equals(memberId))
+                .forEach(am -> notificationService.send(
+                        am.getMember(), NotificationType.STORY_CREATED, msg, "/consumption-history"));
+
+        return result;
     }
 
     public SpendRecordResponseDto getSpendRecordByTransaction(Long memberId, Long transactionId) {

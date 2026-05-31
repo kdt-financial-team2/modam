@@ -279,14 +279,20 @@
 
     // 알림 유형 → 아이콘 이름 매핑
     function resolveNotiIcon(type) {
-      const map = { DEPOSIT: 'arrow-down-circle', WITHDRAW: 'arrow-up-circle',
-                    LIMIT_WARNING: 'alert-triangle', INVITE: 'heart-handshake', SAVINGS_GOAL: 'trophy' };
+      const map = {
+        DEPOSIT: 'arrow-down-circle', WITHDRAW: 'arrow-up-circle',
+        LIMIT_WARNING: 'alert-triangle', INVITE: 'heart-handshake', SAVINGS_GOAL: 'trophy',
+        STORY_CREATED: 'book-open', FAVORITE: 'heart', POINT_SPEND: 'gift'
+      };
       return map[type] || 'bell';
     }
     // 알림 유형 → 제목 매핑
     function resolveNotiTitle(type) {
-      const map = { DEPOSIT: '입금 알림', WITHDRAW: '출금 알림',
-                    LIMIT_WARNING: '예산 경고', INVITE: '파트너 초대', SAVINGS_GOAL: '저축 달성' };
+      const map = {
+        DEPOSIT: '입금 알림', WITHDRAW: '출금 알림',
+        LIMIT_WARNING: '예산 경고', INVITE: '파트너 초대', SAVINGS_GOAL: '저축 달성',
+        STORY_CREATED: '새 소비 스토리', FAVORITE: '즐겨찾기', POINT_SPEND: '포인트 사용'
+      };
       return map[type] || '알림';
     }
     // ISO 날짜 → MM.dd HH:mm 형식

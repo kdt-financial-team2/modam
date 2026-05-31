@@ -5,6 +5,10 @@ import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.couple.entity.Couple;
 import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
+import com.intelliJ_JO.modam.domain.member.entity.Member;
+import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
+import com.intelliJ_JO.modam.domain.notification.entity.NotificationType;
+import com.intelliJ_JO.modam.domain.notification.service.NotificationService;
 import com.intelliJ_JO.modam.domain.point.dto.response.PointResponse;
 import com.intelliJ_JO.modam.domain.point.dto.request.PointSaveRequest;
 import com.intelliJ_JO.modam.domain.point.dto.request.PointSpendRequest;
@@ -32,6 +36,8 @@ public class PointService {
     private final PointRepository pointRepository;
     private final CoupleRepository coupleRepository;
     private final AccountMemberRepository accountMemberRepository;
+    private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     public List<PointResponse> getPointHistories(Long memberId) {
         Couple couple = getCoupleByMemberId(memberId);
@@ -69,7 +75,15 @@ public class PointService {
                 .descrip(request.getDescrip())
                 .build();
 
-        return toResponse(pointRepository.save(pointHistory));
+        PointResponse result = toResponse(pointRepository.save(pointHistory));
+
+        // 포인트 사용자에게 알림 발송
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        String msg = String.format("%,dP를 사용했습니다. (잔액: %,dP)", request.getAmt(), pointHistory.getAftBal());
+        notificationService.send(member, NotificationType.POINT_SPEND, msg, "/point-shop");
+
+        return result;
     }
 
     public Integer getCurrentPoint(Long memberId) {
