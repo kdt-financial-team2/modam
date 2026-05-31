@@ -7,17 +7,20 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+<body class="h-screen overflow-hidden bg-[#FAFAFA] flex flex-col">
 
   <!-- ===== 헤더 ===== -->
   <th:block th:replace="~{common/layout/header-dashboard :: nav}"></th:block>
 
   <!-- ===== 메인 콘텐츠 ===== -->
-  <main class="flex-1">
-    <div class="max-w-[1440px] mx-auto px-8 py-12">
+  <main class="flex-1 min-h-0 flex flex-col overflow-hidden">
+    <div class="max-w-[1440px] mx-auto px-8 py-6 flex flex-col flex-1 min-h-0 overflow-hidden w-full">
+
+      <!-- 고정 영역: 페이지 헤더, 필터, 요약 카드, 테이블 헤더는 스크롤 시 고정 -->
+      <div class="flex-shrink-0">
 
       <!-- 페이지 헤더 -->
-      <div class="mb-8">
+      <div class="mb-6">
         <h1 class="text-4xl font-bold text-gray-900 mb-2">소비내역</h1>
         <p class="text-lg text-gray-600">모든 거래 내역을 확인하세요</p>
       </div>
@@ -37,12 +40,13 @@
             </div>
           </div>
 
-          <!-- 날짜 선택 -->
-          <div class="relative">
-            <input type="date" id="dateInput" onchange="applyFilters()"
-                   th:value="${selectedDate}"
-                   class="bg-white border-2 border-gray-200 rounded-2xl px-6 py-3 pr-12 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors" />
-            <i data-lucide="calendar" class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
+          <!-- 기간 선택 (시작일 ~ 종료일) -->
+          <div class="flex items-center gap-2">
+            <input type="date" id="startDateInput" onchange="applyFilters()" onclick="this.showPicker()" readonly
+                   class="bg-white border-2 border-gray-200 rounded-2xl px-4 py-3 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors text-sm" />
+            <span class="text-gray-400 font-semibold">~</span>
+            <input type="date" id="endDateInput" onchange="applyFilters()" onclick="this.showPicker()" readonly
+                   class="bg-white border-2 border-gray-200 rounded-2xl px-4 py-3 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors text-sm" />
           </div>
 
           <!-- 카테고리 필터 -->
@@ -85,11 +89,34 @@
         </div>
       </div>
 
-      <!-- 거래 내역 테이블 -->
-      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <!-- 거래 유형 필터 탭 -->
+      <div class="flex items-center gap-2 mb-4">
+        <button id="typeBtn-all" onclick="setTypeFilter('all')"
+                class="px-5 py-2 rounded-full text-sm font-semibold transition-colors bg-gray-900 text-white">
+          전체
+        </button>
+        <button id="typeBtn-deposit" onclick="setTypeFilter('deposit')"
+                class="px-5 py-2 rounded-full text-sm font-semibold transition-colors bg-white border-2 border-gray-200 text-gray-600 hover:border-blue-400 hover:text-blue-500">
+          입금
+        </button>
+        <button id="typeBtn-withdrawal" onclick="setTypeFilter('withdrawal')"
+                class="px-5 py-2 rounded-full text-sm font-semibold transition-colors bg-white border-2 border-gray-200 text-gray-600 hover:border-[#F5A5A5] hover:text-[#F5A5A5]">
+          출금
+        </button>
+      </div>
 
-        <!-- 테이블 헤더 -->
-        <div class="grid grid-cols-12 gap-4 px-8 py-4 bg-gray-50 border-b border-gray-100 text-sm font-semibold text-gray-600">
+      </div><!-- /고정 영역 끝 -->
+
+      <!-- 거래 내역 테이블: flex-1로 남은 높이를 채우고, 목록 영역만 스크롤 -->
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1 min-h-0">
+
+        <!-- 건수 표시 -->
+        <div class="flex-shrink-0 flex items-center px-8 py-3 border-b border-gray-100 bg-white">
+          <span class="text-sm text-gray-500">총 <strong id="countNum" class="text-gray-900">0</strong>건 조회</span>
+        </div>
+
+        <!-- 테이블 헤더 (고정) - 연핑크 배경으로 데이터 행과 구분 강조 -->
+        <div class="flex-shrink-0 grid grid-cols-12 gap-4 px-8 py-4 bg-[#FCE8E3] border-b border-[#F5A5A5]/40 text-sm font-semibold text-[#b85c5c]">
           <div class="col-span-1">날짜/시간</div>
           <div class="col-span-1">구분</div>
           <div class="col-span-3">거래처</div>
@@ -99,8 +126,8 @@
           <div class="col-span-1 text-right">잔액</div>
         </div>
 
-        <!-- 서버사이드 렌더링 (Thymeleaf) -->
-        <div id="transactionList">
+        <!-- 서버사이드 렌더링 (Thymeleaf): JS 렌더로 통일하여 항상 숨김 처리 -->
+        <div id="transactionList" class="hidden">
           <th:block th:each="group : ${groupedTransactions}">
             <!-- 날짜 헤더 -->
             <div class="px-8 py-3 bg-[#FAFAFA] border-b border-gray-100">
@@ -164,12 +191,10 @@
         </div>
 
         <!-- 클라이언트사이드 폴백 (서버 데이터 없을 때 JS로 렌더) -->
-        <div id="jsTransactionList" class="hidden"></div>
+        <div id="jsTransactionList" class="hidden flex-1 overflow-y-auto min-h-0"></div>
 
       </div>
 
-      <!-- 페이지네이션 -->
-      <div id="pagination" class="flex justify-center items-center gap-2 mt-8"></div>
 
     </div>
   </main>
@@ -198,48 +223,102 @@
     ];
 
     const allTransactions = serverTransactions || fallbackTransactions;
-    const ITEMS_PER_PAGE = 10;
-    let currentPage = 1;
+    const BATCH_SIZE = 20;       // 한 번에 불러오는 건수
     let filteredData = [...allTransactions];
+    let displayedCount = 0;      // 현재 화면에 표시된 건수
+    let lastLoadedDate = null;   // 마지막으로 렌더된 날짜 (날짜 헤더 중복 방지)
+    let isLoading = false;       // 스크롤 중 중복 로드 방지
+    let typeFilter = 'all';      // 거래 유형 필터: all | deposit | withdrawal
+
+    /* ===== 거래 유형 탭 전환 ===== */
+    function setTypeFilter(type) {
+      typeFilter = type;
+
+      /* 탭 버튼 스타일 초기화 후 활성 버튼 강조 */
+      const btnAll        = document.getElementById('typeBtn-all');
+      const btnDeposit    = document.getElementById('typeBtn-deposit');
+      const btnWithdrawal = document.getElementById('typeBtn-withdrawal');
+      const inactive = 'bg-white border-2 border-gray-200 text-gray-600';
+      const activeAll        = 'bg-gray-900 text-white border-2 border-gray-900';
+      const activeDeposit    = 'bg-blue-500 text-white border-2 border-blue-500';
+      const activeWithdrawal = 'bg-[#F5A5A5] text-white border-2 border-[#F5A5A5]';
+
+      [btnAll, btnDeposit, btnWithdrawal].forEach(btn => {
+        btn.className = btn.className.replace(/bg-\S+|text-\S+|border-\S+/g, '').trim();
+        btn.className += ' px-5 py-2 rounded-full text-sm font-semibold transition-colors ' + inactive;
+      });
+
+      if (type === 'all')        btnAll.className        = 'px-5 py-2 rounded-full text-sm font-semibold transition-colors ' + activeAll;
+      else if (type === 'deposit')    btnDeposit.className    = 'px-5 py-2 rounded-full text-sm font-semibold transition-colors ' + activeDeposit;
+      else if (type === 'withdrawal') btnWithdrawal.className = 'px-5 py-2 rounded-full text-sm font-semibold transition-colors ' + activeWithdrawal;
+
+      applyFilters();
+    }
 
     /* ===== 필터 적용 ===== */
     function applyFilters() {
-      const query    = document.getElementById('searchInput').value.trim().toLowerCase();
-      const dateVal  = document.getElementById('dateInput').value;          // 'yyyy-MM-dd'
-      const category = document.getElementById('categorySelect').value;
+      const query     = document.getElementById('searchInput').value.trim().toLowerCase();
+      const startDate = document.getElementById('startDateInput').value; // 'yyyy-MM-dd'
+      const endDate   = document.getElementById('endDateInput').value;   // 'yyyy-MM-dd'
+      const category  = document.getElementById('categorySelect').value;
 
       filteredData = allTransactions.filter(tx => {
         const matchSearch   = !query    || tx.merchant.toLowerCase().includes(query);
         const matchCategory = category === '전체' || tx.category === category;
-        const txDateNorm    = tx.date.replace(/\./g, '-');                  // '2026.05.07' → '2026-05-07'
-        const matchDate     = !dateVal  || txDateNorm === dateVal;
-        return matchSearch && matchCategory && matchDate;
+        const txDateNorm    = tx.date.replace(/\./g, '-'); // '2026.05.07' → '2026-05-07'
+        const matchDate     = (!startDate || txDateNorm >= startDate) &&
+                              (!endDate   || txDateNorm <= endDate);
+        const matchType     = typeFilter === 'all' || tx.type === typeFilter;
+        return matchSearch && matchCategory && matchDate && matchType;
       });
 
-      currentPage = 1;
       renderList();
     }
 
-    /* ===== 렌더링 ===== */
+    /* ===== 거래 행 HTML 생성 ===== */
+    function txRowHTML(tx) {
+      return `
+        <div class="col-span-1 text-sm text-gray-600">${tx.time}</div>
+        <div class="col-span-1">
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-medium ${tx.type === 'deposit' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-700'}">
+            ${tx.type === 'deposit' ? '입금' : '출금'}
+          </span>
+        </div>
+        <div class="col-span-3 flex items-center gap-3">
+          <div class="w-10 h-10 bg-[#FCE8E3] rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="${tx.iconName}" class="w-5 h-5 text-[#F5A5A5]"></i>
+          </div>
+          <span class="font-medium text-gray-900">${tx.merchant}</span>
+        </div>
+        <div class="col-span-2 text-sm text-gray-600">${tx.cardName}</div>
+        <div class="col-span-2">
+          <span class="inline-block px-3 py-1 bg-[#FCE8E3] text-[#F5A5A5] rounded-full text-xs font-medium">${tx.category}</span>
+        </div>
+        <div class="col-span-2 text-right">
+          <span class="text-lg font-bold ${tx.type === 'deposit' ? 'text-blue-600' : 'text-gray-900'}">
+            ${tx.amount > 0 ? '+' : ''}${tx.amount.toLocaleString()}원
+          </span>
+        </div>
+        <div class="col-span-1 text-right text-sm text-gray-500">${tx.balance.toLocaleString()}</div>
+      `;
+    }
+
+    /* ===== 목록 초기화 및 첫 배치 렌더 ===== */
     function renderList() {
-      /* 서버 렌더 요소 숨기기 (JS 사용 시) */
+      displayedCount = 0;
+      lastLoadedDate = null;
+      isLoading = false;
+
+      /* 건수 업데이트 */
+      document.getElementById('countNum').textContent = filteredData.length.toLocaleString();
+
+      /* JS 렌더 영역 표시 */
       document.getElementById('transactionList').classList.add('hidden');
-      document.getElementById('jsTransactionList').classList.remove('hidden');
-
-      const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
-      const start      = (currentPage - 1) * ITEMS_PER_PAGE;
-      const paged      = filteredData.slice(start, start + ITEMS_PER_PAGE);
-
-      /* 날짜별 그룹핑 */
-      const grouped = {};
-      paged.forEach(tx => {
-        if (!grouped[tx.date]) grouped[tx.date] = [];
-        grouped[tx.date].push(tx);
-      });
-
       const container = document.getElementById('jsTransactionList');
+      container.classList.remove('hidden');
+      container.innerHTML = '';
 
-      if (paged.length === 0) {
+      if (filteredData.length === 0) {
         container.innerHTML = `
           <div class="py-20 text-center">
             <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -249,98 +328,85 @@
             <p class="text-gray-400 text-sm mt-2">다른 조건으로 검색해보세요</p>
           </div>`;
         lucide.createIcons();
-        renderPagination(totalPages);
         return;
       }
 
-      container.innerHTML = Object.entries(grouped).map(([date, txList]) => `
-        <div class="px-8 py-3 bg-[#FAFAFA] border-b border-gray-100">
-          <p class="text-sm font-semibold text-gray-700">${date}</p>
-        </div>
-        ${txList.map(tx => `
-          <div class="grid grid-cols-12 gap-4 px-8 py-5 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer items-center">
-            <div class="col-span-1 text-sm text-gray-600">${tx.time}</div>
-            <div class="col-span-1">
-              <span class="inline-block px-3 py-1 rounded-full text-xs font-medium ${tx.type === 'deposit' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-700'}">
-                ${tx.type === 'deposit' ? '입금' : '출금'}
-              </span>
-            </div>
-            <div class="col-span-3 flex items-center gap-3">
-              <div class="w-10 h-10 bg-[#FCE8E3] rounded-xl flex items-center justify-center flex-shrink-0">
-                <i data-lucide="${tx.iconName}" class="w-5 h-5 text-[#F5A5A5]"></i>
-              </div>
-              <span class="font-medium text-gray-900">${tx.merchant}</span>
-            </div>
-            <div class="col-span-2 text-sm text-gray-600">${tx.cardName}</div>
-            <div class="col-span-2">
-              <span class="inline-block px-3 py-1 bg-[#FCE8E3] text-[#F5A5A5] rounded-full text-xs font-medium">${tx.category}</span>
-            </div>
-            <div class="col-span-2 text-right">
-              <span class="text-lg font-bold ${tx.type === 'deposit' ? 'text-blue-600' : 'text-gray-900'}">
-                ${tx.amount > 0 ? '+' : ''}${tx.amount.toLocaleString()}원
-              </span>
-            </div>
-            <div class="col-span-1 text-right text-sm text-gray-500">${tx.balance.toLocaleString()}</div>
-          </div>
-        `).join('')}
-      `).join('');
-
-      lucide.createIcons();
-      renderPagination(totalPages);
+      loadMore();
     }
 
-    /* ===== 페이지네이션 ===== */
-    function renderPagination(totalPages) {
-      const pag = document.getElementById('pagination');
-      if (totalPages <= 1) { pag.innerHTML = ''; return; }
+    /* ===== 무한 스크롤: 다음 배치를 DOM에 추가 ===== */
+    function loadMore() {
+      if (isLoading || displayedCount >= filteredData.length) return;
+      isLoading = true;
 
-      let html = '';
-      /* 이전 버튼 */
-      html += `<button onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
-               class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-               <i data-lucide="chevron-left" class="w-4 h-4 text-gray-600"></i></button>`;
+      const newItems = filteredData.slice(displayedCount, displayedCount + BATCH_SIZE);
+      const container = document.getElementById('jsTransactionList');
+      const fragment = document.createDocumentFragment();
 
-      /* 페이지 번호 */
-      const range = pageRange(currentPage, totalPages);
-      range.forEach(p => {
-        if (p === '...') {
-          html += `<span class="w-10 h-10 flex items-center justify-center text-gray-400">…</span>`;
-        } else {
-          html += `<button onclick="goPage(${p})"
-                   class="w-10 h-10 rounded-xl border transition-colors ${p === currentPage ? 'bg-[#F5A5A5] text-white border-[#F5A5A5] font-bold' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}">
-                   ${p}</button>`;
-        }
+      /* 날짜별 그룹핑 */
+      const grouped = {};
+      newItems.forEach(tx => {
+        if (!grouped[tx.date]) grouped[tx.date] = [];
+        grouped[tx.date].push(tx);
       });
 
-      /* 다음 버튼 */
-      html += `<button onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
-               class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-               <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600"></i></button>`;
+      Object.entries(grouped).forEach(([date, txList], idx) => {
+        /* 이전 배치 마지막 날짜와 같으면 날짜 헤더 생략 (중복 방지) */
+        if (!(idx === 0 && date === lastLoadedDate)) {
+          const headerEl = document.createElement('div');
+          headerEl.className = 'px-8 py-3 bg-[#FAFAFA] border-b border-gray-100 sticky top-0 z-10';
+          headerEl.innerHTML = `<p class="text-sm font-semibold text-gray-700">${date}</p>`;
+          fragment.appendChild(headerEl);
+        }
 
-      pag.innerHTML = html;
+        txList.forEach(tx => {
+          const rowEl = document.createElement('div');
+          rowEl.className = 'grid grid-cols-12 gap-4 px-8 py-5 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer items-center';
+          rowEl.innerHTML = txRowHTML(tx);
+          fragment.appendChild(rowEl);
+        });
+      });
+
+      /* 마지막으로 로드된 날짜 기록 */
+      if (newItems.length > 0) {
+        lastLoadedDate = newItems[newItems.length - 1].date;
+      }
+      displayedCount += newItems.length;
+
+      /* 모든 데이터 로드 완료 시 끝 표시 */
+      if (displayedCount >= filteredData.length) {
+        const endEl = document.createElement('div');
+        endEl.className = 'py-6 text-center text-sm text-gray-400';
+        endEl.textContent = '마지막 내역입니다';
+        fragment.appendChild(endEl);
+      }
+
+      container.appendChild(fragment);
       lucide.createIcons();
-    }
-
-    function goPage(p) {
-      const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
-      if (p < 1 || p > totalPages) return;
-      currentPage = p;
-      renderList();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function pageRange(cur, total) {
-      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-      if (cur <= 4)  return [1, 2, 3, 4, 5, '...', total];
-      if (cur >= total - 3) return [1, '...', total-4, total-3, total-2, total-1, total];
-      return [1, '...', cur-1, cur, cur+1, '...', total];
+      isLoading = false;
     }
 
     /* ===== 초기 렌더 ===== */
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      /* 서버 데이터가 없으면 JS 렌더 모드 활성화 */
-      if (!serverTransactions) { renderList(); }
+
+      /* 기본 기간: 최근 1년 */
+      const today = new Date();
+      const oneYearAgo = new Date(today);
+      oneYearAgo.setFullYear(today.getFullYear() - 1);
+      const fmt = d => d.toISOString().slice(0, 10); // 'yyyy-MM-dd'
+      document.getElementById('startDateInput').value = fmt(oneYearAgo);
+      document.getElementById('endDateInput').value   = fmt(today);
+
+      /* 필터 적용 후 렌더 */
+      applyFilters();
+
+      /* 무한 스크롤: 컨테이너 하단 100px 이내 진입 시 추가 로드 */
+      document.getElementById('jsTransactionList').addEventListener('scroll', function() {
+        if (this.scrollTop + this.clientHeight >= this.scrollHeight - 100) {
+          loadMore();
+        }
+      });
     });
   </script>
   <th:block th:replace="~{common/layout/header-dashboard :: scripts}"></th:block>

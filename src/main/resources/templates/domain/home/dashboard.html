@@ -54,6 +54,23 @@
 
           <!-- 계좌 잔액 카드 (도넛 차트) -->
           <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+
+            <!-- 공동 통장 계좌 정보 -->
+            <div class="flex items-center gap-3 mb-6 pb-5 border-b border-gray-100">
+              <div class="w-10 h-10 bg-[#FCE8E3] rounded-xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="landmark" class="w-5 h-5 text-[#F5A5A5]"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs text-gray-400 mb-0.5">모담 공동통장</p>
+                <p class="text-sm font-medium text-gray-700 font-mono tracking-wide"
+                   th:text="${groupAccountNumber}">000-0000-0000000</p>
+              </div>
+              <!-- 계좌 애칭 뱃지 (설정된 경우에만 표시) -->
+              <span th:if="${coupleAcctAlias != null and !#strings.isEmpty(coupleAcctAlias)}"
+                    class="flex-shrink-0 text-xs bg-[#FCE8E3] text-[#c47a7a] px-3 py-1.5 rounded-full font-medium"
+                    th:text="${coupleAcctAlias}">우리의 여행통장</span>
+            </div>
+
             <div class="flex items-center gap-4 mb-8">
               <h2 class="text-3xl font-bold text-gray-900">계좌 잔액</h2>
               <span class="text-3xl font-bold text-gray-900">₩<span th:text="${#numbers.formatInteger(accountBalance, 1, 'COMMA')}">3,500,000</span></span>
@@ -370,33 +387,57 @@
 
           <!-- 목표 저축 카드 -->
           <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-            <h3 class="text-lg font-bold text-gray-900 mb-6">목표 저축 금액</h3>
-            <div class="mb-6">
-              <div class="text-4xl font-bold text-[#F5A5A5] mb-2">
-                ₩<span th:text="${#numbers.formatInteger(savingsGoalCurrent, 1, 'COMMA')}">3,500,000</span>
-              </div>
-              <p class="text-sm text-gray-500">
-                목표: ₩<span th:text="${#numbers.formatInteger(savingsGoalTarget, 1, 'COMMA')}">10,000,000</span>
-              </p>
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-lg font-bold text-gray-900">목표 저축 금액</h3>
+              <a th:href="@{/savings}" class="text-sm text-[#F5A5A5] hover:text-[#F28B8B] font-medium transition-colors">전체보기</a>
             </div>
-            <div class="mb-6">
-              <div class="w-full bg-gray-200 rounded-full h-3">
-                <div class="bg-gradient-to-r from-[#F5A5A5] to-[#F28B8B] h-3 rounded-full transition-all duration-500"
-                     th:style="'width:' + ${savingsGoalPercent} + '%'"></div>
+
+            <!-- 저축 목표가 없을 때: 안내 메시지 + 설정 페이지 링크 -->
+            <div th:if="${!hasSavingsGoal}" class="flex flex-col items-center justify-center py-6 text-center">
+              <div class="w-16 h-16 bg-[#FCE8E3] rounded-full flex items-center justify-center mb-4">
+                <i data-lucide="piggy-bank" class="w-8 h-8 text-[#F5A5A5]"></i>
               </div>
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-xs font-medium text-gray-600">
-                  <span th:text="${savingsGoalPercent}">35</span>% 달성
-                </span>
-                <span class="text-xs text-gray-500">
-                  ₩<span th:text="${#numbers.formatInteger(savingsGoalTarget - savingsGoalCurrent, 1, 'COMMA')}">6,500,000</span> 남음
-                </span>
-              </div>
+              <p class="text-gray-500 text-sm mb-1">아직 목표 저축이 없어요</p>
+              <p class="text-gray-400 text-xs mb-6">커플의 첫 번째 저축 목표를 만들어보세요</p>
+              <a th:href="@{/savings-goal-setup}"
+                 class="w-full py-3 bg-[#F5A5A5] text-white rounded-xl hover:bg-[#F28B8B] transition-colors font-semibold text-sm text-center block">
+                목표 저축 설정하기
+              </a>
             </div>
-            <div class="bg-[#FCE8E3] rounded-2xl p-4">
-              <div class="flex items-center gap-2">
-                <i data-lucide="trending-up" class="w-5 h-5 text-[#F5A5A5]"></i>
-                <span class="text-sm font-medium text-gray-800" th:text="${savingsGoalName}">제주도 여행</span>
+
+            <!-- 저축 목표가 있을 때: 전체 목표 리스트 표시 -->
+            <div th:if="${hasSavingsGoal}" class="space-y-4">
+              <div th:each="goal : ${savingsGoals}"
+                   class="bg-[#FAFAFA] rounded-2xl p-4 hover:bg-[#FCE8E3] transition-colors group cursor-pointer"
+                   onclick="window.location.href='/savings'">
+                <!-- 목표명 -->
+                <div class="flex items-center gap-2 mb-3">
+                  <i data-lucide="trending-up" class="w-4 h-4 text-[#F5A5A5] flex-shrink-0"></i>
+                  <span class="text-sm font-semibold text-gray-800 truncate" th:text="${goal.goalName}">목표명</span>
+                </div>
+                <!-- 현재 금액 / 목표 금액 -->
+                <div class="flex items-end justify-between mb-2">
+                  <span class="text-xl font-bold text-[#F5A5A5]">
+                    ₩<span th:text="${#numbers.formatInteger(goal.currentAmount, 1, 'COMMA')}">0</span>
+                  </span>
+                  <span class="text-xs text-gray-400">
+                    / ₩<span th:text="${#numbers.formatInteger(goal.targetAmount, 1, 'COMMA')}">0</span>
+                  </span>
+                </div>
+                <!-- 프로그레스 바 -->
+                <div class="w-full bg-gray-200 rounded-full h-2 mb-1">
+                  <div class="bg-gradient-to-r from-[#F5A5A5] to-[#F28B8B] h-2 rounded-full transition-all duration-500"
+                       th:style="'width:' + ${goal.percent} + '%'"></div>
+                </div>
+                <!-- 달성률 / 남은 금액 -->
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-gray-500">
+                    <span th:text="${goal.percent}">0</span>% 달성
+                  </span>
+                  <span class="text-xs text-gray-400">
+                    ₩<span th:text="${#numbers.formatInteger(goal.targetAmount - goal.currentAmount, 1, 'COMMA')}">0</span> 남음
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -413,12 +454,13 @@
             <div class="bg-white/70 backdrop-blur rounded-2xl p-4 mb-4">
               <div class="flex items-center justify-between mb-3">
                 <span class="text-sm text-gray-700">이번 달 적립</span>
-                <span class="text-sm font-semibold text-[#F5A5A5]">+1,250P</span>
+                <span class="text-sm font-semibold text-[#F5A5A5]">+<span th:text="${#numbers.formatInteger(monthlyEarnedPoints, 1, 'COMMA')}">0</span>P</span>
               </div>
               <div class="w-full bg-white rounded-full h-2">
-                <div class="bg-[#F5A5A5] h-2 rounded-full" style="width: 65%"></div>
+                <div class="bg-[#F5A5A5] h-2 rounded-full"
+                     th:style="'width:' + ${rewardProgressPercent} + '%'"></div>
               </div>
-              <p class="text-xs text-gray-600 mt-2">다음 리워드까지 750P</p>
+              <p class="text-xs text-gray-600 mt-2">다음 리워드까지 <span th:text="${#numbers.formatInteger(nextRewardPoints, 1, 'COMMA')}">2,000</span>P</p>
             </div>
             <a th:href="@{/point-shop}"
                class="block w-full bg-white text-[#F5A5A5] py-4 rounded-2xl hover:bg-gray-50 transition-colors font-medium text-center">

@@ -38,6 +38,7 @@ public class AnalysisViewController {
                 ? month
                 : YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
+        model.addAttribute("currentPage", "analysis");
         model.addAttribute("accountId", accountId);
         model.addAttribute("selectedMonth", selectedMonth);
 
