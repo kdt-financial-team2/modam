@@ -55,6 +55,12 @@ public class SavingsService {
                 .build();
 
         savingsRepository.save(savings);
+
+        Member member = memberRepository.findById(requestDto.getMemberId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        String msg = String.format("'%s' 저축 목표가 생성되었습니다. 목표 금액: %,d원",
+                requestDto.getGoalName(), requestDto.getTargetAmount());
+        notificationService.send(member, NotificationType.SAVINGS_GOAL, msg, "/savings");
     }
 
     public List<SavingsResponseDto> getSavingsByAccountId(Long accountId) {

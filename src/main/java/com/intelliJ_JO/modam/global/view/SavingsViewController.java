@@ -83,9 +83,11 @@ public class SavingsViewController {
     // ===== 저축 목표 생성 처리 (POST) =====
     @PostMapping("/savings-goal-setup")
     public String createSavingsGoal(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @ModelAttribute SavingsCreateRequestDto requestDto,
             RedirectAttributes redirectAttributes) {
         try {
+            requestDto.setMemberId(userDetails.getMember().getId());
             savingsService.createSavings(requestDto);
             redirectAttributes.addFlashAttribute("successMsg", "새로운 저축 목표가 등록되었습니다! 💕");
             return "redirect:/savings";

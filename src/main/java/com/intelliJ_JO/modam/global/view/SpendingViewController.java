@@ -6,6 +6,7 @@ import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
+import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.comment.dto.request.CommentCreateRequestDto;
 import com.intelliJ_JO.modam.domain.comment.dto.response.CommentResponseDto;
 import com.intelliJ_JO.modam.domain.comment.service.CommentService;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SpendingViewController {
 
+    private final MemberRepository memberRepository;
     private final DashboardService dashboardService;
     private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
@@ -65,7 +67,8 @@ public class SpendingViewController {
         dashboardService.populateHeader(userDetails.getMember(), model);
         model.addAttribute("currentPage", "story");
 
-        Member member = userDetails.getMember();
+        Member member = memberRepository.findById(userDetails.getMember().getId())
+                .orElse(userDetails.getMember());
 
         // 내 프로필 정보
         model.addAttribute("myName", member.getName());
