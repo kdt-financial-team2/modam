@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.global.view;
 
 import com.intelliJ_JO.modam.config.security.CustomUserDetails;
+import com.intelliJ_JO.modam.domain.account.dto.AccountUpdateRequestDto;
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
@@ -15,9 +16,14 @@ import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.member.service.MemberService;
 import com.intelliJ_JO.modam.domain.member.service.MyPageService;
+import com.intelliJ_JO.modam.domain.transaction.dto.TransactionResponseDto;
+import com.intelliJ_JO.modam.domain.transaction.service.TransactionService;
 import com.intelliJ_JO.modam.global.util.AES256Util;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -44,6 +50,7 @@ public class MypageViewController {
     private final CardRepository cardRepository;
     private final AES256Util aes256Util;
     private final AccountService accountService;
+    private final TransactionService transactionService; // 🔥 추가됨
 
     @ModelAttribute("cardIssueSession")
     public CardIssueSessionDto cardIssueSession() {
@@ -112,6 +119,138 @@ public class MypageViewController {
         populateAccountData(freshMember, model);
         model.addAttribute("activeMenu", "accounts");
         return "domain/mypage/accounts";
+    }
+
+    @PostMapping("/mypage/accounts/limit")
+    public String updateAccountLimit(
+            @RequestParam(required = false) Long onceTransferLimit,
+            @RequestParam(required = false) Long dailyTransferLimit,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            RedirectAttributes rttr) {
+        try {
+            Long memberId = userDetails.getMember().getId();
+            Long accountId = accountMemberRepository.findByMemberId(memberId).stream()
+                    .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()))
+                    .findFirst().orElseThrow(() -> new IllegalArgumentException("활성 공동 계좌가 존재하지 않습니다."))
+                    .getAccount().getId();
+
+            AccountUpdateRequestDto requestDto = new AccountUpdateRequestDto();
+            requestDto.setOnceTransferLimit(onceTransferLimit);
+            requestDto.setDailyTransferLimit(dailyTransferLimit);
+
+            accountService.updateAccount(accountId, requestDto);
+
+            rttr.addFlashAttribute("successMsg", "이체 한도가 성공적으로 변경되었습니다.");
+        } catch (Exception e) {
+            rttr.addFlashAttribute("errorMsg", "이체 한도 변경 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        return "redirect:/mypage/accounts";
+    }
+
+    @PostMapping("/mypage/accounts/password")
+    public String updateAccountPassword(
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            RedirectAttributes rttr) {
+        try {
+            Long memberId = userDetails.getMember().getId();
+            Long accountId = accountMemberRepository.findByMemberId(memberId).stream()
+                    .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()))
+                    .findFirst().orElseThrow(() -> new IllegalArgumentException("활성 공동 계좌가 존재하지 않습니다."))
+                    .getAccount().getId();
+
+            accountService.updateAccountPassword(accountId, currentPassword, newPassword);
+
+            rttr.addFlashAttribute("successMsg", "계좌 비밀번호가 안전하게 변경되었습니다.");
+        } catch (Exception e) {
+            rttr.addFlashAttribute("errorMsg", "비밀번호 변경 실패: " + e.getMessage());
+        }
+        return "redirect:/mypage/accounts";
+    }
+
+    @PostMapping("/mypage/accounts/verify-password")
+    @ResponseBody
+    public java.util.Map<String, Boolean> verifyAccountPassword(@RequestParam String password, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            Long memberId = userDetails.getMember().getId();
+            Long accountId = accountMemberRepository.findByMemberId(memberId).stream()
+                    .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()))
+                    .findFirst().orElseThrow(() -> new IllegalArgumentException("활성 공동 계좌가 존재하지 않습니다."))
+                    .getAccount().getId();
+
+            accountService.verifyAccountPassword(accountId, password);
+            return java.util.Map.of("success", true);
+        } catch (Exception e) {
+            return java.util.Map.of("success", false);
+        }
+    }
+
+    // 🔥 [추가됨] 거래 내역 CSV 엑셀 다운로드 API
+    @GetMapping("/mypage/accounts/transactions/download")
+    public ResponseEntity<String> downloadTransactionsCsv(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            Long memberId = userDetails.getMember().getId();
+            Long accountId = accountMemberRepository.findByMemberId(memberId).stream()
+                    .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()))
+                    .findFirst().orElseThrow(() -> new IllegalArgumentException("활성 공동 계좌가 존재하지 않습니다."))
+                    .getAccount().getId();
+
+            // 넉넉하게 최근 1000건 조회
+            List<TransactionResponseDto> transactions = transactionService.getTransactions(accountId, null, 1000);
+
+            StringBuilder csvBuilder = new StringBuilder();
+
+            // 엑셀에서 한글이 깨지지 않도록 UTF-8 BOM 추가
+            csvBuilder.append('\ufeff');
+
+            // CSV 헤더 (컬럼명)
+            csvBuilder.append("거래일자,거래시간,구분,거래처(카테고리),거래금액\n");
+
+            // 데이터 바인딩
+            for (TransactionResponseDto tx : transactions) {
+                String typeStr = "deposit".equals(tx.getType()) ? "입금" : "출금";
+                String place = tx.getMerchant() != null ? tx.getMerchant() : tx.getCategory();
+                // 콤마(,)가 포함된 상호명이 있을 경우를 대비해 띄어쓰기로 치환
+                place = place != null ? place.replace(",", " ") : "";
+
+                csvBuilder.append(tx.getDate()).append(",")
+                        .append(tx.getTime()).append(",")
+                        .append(typeStr).append(",")
+                        .append(place).append(",")
+                        .append(tx.getAmount()).append("\n");
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=modam_transactions.csv");
+            headers.setContentType(MediaType.parseMediaType("text/csv; charset=UTF-8"));
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(csvBuilder.toString());
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("다운로드 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    // 🔥 [추가됨] 계좌 증명서 발급 라우터
+    @GetMapping("/mypage/accounts/certificate")
+    public String accountCertificate(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        Member freshMember = getFreshMember(userDetails.getMember().getId());
+        populateAccountData(freshMember, model);
+
+        model.addAttribute("userName", freshMember.getName());
+
+        AccountMember myMembership = accountMemberRepository.findByMemberId(freshMember.getId()).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()))
+                .findFirst().orElse(null);
+
+        if (myMembership != null) {
+            model.addAttribute("createdAt", myMembership.getAccount().getCreatedAt());
+        }
+
+        return "domain/mypage/certificate";
     }
 
     // =========================================================================
@@ -291,7 +430,6 @@ public class MypageViewController {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         dashboardService.populateHeader(freshMember, model);
 
-        // 🔥 [수정됨] 계좌가 CLOSED 상태가 "아닐 때만" 탈퇴를 막도록 로직 개조
         boolean hasActiveAccount = accountMemberRepository.findByMemberId(freshMember.getId()).stream()
                 .anyMatch(am -> am.getInviteStatus() == InviteStatus.ACCEPT
                         && "GROUP".equals(am.getAccount().getAccountType().name())
@@ -333,7 +471,7 @@ public class MypageViewController {
     }
 
     // =========================================================================
-    // 🔥 [수정] 헬퍼 메서드: 계좌의 CLOSED 상태 판별 로직 추가
+    // 헬퍼 메서드: 계좌 정보 주입
     // =========================================================================
     private void populateAccountData(Member member, Model model) {
         dashboardService.populateHeader(member, model);
@@ -353,6 +491,9 @@ public class MypageViewController {
             model.addAttribute("accountNumber", account.getAccountNumber());
             model.addAttribute("hasActiveAccount", true);
             model.addAttribute("isAccountClosed", isClosed);
+
+            model.addAttribute("onceLimit", account.getOnceTransferLimit());
+            model.addAttribute("dailyLimit", account.getDailyTransferLimit());
 
             AccountMember partner = accountMemberRepository.findByAccountId(accountId).stream()
                     .filter(am -> !am.getMember().getId().equals(member.getId()))
@@ -431,6 +572,9 @@ public class MypageViewController {
             model.addAttribute("partnerRefund", 0L);
             model.addAttribute("myContribution", 0.0);
             model.addAttribute("partnerContribution", 0.0);
+
+            model.addAttribute("onceLimit", null);
+            model.addAttribute("dailyLimit", null);
         }
     }
 

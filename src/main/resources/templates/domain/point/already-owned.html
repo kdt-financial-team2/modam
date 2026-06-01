@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이미 보유한 상품 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @keyframes zoomIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim-zoom  { animation: zoomIn  0.5s ease both; }
+    .anim-slide { animation: slideUp 0.6s ease both; }
+    .delay-100  { animation-delay: 0.1s; }
+    .delay-200  { animation-delay: 0.2s; }
+    .delay-300  { animation-delay: 0.3s; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-[#F0FDF4] to-[#DCFCE7] flex flex-col">
+
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{common/layout/header :: nav}"></th:block>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1 flex flex-col items-center justify-center px-8 py-12">
+    <div class="w-full max-w-2xl text-center">
+
+      <!-- 아이콘 -->
+      <div class="mb-8 anim-zoom">
+        <div class="w-32 h-32 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+          <i data-lucide="check-circle" class="w-16 h-16 text-white"></i>
+        </div>
+      </div>
+
+      <!-- 타이틀 -->
+      <h1 class="text-4xl text-gray-800 mb-3 anim-slide">이미 보유한 상품이에요!</h1>
+      <p class="text-lg text-gray-600 mb-12 anim-slide delay-100">
+        이 상품은 이미 내 보관함에 있어요. 마이페이지에서 확인해보세요.
+      </p>
+
+      <!-- 상품 카드 (flash attribute로 전달된 경우에만 표시) -->
+      <div th:if="${product != null}"
+           class="bg-white/90 backdrop-blur rounded-3xl shadow-lg p-8 mb-8 anim-zoom delay-200">
+        <div class="flex items-center gap-6">
+          <div class="w-24 h-24 bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-2xl flex items-center justify-center text-5xl flex-shrink-0">
+            <span th:text="${product.image}">🌸</span>
+          </div>
+          <div class="flex-1 text-left">
+            <p class="text-sm text-gray-500 mb-1">보유 중인 상품</p>
+            <h2 class="text-2xl text-gray-800 mb-2" th:text="${product.name}">봄날의 벚꽃 핑크</h2>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>보유 완료</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 안내 메시지 카드 -->
+      <div class="bg-white/90 backdrop-blur rounded-3xl shadow-lg p-8 mb-8 anim-slide delay-200 text-left">
+        <div class="space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-white text-sm font-bold">✓</span>
+            </div>
+            <p class="text-gray-700">보유한 상품은 마이페이지 &gt; 내 보관함에서 확인할 수 있습니다</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-white text-sm font-bold">✓</span>
+            </div>
+            <p class="text-gray-700">같은 상품은 중복 구매할 수 없습니다</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-white text-sm font-bold">✓</span>
+            </div>
+            <p class="text-gray-700">포인트는 차감되지 않았습니다</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 액션 버튼 -->
+      <div class="flex gap-4 anim-slide delay-300">
+        <a th:href="@{/point-shop}" href="/point-shop"
+           class="flex-1 px-8 py-4 bg-white text-gray-800 text-lg rounded-2xl hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3">
+          <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+          <span>상점 둘러보기</span>
+        </a>
+        <a th:href="@{/mypage}" href="/mypage"
+           class="flex-1 px-8 py-4 bg-green-500 text-white text-lg rounded-2xl hover:bg-green-600 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3">
+          <i data-lucide="package" class="w-6 h-6"></i>
+          <span>내 보관함 보기</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      lucide.createIcons();
+    });
+  </script>
+  <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+</body>
+</html>

@@ -133,4 +133,9 @@ public class Account {
             this.acctAlias = accountAlias;
         }
     }
+
+    // 🔥 [추가됨] 비밀번호 변경을 위한 헬퍼 메서드
+    public void updatePassword(String newPasswordHash) {
+        this.passwordHash = newPasswordHash;
+    }
 }

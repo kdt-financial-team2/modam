@@ -103,13 +103,70 @@
 
             <div class="space-y-4">
 
-              <!-- 이모티콘 -->
+              <!-- 제목 -->
               <div>
-                <label for="emoticon" class="block text-sm text-[#6E5A55] font-medium mb-2">이모티콘</label>
-                <input type="text" id="emoticon" name="emoticon"
-                       th:value="${record?.emoticon}"
-                       placeholder="예: ☕ 🍝 🎬"
+                <label for="title" class="block text-sm text-[#6E5A55] font-medium mb-2">제목 *</label>
+                <input type="text" id="title" name="title"
+                       th:value="${record?.title}"
+                       placeholder="이 소비의 제목을 입력하세요"
+                       maxlength="100"
                        class="w-full px-4 py-3 bg-[#FFF7F5] border border-[#F5E6E0] rounded-[16px] focus:outline-none focus:border-[#D9B8AE] transition-colors text-[#6E5A55] placeholder-[#C4B5B0]" />
+              </div>
+
+              <!-- 이모티콘 피커 -->
+              <div>
+                <label class="block text-sm text-[#6E5A55] font-medium mb-2">이모티콘</label>
+
+                <!-- 선택된 이모티콘 미리보기 -->
+                <div class="flex items-center gap-3 mb-3">
+                  <div id="emojiPreview"
+                       class="w-14 h-14 rounded-2xl bg-[#FFF7F5] border-2 border-[#F5E6E0] flex items-center justify-center text-3xl transition-all">
+                    <span id="emojiPreviewText"
+                          th:text="${record?.emoticon != null ? record?.emoticon : ''}">
+                    </span>
+                    <i id="emojiPreviewPlaceholder"
+                       th:classappend="${record?.emoticon != null ? 'hidden' : ''}"
+                       data-lucide="smile" class="w-6 h-6 text-[#C4B5B0]"></i>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-xs text-[#A89089]" id="emojiHint">
+                      <span th:if="${record?.emoticon != null}" th:text="${record?.emoticon} + ' 선택됨'"></span>
+                      <span th:unless="${record?.emoticon != null}">아래에서 이모티콘을 선택하세요</span>
+                    </p>
+                    <button type="button" id="emojiClearBtn"
+                            th:classappend="${record?.emoticon != null ? '' : 'hidden'}"
+                            onclick="clearEmoji()"
+                            class="text-xs text-[#D9B8AE] hover:text-[#A89089] mt-1 transition-colors">
+                      선택 취소
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 보유 이모티콘 그리드 -->
+                <div th:if="${not #lists.isEmpty(ownedEmojis)}"
+                     class="grid grid-cols-6 gap-2 p-3 bg-[#FFF7F5] rounded-2xl border border-[#F5E6E0]">
+                  <button type="button"
+                          th:each="emoji : ${ownedEmojis}"
+                          th:text="${emoji}"
+                          th:attr="data-emoji=${emoji}"
+                          th:id="'emoji-btn-' + ${emoji}"
+                          th:classappend="${record?.emoticon == emoji} ? 'ring-2 ring-[#D9B8AE] bg-[#FCE8E3]' : 'bg-white hover:bg-[#FCE8E3]'"
+                          onclick="selectEmoji(this.dataset.emoji)"
+                          class="w-full aspect-square rounded-xl text-2xl flex items-center justify-center border border-[#F5E6E0] transition-all">
+                  </button>
+                </div>
+
+                <!-- 보유 이모티콘 없을 때 -->
+                <div th:if="${#lists.isEmpty(ownedEmojis)}"
+                     class="p-4 bg-[#FFF7F5] rounded-2xl border border-dashed border-[#F5E6E0] text-center">
+                  <p class="text-sm text-[#A89089] mb-2">보유한 이모티콘이 없어요</p>
+                  <a th:href="@{/point-shop}" class="text-xs text-[#D9B8AE] hover:text-[#A89089] underline transition-colors">
+                    포인트 샵에서 구매하기 →
+                  </a>
+                </div>
+
+                <!-- 실제 폼 전송 값 -->
+                <input type="hidden" id="emoticon" name="emoticon" th:value="${record?.emoticon}" />
               </div>
 
               <!-- 메모 -->
@@ -209,12 +266,55 @@
 
     /* ===== 폼 검증 ===== */
     function validateForm() {
+      const title = document.getElementById('title').value.trim();
+      if (!title) {
+        alert('제목을 입력해주세요.');
+        return false;
+      }
       const memo = document.getElementById('memo').value.trim();
       if (!memo) {
         alert('메모를 입력해주세요.');
         return false;
       }
       return true;
+    }
+
+    /* ===== 이모티콘 피커 ===== */
+    function selectEmoji(emoji) {
+      // 히든 인풋 값 세팅
+      document.getElementById('emoticon').value = emoji;
+
+      // 미리보기 갱신
+      const previewText = document.getElementById('emojiPreviewText');
+      const placeholder = document.getElementById('emojiPreviewPlaceholder');
+      previewText.textContent = emoji;
+      placeholder.classList.add('hidden');
+
+      // 힌트 + 선택 취소 버튼 표시
+      document.getElementById('emojiHint').textContent = emoji + ' 선택됨';
+      document.getElementById('emojiClearBtn').classList.remove('hidden');
+
+      // 버튼 활성화 스타일 갱신
+      document.querySelectorAll('[data-emoji]').forEach(btn => {
+        const isSelected = btn.dataset.emoji === emoji;
+        btn.classList.toggle('ring-2', isSelected);
+        btn.classList.toggle('ring-[#D9B8AE]', isSelected);
+        btn.classList.toggle('bg-[#FCE8E3]', isSelected);
+        btn.classList.toggle('bg-white', !isSelected);
+      });
+    }
+
+    function clearEmoji() {
+      document.getElementById('emoticon').value = '';
+      document.getElementById('emojiPreviewText').textContent = '';
+      document.getElementById('emojiPreviewPlaceholder').classList.remove('hidden');
+      document.getElementById('emojiHint').textContent = '아래에서 이모티콘을 선택하세요';
+      document.getElementById('emojiClearBtn').classList.add('hidden');
+
+      document.querySelectorAll('[data-emoji]').forEach(btn => {
+        btn.classList.remove('ring-2', 'ring-[#D9B8AE]', 'bg-[#FCE8E3]');
+        btn.classList.add('bg-white');
+      });
     }
 
     /* ===== 초기화 ===== */

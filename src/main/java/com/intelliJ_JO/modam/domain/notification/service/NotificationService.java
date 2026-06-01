@@ -45,8 +45,15 @@ public class NotificationService {
     }
 
     // 알림 저장 + SSE push — 트랜잭션 커밋 확정 후에만 SSE 발송
+    // 회원이 해당 유형 알림을 꺼둔 경우(notiDeposit/notiWithdrawal = 'N')에는 저장·발송 모두 건너뜀
     @Transactional
     public void send(Member member, NotificationType type, String message, String targetUrl) {
+        // 입금 알림 설정 확인
+        if (type == NotificationType.DEPOSIT && "N".equals(member.getNotiDeposit())) return;
+        // 출금·한도경고 알림 설정 확인 (LIMIT_WARNING도 출금 관련이므로 notiWithdrawal로 제어)
+        if ((type == NotificationType.WITHDRAW || type == NotificationType.LIMIT_WARNING)
+                && "N".equals(member.getNotiWithdrawal())) return;
+
         Notification notification = Notification.builder()
                 .member(member)
                 .notiType(type)

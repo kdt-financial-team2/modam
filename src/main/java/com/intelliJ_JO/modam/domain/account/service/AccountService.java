@@ -273,4 +273,19 @@ public class AccountService {
         groupAccount.updateBalance(-totalBalance);
         groupAccount.close();
     }
+
+    // 🔥 [추가됨] 계좌 비밀번호 변경 비즈니스 로직
+    @Transactional
+    public void updateAccountPassword(Long accountId, String currentPassword, String newPassword) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
+
+        // 기존 비밀번호가 맞는지 BCrypt 검증
+        if (!passwordEncoder.matches(currentPassword, account.getPasswordHash())) {
+            throw new IllegalArgumentException("기존 계좌 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 새 비밀번호 암호화 후 업데이트
+        account.updatePassword(passwordEncoder.encode(newPassword));
+    }
 }

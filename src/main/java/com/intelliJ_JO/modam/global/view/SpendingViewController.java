@@ -15,6 +15,8 @@ import com.intelliJ_JO.modam.domain.spendrecord.dto.ConsumptionDetailDto;
 import com.intelliJ_JO.modam.domain.spendrecord.dto.ConsumptionHistoryItemDto;
 import com.intelliJ_JO.modam.domain.spendrecord.entity.SpendRecord;
 import com.intelliJ_JO.modam.domain.spendrecord.repository.SpendRecordRepository;
+import com.intelliJ_JO.modam.domain.inventory.repository.InventoryRepository;
+import com.intelliJ_JO.modam.domain.spendrecord.service.FavoriteService;
 import com.intelliJ_JO.modam.domain.spendrecord.service.SpendRecordService;
 import com.intelliJ_JO.modam.domain.transaction.dto.TransactionResponseDto;
 import com.intelliJ_JO.modam.domain.transaction.repository.TransactionRepository;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +53,8 @@ public class SpendingViewController {
     private final CommentService commentService;
     private final SpendRecordRepository spendRecordRepository;
     private final SpendRecordService spendRecordService;
+    private final FavoriteService favoriteService;
+    private final InventoryRepository inventoryRepository;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy.MM.dd");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
@@ -66,21 +71,24 @@ public class SpendingViewController {
         model.addAttribute("myName", member.getName());
         model.addAttribute("myProfileImg", member.getProfileImg());
 
-        Account account = getGroupAccount(member.getId());
-        if (account == null) {
-            // 커플 프로필 기본값
+        // 파트너 연결 여부 확인 — 미연결 시 잠금 화면 렌더
+        boolean partnerConnected = isPartnerConnected(member.getId());
+        model.addAttribute("partnerConnected", partnerConnected);
+
+        if (!partnerConnected) {
             model.addAttribute("partnerName", "");
             model.addAttribute("partnerProfileImg", null);
-            model.addAttribute("daysTogether", 0L);
-            model.addAttribute("coupleStartDate", "");
             model.addAttribute("coupleAcctAlias", "");
             model.addAttribute("records", List.of());
             model.addAttribute("storyRecords", List.of());
             model.addAttribute("totalAmount", 0L);
             model.addAttribute("writtenCount", 0L);
+            model.addAttribute("favoriteCount", 0L);
             model.addAttribute("totalCount", 0);
             return "domain/spendrecord/consumption-history";
         }
+
+        Account account = getGroupAccount(member.getId());
 
         // 파트너 정보
         AccountMember partnerMembership = accountMemberRepository.findByAccountId(account.getId()).stream()
@@ -116,6 +124,9 @@ public class SpendingViewController {
                 .stream()
                 .collect(Collectors.toMap(r -> r.getTransaction().getId(), r -> r, (a, b) -> a));
 
+        // 현재 회원의 즐겨찾기 SpendRecord id 집합
+        java.util.Set<Long> favIds = favoriteService.getFavoriteRecordIds(member.getId());
+
         List<ConsumptionHistoryItemDto> records = txList.stream()
                 .map(tx -> {
                     SpendRecord record = recordMap.get(tx.getTransactionId());
@@ -127,6 +138,7 @@ public class SpendingViewController {
                             .date(tx.getDate())
                             .time(tx.getTime())
                             .place(tx.getMerchant() != null ? tx.getMerchant() : tx.getCategory())
+                            .title(record != null ? record.getTitle() : null)
                             .memo(record != null ? record.getMemo() : null)
                             .iconName(tx.getIconName())
                             .emoticon(record != null ? record.getEmoticon() : null)
@@ -138,29 +150,42 @@ public class SpendingViewController {
                             .hasRecord(record != null)
                             .commentCount(0)
                             .amount(tx.getAmount())
+                            .favorited(record != null && favIds.contains(record.getId()))
+                            .createdAt(record != null ? record.getCreatedAt() : null)
                             .build();
                 })
                 .collect(Collectors.toList());
 
-        long totalAmount  = records.stream().mapToLong(ConsumptionHistoryItemDto::getAmount).sum();
-        long writtenCount = records.stream().filter(ConsumptionHistoryItemDto::isHasRecord).count();
+        long totalAmount    = records.stream().mapToLong(ConsumptionHistoryItemDto::getAmount).sum();
+        long writtenCount   = records.stream().filter(ConsumptionHistoryItemDto::isHasRecord).count();
+        // 현재 회원이 즐겨찾기한 스토리 수
+        long favoriteCount  = records.stream().filter(ConsumptionHistoryItemDto::isFavorited).count();
 
-        // 스토리가 있는 기록만 그리드용으로 분리
+        // 스토리가 있는 기록만 그리드용 분리 — 작성일 내림차순 정렬
         List<ConsumptionHistoryItemDto> storyRecords = records.stream()
                 .filter(ConsumptionHistoryItemDto::isHasRecord)
+                .sorted(Comparator.comparing(ConsumptionHistoryItemDto::getCreatedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
 
         model.addAttribute("records", records);
         model.addAttribute("storyRecords", storyRecords);
         model.addAttribute("totalAmount", totalAmount);
         model.addAttribute("writtenCount", writtenCount);
+        model.addAttribute("favoriteCount", favoriteCount);
         model.addAttribute("totalCount", records.size());
+        model.addAttribute("partnerConnected", true);
         return "domain/spendrecord/consumption-history";
     }
 
     // ===== 소비 내역 선택 =====
     @GetMapping("/consumption-select")
     public String consumptionSelect(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        // 파트너 미연결 시 소비 스토리 기능 차단
+        if (!isPartnerConnected(userDetails.getMember().getId())) {
+            return "redirect:/consumption-history";
+        }
+
         dashboardService.populateHeader(userDetails.getMember(), model);
         model.addAttribute("currentPage", "story");
 
@@ -187,7 +212,7 @@ public class SpendingViewController {
     @ResponseBody
     public List<ConsumptionHistoryItemDto> consumptionSelectMore(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(required = false) Long lastTxId) {
+            @RequestParam(value = "lastTxId", required = false) Long lastTxId) {
         Account account = getGroupAccount(userDetails.getMember().getId());
         if (account == null) return List.of();
         return buildSelectItems(account.getId(), lastTxId, 20);
@@ -227,8 +252,13 @@ public class SpendingViewController {
     @GetMapping("/consumption-upload")
     public String consumptionUploadForm(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(required = false) Long txId,
+            @RequestParam(value = "txId", required = false) Long txId,
             Model model) {
+
+        // 파트너 미연결 시 소비 스토리 기능 차단
+        if (!isPartnerConnected(userDetails.getMember().getId())) {
+            return "redirect:/consumption-history";
+        }
 
         if (txId == null) {
             return "redirect:/consumption-select";
@@ -248,6 +278,14 @@ public class SpendingViewController {
                     model.addAttribute("record", record));
         });
 
+        // 보유 이모티콘 목록 (포인트 샵에서 구매한 것만)
+        List<String> ownedEmojis = inventoryRepository
+                .findEmojiItemsByMemberId(userDetails.getMember().getId())
+                .stream()
+                .map(inv -> inv.getItem().getImage())
+                .collect(Collectors.toList());
+        model.addAttribute("ownedEmojis", ownedEmojis);
+
         return "domain/spendrecord/consumption-upload";
     }
 
@@ -255,12 +293,16 @@ public class SpendingViewController {
     @PostMapping("/consumption-upload")
     public String consumptionUploadSubmit(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(required = false) Long transactionId,
-            @RequestParam(required = false) String memo,
-            @RequestParam(required = false) String emoticon,
-            @RequestParam(required = false) String imageUrl,
+            @RequestParam(value = "transactionId", required = false) Long transactionId,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "memo", required = false) String memo,
+            @RequestParam(value = "emoticon", required = false) String emoticon,
+            @RequestParam(value = "imageUrl", required = false) String imageUrl,
             Model model) {
 
+        if (userDetails == null) {
+            return "redirect:/login";
+        }
         if (transactionId == null) {
             return "redirect:/consumption-history";
         }
@@ -269,11 +311,12 @@ public class SpendingViewController {
         try {
             // 기존 기록 있으면 수정, 없으면 생성
             spendRecordRepository.findByTransactionId(transactionId).ifPresentOrElse(
-                    record -> record.updateRecord(imageUrl, memo, emoticon),
+                    record -> record.updateRecord(imageUrl, title, memo, emoticon),
                     () -> {
                         com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto req =
                                 new com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto();
                         req.setTransactionId(transactionId);
+                        req.setTitle(title);
                         req.setMemo(memo);
                         req.setEmoticon(emoticon);
                         req.setImageUrl(imageUrl);
@@ -292,15 +335,24 @@ public class SpendingViewController {
     @GetMapping("/consumption-detail/{id}")
     public String consumptionDetail(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             Model model) {
+        // 파트너 미연결 시 소비 스토리 기능 차단
+        if (!isPartnerConnected(userDetails.getMember().getId())) {
+            return "redirect:/consumption-history";
+        }
+
         dashboardService.populateHeader(userDetails.getMember(), model);
         model.addAttribute("currentPage", "story");
         SpendRecord record = spendRecordService.getSpendRecordEntityById(id);
         var tx = record.getTransaction();
 
+        boolean liked = favoriteService.getFavoriteRecordIds(userDetails.getMember().getId())
+                .contains(record.getId());
+
         ConsumptionDetailDto consumption = ConsumptionDetailDto.builder()
                 .id(record.getId())
+                .transactionId(tx.getId())
                 .title(tx.getMerchantName() != null ? tx.getMerchantName() : tx.getCategory())
                 .place(tx.getMerchantName() != null ? tx.getMerchantName() : tx.getCategory())
                 .date(tx.getCreatedAt().format(DATE_FMT))
@@ -320,14 +372,14 @@ public class SpendingViewController {
 
         model.addAttribute("consumption", consumption);
         model.addAttribute("comments", comments);
-        model.addAttribute("liked", false);
+        model.addAttribute("liked", liked);
         model.addAttribute("currentUsername", userDetails.getMember().getName());
         return "domain/spendrecord/consumption-detail";
     }
 
     // ===== 좋아요 (스텁) =====
     @PostMapping("/consumption-detail/{id}/like")
-    public String consumptionLike(@PathVariable Long id) {
+    public String consumptionLike(@PathVariable("id") Long id) {
         return "redirect:/consumption-detail/" + id;
     }
 
@@ -381,6 +433,15 @@ public class SpendingViewController {
                 .orElse(null);
     }
 
+    // 파트너가 수락된 상태인지 확인 (소비 스토리 기능 잠금 용도)
+    private boolean isPartnerConnected(Long memberId) {
+        Account account = getGroupAccount(memberId);
+        if (account == null) return false;
+        return accountMemberRepository.findByAccountId(account.getId()).stream()
+                .anyMatch(am -> !am.getMember().getId().equals(memberId)
+                        && am.getInviteStatus() == InviteStatus.ACCEPT);
+    }
+
     private void populateTransactionData(CustomUserDetails userDetails, Model model) {
         try {
             Account account = getGroupAccount(userDetails.getMember().getId());
@@ -394,9 +455,9 @@ public class SpendingViewController {
                 return;
             }
 
-            Long memberId = userDetails.getMember().getId();
+            // 🔥 [수정됨] 레거시 메서드 대신 표준 getTransactions(accountId) 호출로 100% 오류 해결
             List<TransactionResponseDto> transactions =
-                    transactionService.getTransactionsByMember(memberId, null, 500);
+                    transactionService.getTransactions(account.getId(), null, 500);
 
             Map<String, List<TransactionResponseDto>> groupedTransactions = transactions.stream()
                     .collect(Collectors.groupingBy(

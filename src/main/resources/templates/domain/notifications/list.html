@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>알림 전체 보기 - 모담</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col">
+
+<th:block th:replace="~{common/layout/header :: nav}"></th:block>
+
+<main class="flex-1 max-w-3xl w-full mx-auto px-4 py-10">
+
+    <!-- 페이지 헤더 -->
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">전체 알림</h1>
+        <!-- 미읽음이 있을 때만 전체 읽음 버튼 표시 -->
+        <button th:if="${unreadCount > 0}"
+                onclick="markAllReadPage()"
+                class="text-sm font-medium text-[#F5A5A5] hover:text-[#F28B8B] transition-colors">
+            전체 읽음 처리
+        </button>
+    </div>
+
+    <!-- 알림 목록 -->
+    <div id="notiList" class="space-y-2">
+
+        <!-- 알림이 있을 때 -->
+        <th:block th:if="${notifications != null and !notifications.empty}">
+            <div th:each="noti : ${notifications}"
+                 th:id="'noti-' + ${noti.id}"
+                 th:onclick="${noti.targetUrl != null and !noti.targetUrl.empty}
+                             ? 'markReadAndGo(this, \'' + ${noti.targetUrl} + '\')'
+                             : 'markReadItem(this)'"
+                 th:classappend="${noti.isRead == 'N'} ? 'bg-[#FFF7F5] border-l-4 border-[#F5A5A5]' : 'bg-white'"
+                 class="flex items-start gap-4 p-5 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+
+                <!-- 아이콘 -->
+                <div class="w-12 h-12 bg-[#FCE8E3] rounded-full flex items-center justify-center flex-shrink-0">
+                    <i th:if="${noti.notiType.name() == 'DEPOSIT'}"
+                       data-lucide="arrow-down-circle" class="w-6 h-6 text-green-500"></i>
+                    <i th:if="${noti.notiType.name() == 'WITHDRAW'}"
+                       data-lucide="arrow-up-circle" class="w-6 h-6 text-red-400"></i>
+                    <i th:if="${noti.notiType.name() == 'LIMIT_WARNING'}"
+                       data-lucide="alert-triangle" class="w-6 h-6 text-yellow-500"></i>
+                    <i th:if="${noti.notiType.name() == 'INVITE'}"
+                       data-lucide="heart-handshake" class="w-6 h-6 text-[#F5A5A5]"></i>
+                    <i th:if="${noti.notiType.name() == 'SAVINGS_GOAL'}"
+                       data-lucide="trophy" class="w-6 h-6 text-amber-500"></i>
+                    <i th:if="${noti.notiType.name() == 'STORY_CREATED'}"
+                       data-lucide="book-open" class="w-6 h-6 text-blue-400"></i>
+                    <i th:if="${noti.notiType.name() == 'FAVORITE'}"
+                       data-lucide="heart" class="w-6 h-6 text-[#F5A5A5]"></i>
+                    <i th:if="${noti.notiType.name() == 'POINT_SPEND'}"
+                       data-lucide="gift" class="w-6 h-6 text-purple-400"></i>
+                </div>
+
+                <!-- 내용 -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <!-- 미읽음 점 표시 -->
+                        <span th:if="${noti.isRead == 'N'}"
+                              class="w-2 h-2 bg-[#F5A5A5] rounded-full flex-shrink-0"></span>
+                        <p class="text-sm font-semibold text-gray-800"
+                           th:text="${noti.notiType.name() == 'DEPOSIT' ? '입금 알림' :
+                                      noti.notiType.name() == 'WITHDRAW' ? '출금 알림' :
+                                      noti.notiType.name() == 'LIMIT_WARNING' ? '예산 경고' :
+                                      noti.notiType.name() == 'INVITE' ? '파트너 초대' :
+                                      noti.notiType.name() == 'SAVINGS_GOAL' ? '저축 달성' :
+                                      noti.notiType.name() == 'STORY_CREATED' ? '새 소비 스토리' :
+                                      noti.notiType.name() == 'FAVORITE' ? '즐겨찾기' : '포인트 사용'}">
+                        </p>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2" th:text="${noti.message}"></p>
+                    <p class="text-xs text-gray-400"
+                       th:text="${#temporals.format(noti.createdAt, 'yyyy.MM.dd HH:mm')}"></p>
+                </div>
+            </div>
+        </th:block>
+
+        <!-- 알림이 없을 때 -->
+        <div th:if="${notifications == null or notifications.empty}"
+             class="text-center py-20">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="bell-off" class="w-10 h-10 text-gray-300"></i>
+            </div>
+            <p class="text-gray-400 text-base">받은 알림이 없습니다</p>
+        </div>
+
+    </div>
+</main>
+
+<th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+
+    // CSRF 토큰 쿠키에서 추출
+    function getCsrfToken() {
+        return document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || '';
+    }
+
+    // 단건 읽음 처리 (이동 없음)
+    function markReadItem(el) {
+        const notiId = el.id.replace('noti-', '');
+        fetch(`/api/notifications/${notiId}/read`, {
+            method: 'PATCH',
+            headers: { 'X-CSRF-TOKEN': getCsrfToken() }
+        }).then(() => applyReadStyle(el));
+    }
+
+    // 단건 읽음 처리 후 targetUrl로 이동
+    function markReadAndGo(el, url) {
+        const notiId = el.id.replace('noti-', '');
+        fetch(`/api/notifications/${notiId}/read`, {
+            method: 'PATCH',
+            headers: { 'X-CSRF-TOKEN': getCsrfToken() }
+        }).then(() => {
+            applyReadStyle(el);
+            if (url) window.location.href = url;
+        });
+    }
+
+    // 전체 읽음 처리
+    function markAllReadPage() {
+        fetch('/api/notifications/read-all', {
+            method: 'PATCH',
+            headers: { 'X-CSRF-TOKEN': getCsrfToken() }
+        }).then(() => {
+            document.querySelectorAll('[id^="noti-"]').forEach(el => applyReadStyle(el));
+            // 전체 읽음 버튼 숨김
+            const btn = document.querySelector('button[onclick="markAllReadPage()"]');
+            if (btn) btn.classList.add('hidden');
+        });
+    }
+
+    // 읽음 UI 스타일 적용
+    function applyReadStyle(el) {
+        el.classList.remove('bg-[#FFF7F5]', 'border-l-4', 'border-[#F5A5A5]');
+        el.classList.add('bg-white');
+        const dot = el.querySelector('.w-2.h-2.bg-\\[\\#F5A5A5\\]');
+        if (dot) dot.remove();
+    }
+</script>
+
+<th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+</body>
+</html>

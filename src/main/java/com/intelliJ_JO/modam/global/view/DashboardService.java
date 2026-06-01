@@ -87,10 +87,11 @@ public class DashboardService {
         LocalDateTime monthEnd   = monthStart.plusMonths(1);
         List<TransactionType> spendTypes = List.of(TransactionType.PAYMENT, TransactionType.WITHDRAW);
 
-        // 3. 이번 달 총 지출
+        // 3. 이번 달 총 지출 (현재 월 번호도 함께 전달해 레이블을 동적으로 표시)
         long totalExpense = transactionRepository
                 .sumSpendByAccountAndPeriod(accountId, spendTypes, monthStart, monthEnd);
         model.addAttribute("totalExpense", totalExpense);
+        model.addAttribute("currentMonth", now.getMonthValue());
 
         // 4. 카테고리별 지출 (도넛 차트)
         List<Object[]> categoryRows = transactionRepository
@@ -235,6 +236,9 @@ public class DashboardService {
             case LIMIT_WARNING -> "예산 경고";
             case INVITE        -> "파트너 초대";
             case SAVINGS_GOAL  -> "저축 달성";
+            case STORY_CREATED -> "새 소비 스토리";
+            case FAVORITE      -> "즐겨찾기";
+            case POINT_SPEND   -> "포인트 사용";
         };
     }
 
@@ -245,6 +249,9 @@ public class DashboardService {
             case LIMIT_WARNING -> "alert-triangle";
             case INVITE        -> "heart-handshake";
             case SAVINGS_GOAL  -> "trophy";
+            case STORY_CREATED -> "book-open";
+            case FAVORITE      -> "heart";
+            case POINT_SPEND   -> "gift";
         };
     }
 
@@ -263,6 +270,7 @@ public class DashboardService {
         model.addAttribute("accountBalance",     0);
         model.addAttribute("groupAccountNumber", "");
         model.addAttribute("totalExpense",      0);
+        model.addAttribute("currentMonth",      LocalDate.now().getMonthValue());
         model.addAttribute("balanceData",       List.of());
         model.addAttribute("recentTransactions",List.of());
         model.addAttribute("hasSavingsGoal", false);
