@@ -35,9 +35,9 @@ public class SpendRecordService {
         Transaction transaction = transactionRepository.findById(request.getTransactionId())
                 .orElseThrow(() -> new IllegalArgumentException("거래 내역을 찾을 수 없습니다."));
 
-        if (!transaction.getMember().getId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 거래에만 소비 기록을 생성할 수 있습니다.");
-        }
+        accountMemberRepository.findByAccountIdAndMemberId(transaction.getAccount().getId(), memberId)
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .orElseThrow(() -> new IllegalArgumentException("해당 계좌의 멤버만 소비 기록을 생성할 수 있습니다."));
 
         if (spendRecordRepository.existsByTransactionId(request.getTransactionId())) {
             throw new IllegalStateException("이미 해당 거래에 소비 기록이 존재합니다.");
@@ -61,7 +61,6 @@ public class SpendRecordService {
 
         accountMemberRepository.findByAccountId(transaction.getAccount().getId()).stream()
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
-                .filter(am -> !am.getMember().getId().equals(memberId))
                 .forEach(am -> notificationService.send(
                         am.getMember(), NotificationType.STORY_CREATED, msg, "/consumption-history"));
 

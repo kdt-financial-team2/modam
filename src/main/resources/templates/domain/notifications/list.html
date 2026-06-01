@@ -31,9 +31,8 @@
         <th:block th:if="${notifications != null and !notifications.empty}">
             <div th:each="noti : ${notifications}"
                  th:id="'noti-' + ${noti.id}"
-                 th:onclick="${noti.targetUrl != null and !noti.targetUrl.empty}
-                             ? 'markReadAndGo(this, \'' + ${noti.targetUrl} + '\')'
-                             : 'markReadItem(this)'"
+                 th:data-target-url="${noti.targetUrl}"
+                 onclick="handleNotiClick(this)"
                  th:classappend="${noti.isRead == 'N'} ? 'bg-[#FFF7F5] border-l-4 border-[#F5A5A5]' : 'bg-white'"
                  class="flex items-start gap-4 p-5 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow">
 
@@ -100,6 +99,16 @@
     // CSRF 토큰 쿠키에서 추출
     function getCsrfToken() {
         return document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || '';
+    }
+
+    // 클릭 핸들러: targetUrl 유무에 따라 분기
+    function handleNotiClick(el) {
+        const url = el.dataset.targetUrl;
+        if (url) {
+            markReadAndGo(el, url);
+        } else {
+            markReadItem(el);
+        }
     }
 
     // 단건 읽음 처리 (이동 없음)

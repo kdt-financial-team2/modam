@@ -17,43 +17,43 @@
     <div class="w-full max-w-[1440px] mx-auto px-8 flex flex-col flex-1 overflow-hidden">
 
       <!-- ===== 고정 상단: 페이지 헤더 + 포인트 카드 + 메인 탭 ===== -->
-      <div class="flex-shrink-0 pt-12 pb-0">
+      <div class="flex-shrink-0 pt-6 pb-0">
 
         <!-- 페이지 헤더 -->
-        <div class="mb-8">
-          <h1 class="text-4xl font-bold text-gray-900 mb-3">포인트 상점</h1>
-          <p class="text-gray-600 text-lg">모은 포인트로 다양한 상품을 구매하세요</p>
+        <div class="mb-4">
+          <h1 class="text-2xl font-bold text-gray-900 mb-1">포인트 상점</h1>
+          <p class="text-gray-600 text-sm">모은 포인트로 다양한 상품을 구매하세요</p>
         </div>
 
         <!-- 포인트 카드 -->
-        <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-3xl border border-gray-100 shadow-sm p-8 mb-6">
+        <div class="bg-gradient-to-r from-[#FCE8E3] to-[#FFE4E8] rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                <i data-lucide="gift" class="w-8 h-8 text-[#F5A5A5]"></i>
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 bg-white rounded-full flex items-center justify-center">
+                <i data-lucide="gift" class="w-5 h-5 text-[#F5A5A5]"></i>
               </div>
               <div>
-                <p class="text-gray-600 mb-1">내 포인트</p>
-                <p class="text-4xl text-gray-800">
+                <p class="text-gray-600 text-xs mb-0.5">내 포인트</p>
+                <p class="text-2xl text-gray-800">
                   <span id="pointDisplay" th:text="${#numbers.formatInteger(couplePoints, 0, 'COMMA')}">12,450</span>P
                 </p>
               </div>
             </div>
             <a th:href="@{/savings}" href="/savings"
-               class="px-6 py-3 bg-white text-gray-800 rounded-2xl hover:bg-gray-50 transition-colors">
+               class="px-4 py-2 bg-white text-gray-800 text-sm rounded-xl hover:bg-gray-50 transition-colors">
               포인트 적립하기
             </a>
           </div>
         </div>
 
         <!-- 메인 탭 (상품 / 내역) -->
-        <div class="flex gap-4 mb-4">
+        <div class="flex gap-3 mb-3">
           <button id="tabProducts" onclick="switchMainTab('products')"
-                  class="px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]">
+                  class="px-5 py-2 rounded-xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]">
             상품
           </button>
           <button id="tabHistory" onclick="switchMainTab('history')"
-                  class="px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent">
+                  class="px-5 py-2 rounded-xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent">
             내역
           </button>
         </div>
@@ -66,29 +66,29 @@
       <!-- ===== 상품 탭 콘텐츠 ===== -->
       <div id="productsSection">
         <!-- 카테고리 탭 -->
-        <div class="flex gap-4 mb-8">
+        <div class="flex gap-3 mb-4">
           <button id="catAll" onclick="switchCategory('all')"
-                  class="px-6 py-3 rounded-2xl transition-colors bg-[#F5A5A5] text-white shadow-md">전체</button>
+                  class="px-4 py-2 text-sm rounded-xl transition-colors bg-[#F5A5A5] text-white shadow-md">전체</button>
           <button id="catTheme" onclick="switchCategory('theme')"
-                  class="px-6 py-3 rounded-2xl transition-colors bg-white text-gray-600 hover:bg-gray-50">테마</button>
+                  class="px-4 py-2 text-sm rounded-xl transition-colors bg-white text-gray-600 hover:bg-gray-50">테마</button>
           <button id="catEmoticon" onclick="switchCategory('emoticon')"
-                  class="px-6 py-3 rounded-2xl transition-colors bg-white text-gray-600 hover:bg-gray-50">이모티콘</button>
+                  class="px-4 py-2 text-sm rounded-xl transition-colors bg-white text-gray-600 hover:bg-gray-50">이모티콘</button>
         </div>
 
         <!-- 상품 그리드 (서버 렌더링) -->
-        <div id="productsGrid" class="grid grid-cols-4 gap-6 mb-8">
+        <div id="productsGrid" class="grid grid-cols-4 gap-4 mb-6">
           <!-- Thymeleaf 서버 렌더링 -->
           <a th:each="product : ${products}"
              th:href="@{/point-shop/product/{id}(id=${product.id})}"
              href="/point-shop/product/1"
-             class="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all overflow-hidden group block server-product-card"
+             class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden group block server-product-card"
              th:attr="data-category=${product.category}">
-            <div class="aspect-square bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] flex items-center justify-center text-8xl group-hover:scale-110 transition-transform">
+            <div class="aspect-square bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] flex items-center justify-center text-5xl group-hover:scale-110 transition-transform">
               <span th:text="${product.image}">🌸</span>
             </div>
-            <div class="p-5">
-              <h3 class="text-lg text-gray-800 mb-2" th:text="${product.name}">봄날의 벚꽃 핑크</h3>
-              <p class="text-2xl text-[#F5A5A5]">
+            <div class="p-3">
+              <h3 class="text-sm text-gray-800 mb-1" th:text="${product.name}">봄날의 벚꽃 핑크</h3>
+              <p class="text-base font-semibold text-[#F5A5A5]">
                 <span th:text="${#numbers.formatInteger(product.pointCost, 0, 'COMMA')}">1,500</span>P
               </p>
             </div>
@@ -204,11 +204,11 @@
       const isProducts = tab === 'products';
 
       document.getElementById('tabProducts').className = isProducts
-        ? 'px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]'
-        : 'px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent';
+        ? 'px-5 py-2 rounded-xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]'
+        : 'px-5 py-2 rounded-xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent';
       document.getElementById('tabHistory').className = !isProducts
-        ? 'px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]'
-        : 'px-8 py-4 rounded-2xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent';
+        ? 'px-5 py-2 rounded-xl transition-all font-medium bg-white text-gray-900 shadow-md border-2 border-[#F5A5A5]'
+        : 'px-5 py-2 rounded-xl transition-all font-medium bg-white text-gray-600 hover:bg-gray-50 border-2 border-transparent';
 
       document.getElementById('productsSection').classList.toggle('hidden', !isProducts);
       document.getElementById('historySection').classList.toggle('hidden', isProducts);
@@ -226,8 +226,8 @@
       ['all','theme','emoticon'].forEach(c => {
         const btn = document.getElementById('cat' + c.charAt(0).toUpperCase() + c.slice(1));
         btn.className = c === cat
-          ? 'px-6 py-3 rounded-2xl transition-colors bg-[#F5A5A5] text-white shadow-md'
-          : 'px-6 py-3 rounded-2xl transition-colors bg-white text-gray-600 hover:bg-gray-50';
+          ? 'px-4 py-2 text-sm rounded-xl transition-colors bg-[#F5A5A5] text-white shadow-md'
+          : 'px-4 py-2 text-sm rounded-xl transition-colors bg-white text-gray-600 hover:bg-gray-50';
       });
       renderProducts();
     }
@@ -244,13 +244,13 @@
 
       document.getElementById('productsGrid').innerHTML = slice.map(p => `
         <a href="/point-shop/product/${p.id}"
-           class="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all overflow-hidden group block">
-          <div class="aspect-square bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] flex items-center justify-center text-8xl group-hover:scale-110 transition-transform">
+           class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden group block">
+          <div class="aspect-square bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] flex items-center justify-center text-5xl group-hover:scale-110 transition-transform">
             ${p.image}
           </div>
-          <div class="p-5">
-            <h3 class="text-lg text-gray-800 mb-2">${p.name}</h3>
-            <p class="text-2xl text-[#F5A5A5]">${p.pointCost.toLocaleString()}P</p>
+          <div class="p-3">
+            <h3 class="text-sm text-gray-800 mb-1">${p.name}</h3>
+            <p class="text-base font-semibold text-[#F5A5A5]">${p.pointCost.toLocaleString()}P</p>
           </div>
         </a>
       `).join('');

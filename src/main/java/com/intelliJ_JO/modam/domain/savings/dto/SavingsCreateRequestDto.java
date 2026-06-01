@@ -18,6 +18,8 @@ public class SavingsCreateRequestDto {
     @NotNull(message = "계좌 ID는 필수입니다.")
     private Long accountId;
 
+    private Long memberId;
+
     // 🔥 [추가됨] 목표 이름 바인딩
     @NotBlank(message = "목표 이름을 입력해주세요.")
     private String goalName;
