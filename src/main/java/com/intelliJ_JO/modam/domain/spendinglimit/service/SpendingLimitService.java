@@ -1,6 +1,8 @@
 package com.intelliJ_JO.modam.domain.spendinglimit.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
+import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
@@ -35,7 +37,10 @@ public class SpendingLimitService {
     // =========================
     public List<SpendingLimitDto> getSpendingLimits(Long memberId) {
         Account account = accountMemberRepository
-                .findFirstByMemberId(memberId)
+                .findByMemberId(memberId).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
+                .findFirst()
                 .map(am -> am.getAccount())
                 .orElse(null);
 
@@ -114,7 +119,10 @@ public class SpendingLimitService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         Account account = accountMemberRepository
-                .findFirstByMemberId(memberId)
+                .findByMemberId(memberId).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
+                .findFirst()
                 .map(am -> am.getAccount())
                 .orElseThrow(() -> new IllegalArgumentException("연결된 커플 통장이 없습니다."));
 
@@ -179,7 +187,10 @@ public class SpendingLimitService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         Account account = accountMemberRepository
-                .findFirstByMemberId(memberId)
+                .findByMemberId(memberId).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
+                .findFirst()
                 .map(am -> am.getAccount())
                 .orElseThrow(() -> new IllegalArgumentException("연결된 커플 통장이 없습니다."));
         // 카테고리 미선택 시 전체 카테고리에 적용

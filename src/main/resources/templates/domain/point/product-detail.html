@@ -90,8 +90,14 @@
           </div>
 
           <!-- 구매 버튼 -->
+          <!-- 이미 보유한 경우 -->
+          <div th:if="${alreadyOwned}"
+               class="w-full py-4 rounded-2xl text-lg bg-green-50 text-green-600 border-2 border-green-200 flex items-center justify-center gap-2">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span>이미 보유한 상품입니다</span>
+          </div>
           <!-- 포인트 충분 -->
-          <a th:if="${couplePoints >= product.pointCost}"
+          <a th:if="${!alreadyOwned and couplePoints >= product.pointCost}"
              th:href="@{/point-shop/purchase/{id}(id=${product.id})}"
              href="/point-shop/purchase/1"
              id="purchaseBtn"
@@ -100,7 +106,7 @@
             <span>구매하기</span>
           </a>
           <!-- 포인트 부족 -->
-          <button th:unless="${couplePoints >= product.pointCost}"
+          <button th:if="${!alreadyOwned and couplePoints < product.pointCost}"
                   id="purchaseBtnDisabled"
                   disabled
                   class="w-full py-4 rounded-2xl text-lg bg-gray-200 text-gray-400 cursor-not-allowed flex items-center justify-center gap-2">

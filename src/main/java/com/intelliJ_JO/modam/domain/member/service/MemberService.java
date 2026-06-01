@@ -160,6 +160,21 @@ public class MemberService {
         member.updateInfo(null, passwordEncoder.encode(newPassword), null, null, null, null, null, null, null, null, null, null);
     }
 
+    public boolean checkUserIdAvailable(String userId) {
+        return !memberRepository.existsByUserId(userId);
+    }
+
+    public boolean checkAccountAvailable(String accountNumber) {
+        return !memberRepository.existsByPersAcctNo(accountNumber);
+    }
+
+    // 🔥 [추가] 탈퇴 전용 비밀번호 검증 헬퍼
+    public boolean verifyPassword(Long memberId, String rawPassword) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        return passwordEncoder.matches(rawPassword, member.getPwHash());
+    }
+
     // ====================================================================
     // 조장님 작업분 (아이디/비밀번호 찾기) 유지
     // ====================================================================

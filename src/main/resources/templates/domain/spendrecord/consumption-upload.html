@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>소비 기록하기 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen flex flex-col" style="background: linear-gradient(135deg, #FFF7F5 0%, #FCF3F0 100%)">
+
+  <!-- 배경 장식 -->
+  <div class="fixed top-20 right-20 w-96 h-96 bg-gradient-to-br from-[#FCE8E3]/20 to-[#F5E6E0]/20 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed bottom-20 left-20 w-80 h-80 bg-gradient-to-br from-[#D9B8AE]/10 to-[#FCE8E3]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- ===== 헤더 ===== -->
+  <th:block th:replace="~{common/layout/header-dashboard :: nav}"></th:block>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="flex-1 relative z-10">
+    <div class="max-w-[1200px] mx-auto px-8 py-12 w-full">
+
+      <!-- 페이지 제목 -->
+      <div class="text-center mb-12">
+        <h1 class="text-4xl text-[#6E5A55] font-semibold mb-3">소중한 순간을 기록하세요</h1>
+        <p class="text-[#A89089] text-lg">오늘의 소비와 추억을 담아보세요</p>
+      </div>
+
+      <!-- 폼 -->
+      <form th:action="@{/consumption-upload}" action="/consumption-upload" method="post"
+            onsubmit="return validateForm()">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <input type="hidden" name="transactionId" th:value="${txId}" />
+        <input type="hidden" name="imageUrl" id="imageUrlInput" th:value="${record?.imageUrl}" />
+
+        <!-- 거래 정보 표시 (txId가 있을 때) -->
+        <div th:if="${txId != null}" class="bg-white/80 backdrop-blur-sm rounded-[20px] p-6 mb-8 shadow-sm" style="border: 1px solid #F5E6E0">
+          <h3 class="text-sm text-[#A89089] font-medium mb-3">연결된 소비 내역</h3>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-lg text-[#6E5A55] font-semibold" th:text="${txPlace}">장소</p>
+              <p class="text-sm text-[#A89089]">
+                <span th:text="${txDate}">날짜</span>
+                <span class="mx-2">·</span>
+                <span th:text="${txCategory}">카테고리</span>
+              </p>
+            </div>
+            <p class="text-2xl text-[#6E5A55] font-bold">
+              -₩<span th:text="${#numbers.formatInteger(txAmount, 0, 'COMMA')}">0</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- 2열 레이아웃 -->
+        <div class="grid grid-cols-2 gap-8 mb-8">
+
+          <!-- 왼쪽: 사진 업로드 -->
+          <div class="bg-white/80 backdrop-blur-sm rounded-[28px] shadow-lg p-8" style="border: 1px solid #F5E6E0">
+            <h3 class="text-lg text-[#6E5A55] font-semibold mb-6">사진 추가</h3>
+
+            <!-- 업로드 영역 -->
+            <div id="dropZone"
+                 onclick="document.getElementById('fileInput').click()"
+                 ondragover="handleDragOver(event)"
+                 ondragleave="handleDragLeave(event)"
+                 ondrop="handleDrop(event)"
+                 class="relative aspect-square rounded-[20px] border-2 border-dashed border-[#F5E6E0] hover:border-[#D9B8AE] bg-gradient-to-br from-[#FFF7F5] to-[#FCF3F0] transition-all cursor-pointer overflow-hidden">
+
+              <!-- 이미지 미리보기 -->
+              <img id="imagePreview"
+                   th:src="${record?.imageUrl}"
+                   th:classappend="${record?.imageUrl != null} ? '' : 'hidden'"
+                   alt="미리보기"
+                   class="w-full h-full object-cover" />
+
+              <!-- 삭제 버튼 -->
+              <button type="button" id="removeImageBtn"
+                      th:classappend="${record?.imageUrl != null} ? '' : 'hidden'"
+                      onclick="event.stopPropagation(); removeImage()"
+                      class="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-all shadow-lg">
+                <i data-lucide="x" class="w-5 h-5 text-[#6E5A55]"></i>
+              </button>
+
+              <!-- 플레이스홀더 -->
+              <div id="uploadPlaceholder"
+                   th:classappend="${record?.imageUrl != null} ? 'hidden' : ''"
+                   class="absolute inset-0 flex flex-col items-center justify-center">
+                <div class="w-20 h-20 bg-gradient-to-br from-[#FCE8E3] to-[#F5E6E0] rounded-full flex items-center justify-center mb-4">
+                  <i data-lucide="plus" class="w-10 h-10 text-[#D9B8AE]"></i>
+                </div>
+                <p class="text-[#A89089] mb-2">사진을 업로드해주세요</p>
+                <p class="text-sm text-[#C4B5B0]">클릭하거나 드래그하여 추가</p>
+              </div>
+            </div>
+
+            <input type="file" id="fileInput" name="image" accept="image/*"
+                   onchange="handleFileSelect(this)" class="hidden" />
+          </div>
+
+          <!-- 오른쪽: 내용 작성 -->
+          <div class="bg-white/80 backdrop-blur-sm rounded-[28px] shadow-lg p-8" style="border: 1px solid #F5E6E0">
+            <h3 class="text-lg text-[#6E5A55] font-semibold mb-6">내용 작성</h3>
+
+            <div class="space-y-4">
+
+              <!-- 제목 -->
+              <div>
+                <label for="title" class="block text-sm text-[#6E5A55] font-medium mb-2">제목 *</label>
+                <input type="text" id="title" name="title"
+                       th:value="${record?.title}"
+                       placeholder="이 소비의 제목을 입력하세요"
+                       maxlength="100"
+                       class="w-full px-4 py-3 bg-[#FFF7F5] border border-[#F5E6E0] rounded-[16px] focus:outline-none focus:border-[#D9B8AE] transition-colors text-[#6E5A55] placeholder-[#C4B5B0]" />
+              </div>
+
+              <!-- 이모티콘 피커 -->
+              <div>
+                <label class="block text-sm text-[#6E5A55] font-medium mb-2">이모티콘</label>
+
+                <!-- 선택된 이모티콘 미리보기 -->
+                <div class="flex items-center gap-3 mb-3">
+                  <div id="emojiPreview"
+                       class="w-14 h-14 rounded-2xl bg-[#FFF7F5] border-2 border-[#F5E6E0] flex items-center justify-center text-3xl transition-all">
+                    <span id="emojiPreviewText"
+                          th:text="${record?.emoticon != null ? record?.emoticon : ''}">
+                    </span>
+                    <i id="emojiPreviewPlaceholder"
+                       th:classappend="${record?.emoticon != null ? 'hidden' : ''}"
+                       data-lucide="smile" class="w-6 h-6 text-[#C4B5B0]"></i>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-xs text-[#A89089]" id="emojiHint">
+                      <span th:if="${record?.emoticon != null}" th:text="${record?.emoticon} + ' 선택됨'"></span>
+                      <span th:unless="${record?.emoticon != null}">아래에서 이모티콘을 선택하세요</span>
+                    </p>
+                    <button type="button" id="emojiClearBtn"
+                            th:classappend="${record?.emoticon != null ? '' : 'hidden'}"
+                            onclick="clearEmoji()"
+                            class="text-xs text-[#D9B8AE] hover:text-[#A89089] mt-1 transition-colors">
+                      선택 취소
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 보유 이모티콘 그리드 -->
+                <div th:if="${not #lists.isEmpty(ownedEmojis)}"
+                     class="grid grid-cols-6 gap-2 p-3 bg-[#FFF7F5] rounded-2xl border border-[#F5E6E0]">
+                  <button type="button"
+                          th:each="emoji : ${ownedEmojis}"
+                          th:text="${emoji}"
+                          th:attr="data-emoji=${emoji}"
+                          th:id="'emoji-btn-' + ${emoji}"
+                          th:classappend="${record?.emoticon == emoji} ? 'ring-2 ring-[#D9B8AE] bg-[#FCE8E3]' : 'bg-white hover:bg-[#FCE8E3]'"
+                          onclick="selectEmoji(this.dataset.emoji)"
+                          class="w-full aspect-square rounded-xl text-2xl flex items-center justify-center border border-[#F5E6E0] transition-all">
+                  </button>
+                </div>
+
+                <!-- 보유 이모티콘 없을 때 -->
+                <div th:if="${#lists.isEmpty(ownedEmojis)}"
+                     class="p-4 bg-[#FFF7F5] rounded-2xl border border-dashed border-[#F5E6E0] text-center">
+                  <p class="text-sm text-[#A89089] mb-2">보유한 이모티콘이 없어요</p>
+                  <a th:href="@{/point-shop}" class="text-xs text-[#D9B8AE] hover:text-[#A89089] underline transition-colors">
+                    포인트 샵에서 구매하기 →
+                  </a>
+                </div>
+
+                <!-- 실제 폼 전송 값 -->
+                <input type="hidden" id="emoticon" name="emoticon" th:value="${record?.emoticon}" />
+              </div>
+
+              <!-- 메모 -->
+              <div>
+                <label for="memo" class="block text-sm text-[#6E5A55] font-medium mb-2">메모 *</label>
+                <textarea id="memo" name="memo" rows="10"
+                          placeholder="오늘의 소비와 추억을 기록해보세요..."
+                          class="w-full px-4 py-3 bg-[#FFF7F5] border border-[#F5E6E0] rounded-[16px] focus:outline-none focus:border-[#D9B8AE] transition-colors text-[#6E5A55] placeholder-[#C4B5B0] resize-none"
+                          style="line-height: 1.8"
+                          th:text="${record?.memo}"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 서버 오류 메시지 -->
+        <div th:if="${errorMessage}" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-center">
+          <p class="text-red-600 text-sm" th:text="${errorMessage}"></p>
+        </div>
+
+        <!-- 제출 버튼 -->
+        <div class="text-center">
+          <div class="inline-block relative">
+            <div class="absolute inset-0 bg-gradient-to-r from-[#D9B8AE]/30 to-[#C4A79D]/30 blur-xl rounded-full"></div>
+            <button type="submit"
+                    class="relative px-12 py-4 bg-gradient-to-r from-[#D9B8AE] to-[#C4A79D] text-white rounded-full hover:shadow-2xl transition-all text-lg font-semibold">
+              소중한 순간 기록하기
+            </button>
+          </div>
+          <div class="mt-4">
+            <a th:href="@{/consumption-history}" href="/consumption-history"
+               class="text-sm text-[#A89089] hover:text-[#6E5A55] transition-colors">
+              취소하고 돌아가기
+            </a>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <!-- ===== 푸터 ===== -->
+  <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
+
+  <script>
+    /* ===== 이미지 업로드 ===== */
+    function handleFileSelect(input) {
+      const file = input.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = e => showPreview(e.target.result);
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function showPreview(src) {
+      document.getElementById('imagePreview').src = src;
+      document.getElementById('imagePreview').classList.remove('hidden');
+      document.getElementById('removeImageBtn').classList.remove('hidden');
+      document.getElementById('uploadPlaceholder').classList.add('hidden');
+      document.getElementById('imageUrlInput').value = src;
+    }
+
+    function removeImage() {
+      document.getElementById('imagePreview').classList.add('hidden');
+      document.getElementById('removeImageBtn').classList.add('hidden');
+      document.getElementById('uploadPlaceholder').classList.remove('hidden');
+      document.getElementById('fileInput').value = '';
+      document.getElementById('imageUrlInput').value = '';
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('dropZone').style.borderColor = '#D9B8AE';
+      document.getElementById('dropZone').style.backgroundColor = 'rgba(252,232,227,0.3)';
+    }
+
+    function handleDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('dropZone').style.borderColor = '';
+      document.getElementById('dropZone').style.backgroundColor = '';
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      handleDragLeave(e);
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('fileInput').files = dt.files;
+        const reader = new FileReader();
+        reader.onload = ev => showPreview(ev.target.result);
+        reader.readAsDataURL(file);
+      }
+    }
+
+    /* ===== 폼 검증 ===== */
+    function validateForm() {
+      const title = document.getElementById('title').value.trim();
+      if (!title) {
+        alert('제목을 입력해주세요.');
+        return false;
+      }
+      const memo = document.getElementById('memo').value.trim();
+      if (!memo) {
+        alert('메모를 입력해주세요.');
+        return false;
+      }
+      return true;
+    }
+
+    /* ===== 이모티콘 피커 ===== */
+    function selectEmoji(emoji) {
+      // 히든 인풋 값 세팅
+      document.getElementById('emoticon').value = emoji;
+
+      // 미리보기 갱신
+      const previewText = document.getElementById('emojiPreviewText');
+      const placeholder = document.getElementById('emojiPreviewPlaceholder');
+      previewText.textContent = emoji;
+      placeholder.classList.add('hidden');
+
+      // 힌트 + 선택 취소 버튼 표시
+      document.getElementById('emojiHint').textContent = emoji + ' 선택됨';
+      document.getElementById('emojiClearBtn').classList.remove('hidden');
+
+      // 버튼 활성화 스타일 갱신
+      document.querySelectorAll('[data-emoji]').forEach(btn => {
+        const isSelected = btn.dataset.emoji === emoji;
+        btn.classList.toggle('ring-2', isSelected);
+        btn.classList.toggle('ring-[#D9B8AE]', isSelected);
+        btn.classList.toggle('bg-[#FCE8E3]', isSelected);
+        btn.classList.toggle('bg-white', !isSelected);
+      });
+    }
+
+    function clearEmoji() {
+      document.getElementById('emoticon').value = '';
+      document.getElementById('emojiPreviewText').textContent = '';
+      document.getElementById('emojiPreviewPlaceholder').classList.remove('hidden');
+      document.getElementById('emojiHint').textContent = '아래에서 이모티콘을 선택하세요';
+      document.getElementById('emojiClearBtn').classList.add('hidden');
+
+      document.querySelectorAll('[data-emoji]').forEach(btn => {
+        btn.classList.remove('ring-2', 'ring-[#D9B8AE]', 'bg-[#FCE8E3]');
+        btn.classList.add('bg-white');
+      });
+    }
+
+    /* ===== 초기화 ===== */
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+  <th:block th:replace="~{common/layout/header-dashboard :: scripts}"></th:block>
+</body>
+</html>

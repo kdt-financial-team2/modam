@@ -71,6 +71,11 @@ public class ShopService {
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다.")));
     }
 
+    // 회원이 해당 상품을 이미 보유하고 있는지 확인
+    public boolean isOwned(Long memberId, Long itemId) {
+        return inventoryRepository.existsByMemberIdAndItemId(memberId, itemId);
+    }
+
     public Page<HistoryItemDto> getHistory(Long memberId, int page) {
         Pageable pageable = PageRequest.of(page - 1, HISTORY_PAGE_SIZE);
         Member member = memberRepository.findById(memberId)

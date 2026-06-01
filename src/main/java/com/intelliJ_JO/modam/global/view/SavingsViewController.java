@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.global.view;
 
 import com.intelliJ_JO.modam.config.security.CustomUserDetails;
+import com.intelliJ_JO.modam.domain.account.dto.AccountMemberResponseDto;
 import com.intelliJ_JO.modam.domain.account.dto.AccountResponseDto;
 import com.intelliJ_JO.modam.domain.account.dto.GroupAccountStatusDto;
 import com.intelliJ_JO.modam.domain.account.service.AccountService;
@@ -38,9 +39,18 @@ public class SavingsViewController {
         AccountResponseDto account = accountService.getAccount(status.getAccountId());
         List<SavingsResponseDto> savingsList = savingsService.getSavingsByAccountId(status.getAccountId());
 
+        Long currentMemberId = userDetails.getMember().getId();
+        String partnerName = accountService.getAccountMembers(status.getAccountId()).stream()
+                .filter(m -> !m.getMemberId().equals(currentMemberId))
+                .map(AccountMemberResponseDto::getMemberName)
+                .findFirst()
+                .orElse("파트너");
+
         dashboardService.populateHeader(userDetails.getMember(), model);
         model.addAttribute("currentPage", "savings");
         model.addAttribute("userName", userDetails.getMember().getName());
+        model.addAttribute("partnerName", partnerName);
+        model.addAttribute("linkedAccount", account.getAccountNumber());
         model.addAttribute("accountBalance", account.getAvailableBalance());
         model.addAttribute("savingsGoals", savingsList);
 
@@ -55,10 +65,17 @@ public class SavingsViewController {
             return "redirect:/account-setup";
         }
 
+        Long currentMemberId = userDetails.getMember().getId();
+        String partnerName = accountService.getAccountMembers(status.getAccountId()).stream()
+                .filter(m -> !m.getMemberId().equals(currentMemberId))
+                .map(AccountMemberResponseDto::getMemberName)
+                .findFirst()
+                .orElse("파트너");
+
         dashboardService.populateHeader(userDetails.getMember(), model);
         model.addAttribute("accountId", status.getAccountId());
         model.addAttribute("userName", userDetails.getMember().getName());
-        model.addAttribute("partnerName", "파트너");
+        model.addAttribute("partnerName", partnerName);
 
         return "domain/savings/savings-goal-setup";
     }
@@ -76,6 +93,12 @@ public class SavingsViewController {
             redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
             return "redirect:/savings-goal-setup";
         }
+    }
+
+    // ===== 자동 이체 설정 GET 리다이렉트 =====
+    @GetMapping("/savings/auto-transfer")
+    public String autoTransferGet() {
+        return "redirect:/savings";
     }
 
     // ===== 자동 이체 설정 처리 (POST) =====

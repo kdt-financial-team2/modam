@@ -10,6 +10,7 @@ import lombok.Setter;
 public class SpendRecordUpdateRequestDto {
 
     private String imageUrl;
+    private String title;
     private String memo;
     private String emoticon;
 }

@@ -42,6 +42,12 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
+// Spring Boot 3.2+에서 @RequestParam, @PathVariable 등의 파라미터 이름을
+// 리플렉션으로 읽을 수 있도록 컴파일 시 -parameters 플래그를 추가한다
+tasks.withType(JavaCompile) {
+	options.compilerArgs << '-parameters'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }

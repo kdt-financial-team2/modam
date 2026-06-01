@@ -42,4 +42,11 @@ public class SavingsController {
         savingsService.depositToSavings(savingsId, amount, memberId);
         return GlobalResponse.ok("저축 목표에 성공적으로 납입되었습니다.");
     }
+
+    @Operation(summary = "저축 목표 삭제")
+    @DeleteMapping("/{savingsId}")
+    public GlobalResponse<Void> deleteSavings(@PathVariable Long savingsId) {
+        savingsService.deleteSavings(savingsId);
+        return GlobalResponse.ok("저축 목표가 삭제되었습니다.");
+    }
 }

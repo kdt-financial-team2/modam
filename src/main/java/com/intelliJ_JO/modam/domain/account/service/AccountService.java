@@ -67,6 +67,7 @@ public class AccountService {
                 .account(saved)
                 .member(member)
                 .inviteStatus(InviteStatus.ACCEPT)
+                .totalDeposit(deposit) // 🔥 [수정] 개설 시 초기 입금액도 기여도로 인정
                 .build());
 
         // GROUP 계좌이면 Couple 레코드도 함께 생성 (초대코드 포함)
@@ -124,7 +125,7 @@ public class AccountService {
         return new AccountResponseDto(account);
     }
 
-    // 계좌 해지
+    // 계좌 해지 (잔액 0원일 때만 가능)
     @Transactional
     public void closeAccount(Long accountId) {
         Account account = accountRepository.findById(accountId)
@@ -160,7 +161,7 @@ public class AccountService {
         return candidate;
     }
 
-    // [추가] 계좌 비밀번호 검증 메서드
+    // 계좌 비밀번호 검증 메서드
     public void verifyAccountPassword(Long accountId, String rawPassword) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
@@ -168,5 +169,123 @@ public class AccountService {
         if (!passwordEncoder.matches(rawPassword, account.getPasswordHash())) {
             throw new IllegalArgumentException("계좌 비밀번호가 일치하지 않습니다.");
         }
+    }
+
+    // =========================================================================
+    // 🔥 [추가/수정] 모임 통장 해지 동의 요청 및 상태 판단 로직
+    // =========================================================================
+    @Transactional
+    public String requestAccountClosure(Long accountId, Long requestMemberId) {
+        Account groupAccount = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 계좌를 찾을 수 없습니다."));
+
+        if (groupAccount.getStatus() == AccountStatus.CLOSED) {
+            throw new IllegalStateException("이미 해지된 계좌입니다.");
+        }
+
+        List<AccountMember> activeMembers = accountMemberRepository.findByAccountId(accountId).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .collect(Collectors.toList());
+
+        if (activeMembers.isEmpty()) {
+            throw new IllegalStateException("해지할 계좌에 활성 멤버가 없습니다.");
+        }
+
+        if (activeMembers.size() == 1) {
+            // 혼자일 경우: 파트너 동의 필요 없이 즉시 해지 및 정산
+            executeClosureAndRefund(groupAccount, activeMembers);
+            return "CLOSED";
+        } else {
+            // 두 명일 경우: 동의 프로세스 진행
+            AccountMember me = activeMembers.stream()
+                    .filter(am -> am.getMember().getId().equals(requestMemberId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("본인의 계좌 정보를 찾을 수 없습니다."));
+
+            AccountMember partner = activeMembers.stream()
+                    .filter(am -> !am.getMember().getId().equals(requestMemberId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("파트너의 계좌 정보를 찾을 수 없습니다."));
+
+            // 나의 해지 동의 상태를 'Y'로 변경
+            me.updateAgreeClose("Y");
+
+            if ("Y".equals(partner.getAgreeClose())) {
+                // 파트너도 이미 동의('Y')했다면 최종 해지 및 정산 진행
+                executeClosureAndRefund(groupAccount, activeMembers);
+                return "CLOSED";
+            } else {
+                // 파트너가 아직 'N'이라면 대기 상태로 반환
+                return "PENDING";
+            }
+        }
+    }
+
+    // 🔥 [추가] 해지 요청 취소 로직
+    @Transactional
+    public void cancelAccountClosure(Long accountId, Long requestMemberId) {
+        AccountMember me = accountMemberRepository.findByAccountId(accountId).stream()
+                .filter(am -> am.getMember().getId().equals(requestMemberId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("계좌 멤버 정보를 찾을 수 없습니다."));
+        me.updateAgreeClose("N"); // 취소 시 다시 'N'으로 원복
+    }
+
+    // =========================================================================
+    // 🔥 [수정] 실제 환급 및 계좌 상태 폐쇄 로직 ('실제 기여 금액' 비례 분배 적용)
+    // =========================================================================
+    private void executeClosureAndRefund(Account groupAccount, List<AccountMember> activeMembers) {
+        Long totalBalance = groupAccount.getBalance();
+
+        // 1. 멤버들이 그동안 입금했던 누적 금액의 총합 계산
+        long totalGroupDeposit = activeMembers.stream().mapToLong(AccountMember::getTotalDeposit).sum();
+        long remainingBalanceToDistribute = totalBalance;
+
+        // 2. 각 멤버별로 기여도에 맞춰 잔액 분배 및 개인 계좌로 송금
+        for (int i = 0; i < activeMembers.size(); i++) {
+            AccountMember am = activeMembers.get(i);
+            Account personalAccount = accountMemberRepository.findByMemberId(am.getMember().getId()).stream()
+                    .filter(pam -> pam.getAccount().getAccountType() == AccountType.PERSONAL)
+                    .map(AccountMember::getAccount)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException(am.getMember().getName() + "님의 환급받을 개인 주계좌가 존재하지 않습니다."));
+
+            long refundAmount = 0L;
+
+            if (totalGroupDeposit > 0) {
+                // 마지막 멤버는 소수점 계산 오차(자투리 금액)를 모두 가져가서 정확히 0원을 만듦
+                if (i == activeMembers.size() - 1) {
+                    refundAmount = remainingBalanceToDistribute;
+                } else {
+                    double shareRatio = (double) am.getTotalDeposit() / totalGroupDeposit;
+                    refundAmount = (long) Math.floor(totalBalance * shareRatio);
+                    remainingBalanceToDistribute -= refundAmount;
+                }
+            } else {
+                // 예외 케이스: 입금액이 0원인데 이벤트 등으로 잔액만 있는 경우 1/N 배분
+                refundAmount = totalBalance / activeMembers.size();
+            }
+
+            personalAccount.updateBalance(refundAmount);
+        }
+
+        // 3. 공동 원장 잔액 청산 및 계좌 상태 폐쇄
+        groupAccount.updateBalance(-totalBalance);
+        groupAccount.close();
+    }
+
+    // 🔥 [추가됨] 계좌 비밀번호 변경 비즈니스 로직
+    @Transactional
+    public void updateAccountPassword(Long accountId, String currentPassword, String newPassword) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 계좌입니다."));
+
+        // 기존 비밀번호가 맞는지 BCrypt 검증
+        if (!passwordEncoder.matches(currentPassword, account.getPasswordHash())) {
+            throw new IllegalArgumentException("기존 계좌 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 새 비밀번호 암호화 후 업데이트
+        account.updatePassword(passwordEncoder.encode(newPassword));
     }
 }

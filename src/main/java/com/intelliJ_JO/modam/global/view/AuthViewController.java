@@ -97,7 +97,8 @@ public class AuthViewController {
     }
 
     @PostMapping("/signup/step3")
-    public String signupStep3Submit(@ModelAttribute SignupForm stepForm, HttpSession session, HttpServletRequest request) {
+    public String signupStep3Submit(@ModelAttribute SignupForm stepForm, HttpSession session,
+                                    HttpServletRequest request, RedirectAttributes redirectAttributes) {
         SignupForm form = getOrCreateForm(session);
         if (form.getUserId() == null) {
             return "redirect:/signup/step1";
@@ -133,7 +134,13 @@ public class AuthViewController {
         String userId = form.getUserId();
         String rawPassword = form.getPassword();
 
-        memberService.createMember(memberCreateRequest);
+        try {
+            memberService.createMember(memberCreateRequest);
+        } catch (IllegalArgumentException e) {
+            // 아이디/이메일/휴대폰 중복 등 유효성 오류 발생 시 step2로 돌아가 에러 표시
+            redirectAttributes.addFlashAttribute("signupError", e.getMessage());
+            return "redirect:/signup/step2";
+        }
 
         // 기존 세션 무효화 — 이전에 로그인된 다른 계정 정보 제거
         session.invalidate();

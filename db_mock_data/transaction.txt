@@ -1,0 +1,249 @@
+-- transaction 더미 데이터 (mem_id=1, acct_id=2, card_id=NULL, 2026-04-01 ~ 2026-06-20)
+
+-- ===== 4월 (30건) =====
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'DEPOSIT', '급여', 3000000, 4000000, '회사 급여', TIMESTAMP '2026-04-01 09:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 15000, 3985000, '맥도날드', TIMESTAMP '2026-04-02 12:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 4500, 3980500, '서울교통공사', TIMESTAMP '2026-04-03 08:15:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 32000, 3948500, '한식당', TIMESTAMP '2026-04-04 19:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '쇼핑', 55000, 3893500, '올리브영', TIMESTAMP '2026-04-05 14:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '카페', 7500, 3886000, '이디야커피', TIMESTAMP '2026-04-07 09:45:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 28000, 3858000, '중식당', TIMESTAMP '2026-04-08 20:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '의료', 30000, 3828000, '서울약국', TIMESTAMP '2026-04-09 11:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '쇼핑', 85000, 3743000, '쿠팡', TIMESTAMP '2026-04-10 17:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 4500, 3738500, '서울교통공사', TIMESTAMP '2026-04-11 08:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '식비', 22000, 3716500, '롯데리아', TIMESTAMP '2026-04-12 13:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '카페', 9000, 3707500, '스타벅스', TIMESTAMP '2026-04-13 16:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 35000, 3672500, '일식집', TIMESTAMP '2026-04-14 19:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'DEPOSIT', '이체', 200000, 3872500, '개인 이체', TIMESTAMP '2026-04-15 12:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '쇼핑', 150000, 3722500, '무신사', TIMESTAMP '2026-04-16 10:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 3500, 3719000, '카카오페이 교통', TIMESTAMP '2026-04-17 08:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 42000, 3677000, '곱창집', TIMESTAMP '2026-04-18 20:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '문화', 35000, 3642000, 'CGV', TIMESTAMP '2026-04-19 15:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '의료', 25000, 3617000, '치과', TIMESTAMP '2026-04-20 11:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '쇼핑', 76000, 3541000, '11번가', TIMESTAMP '2026-04-21 14:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '카페', 8000, 3533000, '투썸플레이스', TIMESTAMP '2026-04-22 09:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 18000, 3515000, '분식집', TIMESTAMP '2026-04-23 19:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '쇼핑', 125000, 3390000, 'G마켓', TIMESTAMP '2026-04-24 16:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 5000, 3385000, '코레일', TIMESTAMP '2026-04-25 12:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 29000, 3356000, 'GS25', TIMESTAMP '2026-04-26 20:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '문화', 60000, 3296000, '메가박스', TIMESTAMP '2026-04-27 10:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '의료', 40000, 3256000, '내과 병원', TIMESTAMP '2026-04-28 18:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '쇼핑', 95000, 3161000, '다이소', TIMESTAMP '2026-04-29 14:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '카페', 6500, 3154500, '메가MGC커피', TIMESTAMP '2026-04-30 09:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'DEPOSIT', '이체', 500000, 3654500, '개인 이체', TIMESTAMP '2026-04-30 20:00:00');
+
+-- ===== 5월 (30건) =====
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'DEPOSIT', '급여', 3000000, 6654500, '회사 급여', TIMESTAMP '2026-05-01 09:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 25000, 6629500, '한식당', TIMESTAMP '2026-05-02 13:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 4500, 6625000, '서울교통공사', TIMESTAMP '2026-05-03 08:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 38000, 6587000, '중식당', TIMESTAMP '2026-05-04 19:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '쇼핑', 210000, 6377000, '이케아', TIMESTAMP '2026-05-05 11:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '카페', 8500, 6368500, '스타벅스', TIMESTAMP '2026-05-06 15:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 32000, 6336500, '일식집', TIMESTAMP '2026-05-07 20:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '의료', 50000, 6286500, '서울대병원', TIMESTAMP '2026-05-08 14:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '쇼핑', 75000, 6211500, '쿠팡', TIMESTAMP '2026-05-09 10:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 3500, 6208000, '카카오페이 교통', TIMESTAMP '2026-05-10 17:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '식비', 29000, 6179000, '롯데리아', TIMESTAMP '2026-05-11 12:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '카페', 7000, 6172000, '이디야커피', TIMESTAMP '2026-05-12 09:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 45000, 6127000, '곱창집', TIMESTAMP '2026-05-13 19:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'DEPOSIT', '이체', 300000, 6427000, '개인 이체', TIMESTAMP '2026-05-14 16:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '쇼핑', 88000, 6339000, '올리브영', TIMESTAMP '2026-05-15 11:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 4500, 6334500, '서울교통공사', TIMESTAMP '2026-05-16 08:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 55000, 6279500, '한정식집', TIMESTAMP '2026-05-17 20:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '문화', 45000, 6234500, 'CGV', TIMESTAMP '2026-05-18 14:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '의료', 35000, 6199500, '약국', TIMESTAMP '2026-05-19 10:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '쇼핑', 120000, 6079500, '무신사', TIMESTAMP '2026-05-20 17:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '카페', 9500, 6070000, '투썸플레이스', TIMESTAMP '2026-05-21 13:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 28000, 6042000, '분식집', TIMESTAMP '2026-05-22 19:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '쇼핑', 165000, 5877000, '11번가', TIMESTAMP '2026-05-23 11:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 5000, 5872000, '코레일', TIMESTAMP '2026-05-24 08:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 33000, 5839000, 'CU편의점', TIMESTAMP '2026-05-25 20:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '문화', 80000, 5759000, '롯데시네마', TIMESTAMP '2026-05-26 15:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '의료', 45000, 5714000, '치과', TIMESTAMP '2026-05-27 12:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '쇼핑', 135000, 5579000, 'G마켓', TIMESTAMP '2026-05-28 17:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '카페', 8000, 5571000, '메가MGC커피', TIMESTAMP '2026-05-29 09:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 42000, 5529000, '한식당', TIMESTAMP '2026-05-30 20:00:00');
+
+-- ===== 6월 (20건) =====
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'DEPOSIT', '급여', 3000000, 8529000, '회사 급여', TIMESTAMP '2026-06-01 09:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 27000, 8502000, '한식당', TIMESTAMP '2026-06-02 13:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 4500, 8497500, '서울교통공사', TIMESTAMP '2026-06-03 08:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 35000, 8462500, '중식당', TIMESTAMP '2026-06-04 19:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '쇼핑', 92000, 8370500, '쿠팡', TIMESTAMP '2026-06-05 11:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '카페', 8500, 8362000, '스타벅스', TIMESTAMP '2026-06-06 15:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 40000, 8322000, '일식집', TIMESTAMP '2026-06-07 20:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '의료', 45000, 8277000, '서울대병원', TIMESTAMP '2026-06-08 14:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '쇼핑', 180000, 8097000, '무신사', TIMESTAMP '2026-06-09 10:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 3500, 8093500, '카카오페이 교통', TIMESTAMP '2026-06-10 17:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 22000, 8071500, '분식집', TIMESTAMP '2026-06-11 12:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '카페', 7000, 8064500, '이디야커피', TIMESTAMP '2026-06-12 09:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 48000, 8016500, '곱창집', TIMESTAMP '2026-06-13 19:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'DEPOSIT', '이체', 200000, 8216500, '개인 이체', TIMESTAMP '2026-06-14 16:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '쇼핑', 110000, 8106500, '올리브영', TIMESTAMP '2026-06-15 11:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '교통', 4500, 8102000, '서울교통공사', TIMESTAMP '2026-06-16 08:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '식비', 53000, 8049000, '한정식집', TIMESTAMP '2026-06-17 20:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'PAYMENT', '문화', 55000, 7994000, 'CGV', TIMESTAMP '2026-06-18 14:00:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '의료', 30000, 7964000, '약국', TIMESTAMP '2026-06-19 10:30:00');
+
+INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)
+VALUES (2, NULL, 1, 'WITHDRAW', '쇼핑', 145000, 7819000, 'G마켓', TIMESTAMP '2026-06-20 17:00:00');
+
+-- transaction INSERT 후 계좌 잔액 동기화 (마지막 aft_bal 기준)
+UPDATE account SET bal = 7819000, avail_bal = 7819000 WHERE id = 2;
+
+COMMIT;

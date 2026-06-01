@@ -5,6 +5,10 @@ import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.couple.entity.Couple;
 import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
+import com.intelliJ_JO.modam.domain.member.entity.Member;
+import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
+import com.intelliJ_JO.modam.domain.notification.entity.NotificationType;
+import com.intelliJ_JO.modam.domain.notification.service.NotificationService;
 import com.intelliJ_JO.modam.domain.point.dto.response.PointResponse;
 import com.intelliJ_JO.modam.domain.point.dto.request.PointSaveRequest;
 import com.intelliJ_JO.modam.domain.point.dto.request.PointSpendRequest;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +36,8 @@ public class PointService {
     private final PointRepository pointRepository;
     private final CoupleRepository coupleRepository;
     private final AccountMemberRepository accountMemberRepository;
+    private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     public List<PointResponse> getPointHistories(Long memberId) {
         Couple couple = getCoupleByMemberId(memberId);
@@ -68,7 +75,15 @@ public class PointService {
                 .descrip(request.getDescrip())
                 .build();
 
-        return toResponse(pointRepository.save(pointHistory));
+        PointResponse result = toResponse(pointRepository.save(pointHistory));
+
+        // 포인트 사용자에게 알림 발송
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        String msg = String.format("%,dP를 사용했습니다. (잔액: %,dP)", request.getAmt(), pointHistory.getAftBal());
+        notificationService.send(member, NotificationType.POINT_SPEND, msg, "/point-shop");
+
+        return result;
     }
 
     public Integer getCurrentPoint(Long memberId) {
@@ -83,6 +98,23 @@ public class PointService {
         Couple couple = coupleRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new IllegalStateException("공동 계좌가 없습니다."));
         return savePointForCouple(couple, request);
+    }
+
+    /**
+     * 이번 달 1일 00:00 ~ 말일 23:59 사이에 적립된 포인트 합계를 반환합니다.
+     * SAVE 타입(적립)만 집계하며, 사용(SPEND)은 포함하지 않습니다.
+     */
+    public int getMonthlyEarnedPoints(Long memberId) {
+        return findCoupleByMemberId(memberId).<Integer>map(couple -> {
+            LocalDate now = LocalDate.now();
+            LocalDateTime monthStart = now.withDayOfMonth(1).atStartOfDay();
+            LocalDateTime monthEnd   = monthStart.plusMonths(1);
+            return pointRepository.findByCoupleIdAndCreatedAtBetween(couple.getId(), monthStart, monthEnd)
+                    .stream()
+                    .filter(p -> p.getType() == PointType.SAVE)
+                    .mapToInt(PointHistory::getAmt)
+                    .sum();
+        }).orElse(0);
     }
 
     public boolean isCheckedIn(Long memberId) {

@@ -14,6 +14,7 @@ public class SpendRecordCreateRequestDto {
     private Long transactionId;
 
     private String imageUrl;
+    private String title;
     private String memo;
     private String emoticon;
 }

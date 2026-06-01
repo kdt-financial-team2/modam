@@ -12,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +46,7 @@ public class PointViewController {
 
         model.addAttribute("pointHistory", historyViews);
         model.addAttribute("products", shopService.getProducts(null, 1).getContent());
+        model.addAttribute("couplePoints", pointService.getCurrentPoint(memberId));
         return "domain/point/point-shop";
     }
 
@@ -70,21 +73,58 @@ public class PointViewController {
 
     @GetMapping("/point-shop/product/{id}")
     public String productDetail(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                @PathVariable Long id, Model model) {
+                                @PathVariable("id") Long id, Model model) {
         dashboardService.populateHeader(userDetails.getMember(), model);
+        Long memberId = userDetails.getMember().getId();
         model.addAttribute("product", shopService.getProduct(id));
+        model.addAttribute("couplePoints", pointService.getCurrentPoint(memberId));
+        model.addAttribute("alreadyOwned", shopService.isOwned(memberId, id));
         return "domain/point/product-detail";
     }
 
-    @GetMapping("/point-shop/purchase")
-    public String purchase(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+    // 구매 확인 페이지 — 이미 보유한 상품이면 안내 페이지로 리다이렉트
+    @GetMapping("/point-shop/purchase/{id}")
+    public String purchaseConfirm(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                  @PathVariable("id") Long id,
+                                  Model model, RedirectAttributes redirectAttributes) {
+        Long memberId = userDetails.getMember().getId();
+        if (shopService.isOwned(memberId, id)) {
+            redirectAttributes.addFlashAttribute("product", shopService.getProduct(id));
+            return "redirect:/point-shop/already-owned";
+        }
         dashboardService.populateHeader(userDetails.getMember(), model);
+        model.addAttribute("product", shopService.getProduct(id));
+        model.addAttribute("couplePoints", pointService.getCurrentPoint(memberId));
         return "domain/point/purchase";
+    }
+
+    // 구매 실행 — 이미 보유한 경우 안내 페이지로, 성공 시 완료 페이지로 리다이렉트
+    @PostMapping("/point-shop/purchase/{id}")
+    public String executePurchase(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                  @PathVariable("id") Long id,
+                                  RedirectAttributes redirectAttributes) {
+        Long memberId = userDetails.getMember().getId();
+        try {
+            int remainingPoints = shopService.purchaseItem(memberId, id);
+            redirectAttributes.addFlashAttribute("product", shopService.getProduct(id));
+            redirectAttributes.addFlashAttribute("remainingPoints", remainingPoints);
+            return "redirect:/point-shop/purchase/complete";
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("product", shopService.getProduct(id));
+            return "redirect:/point-shop/already-owned";
+        }
     }
 
     @GetMapping("/point-shop/purchase/complete")
     public String purchaseComplete(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         dashboardService.populateHeader(userDetails.getMember(), model);
         return "domain/point/purchase-complete";
+    }
+
+    // 이미 보유한 상품 안내 페이지
+    @GetMapping("/point-shop/already-owned")
+    public String alreadyOwned(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        dashboardService.populateHeader(userDetails.getMember(), model);
+        return "domain/point/already-owned";
     }
 }
