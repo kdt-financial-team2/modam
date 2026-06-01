@@ -24,7 +24,8 @@ public class SpendRecord {
     @JoinColumn(name = "tx_id", nullable = false, unique = true)
     private Transaction transaction;
 
-    @Column(name = "img_url", length = 500)
+    @Lob
+    @Column(name = "img_url")
     private String imageUrl;
 
     @Column(length = 100)
