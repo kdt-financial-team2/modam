@@ -38,9 +38,25 @@ public class AccountViewController {
             String address = userDetails.getMember().getAddress();
             String detail  = userDetails.getMember().getAddressDetail();
             String full    = address != null ? address : "";
-            if (detail != null && !detail.isBlank()) full = full + " " + detail;
+            if (detail != null && !detail.isBlank()) {
+                full = full + " " + detail;
+            }
             model.addAttribute("userAddress", full);
+
+// 수정용 데이터
+            model.addAttribute("memberId",
+                    userDetails.getMember().getId());
+
+            model.addAttribute("zipCode",
+                    userDetails.getMember().getZipCode());
+
+            model.addAttribute("address",
+                    userDetails.getMember().getAddress());
+
+            model.addAttribute("addressDetail",
+                    userDetails.getMember().getAddressDetail());
         }
         return "domain/account/group-account-new";
     }
+
 }
