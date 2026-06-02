@@ -313,21 +313,38 @@ public class SpendingViewController {
         Long memberId = userDetails.getMember().getId();
         try {
             // 기존 기록 있으면 수정, 없으면 생성
-            spendRecordRepository.findByTransactionId(transactionId).ifPresentOrElse(
-                    record -> record.updateRecord(imageUrl, title, memo, emoticon),
-                    () -> {
-                        com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto req =
-                                new com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto();
-                        req.setTransactionId(transactionId);
-                        req.setTitle(title);
-                        req.setMemo(memo);
-                        req.setEmoticon(emoticon);
-                        req.setImageUrl(imageUrl);
-                        spendRecordService.createSpendRecord(memberId, req);
-                    }
-            );
+            var existing = spendRecordRepository.findByTransactionId(transactionId);
+            if (existing.isPresent()) {
+                var record = existing.get();
+                record.updateRecord(imageUrl, title, memo, emoticon);
+                spendRecordRepository.save(record);
+            } else {
+                com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto req =
+                        new com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto();
+                req.setTransactionId(transactionId);
+                req.setTitle(title);
+                req.setMemo(memo);
+                req.setEmoticon(emoticon);
+                req.setImageUrl(imageUrl);
+                spendRecordService.createSpendRecord(memberId, req);
+            }
         } catch (Exception e) {
+            // 에러 시 폼 재렌더링에 필요한 트랜잭션 정보 복원
+            transactionRepository.findById(transactionId).ifPresent(tx -> {
+                model.addAttribute("txId", tx.getId());
+                model.addAttribute("txPlace", tx.getMerchantName() != null ? tx.getMerchantName() : tx.getCategory());
+                model.addAttribute("txAmount", tx.getAmount());
+                model.addAttribute("txDate", tx.getCreatedAt().format(DATE_FMT));
+                model.addAttribute("txCategory", tx.getCategory());
+            });
+            List<String> ownedEmojis = inventoryRepository
+                    .findEmojiItemsByMemberId(memberId)
+                    .stream()
+                    .map(inv -> inv.getItem().getImage())
+                    .collect(Collectors.toList());
+            model.addAttribute("ownedEmojis", ownedEmojis);
             model.addAttribute("errorMessage", e.getMessage());
+            dashboardService.populateHeader(userDetails.getMember(), model);
             return "domain/spendrecord/consumption-upload";
         }
 
