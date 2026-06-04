@@ -146,6 +146,7 @@ public class Member {
         if (profileImg != null)    this.profileImg = profileImg;
     }
 
+
     public void deactivate() {
         this.active = false;
     }

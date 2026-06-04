@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,14 +52,17 @@ public class CoupleService {
     @Transactional
     public void updateCoupleInfo(Member member, LocalDate dDay, String acctAlias) {
         List<AccountMember> memberships = accountMemberRepository.findByMemberId(member.getId());
+
+        // 🔥 [버그 픽스] findFirst() 대신 가장 최근에 개설된(ID가 큰) 계좌를 찾습니다!
         AccountMember myMembership = memberships.stream()
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
                 .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
-                .findFirst()
+                .max(Comparator.comparing(am -> am.getAccount().getId()))
                 .orElseThrow(() -> new IllegalStateException("모임 통장이 없습니다."));
 
         Account account = myMembership.getAccount();
 
+        // [원본 로직 유지] Couple 정보가 없으면 새로 생성하는 훌륭한 방어 로직!
         Couple couple = coupleRepository.findByAccountId(account.getId())
                 .orElseGet(() -> coupleRepository.save(
                         Couple.builder()

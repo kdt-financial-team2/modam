@@ -23,52 +23,52 @@
 
     <!-- ===== 커플 프로필 헤더 ===== -->
     <div class="bg-white border-b border-gray-100 shadow-sm">
-      <div class="max-w-3xl mx-auto px-8 py-10">
+      <div class="max-w-3xl mx-auto px-8 py-4">
 
         <!-- 프로필 행 -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-between mb-3">
 
           <!-- 내 프로필 -->
-          <div class="flex flex-col items-center gap-3">
-            <div class="w-24 h-24 rounded-full ring-4 ring-[#F5A5A5] ring-offset-2 overflow-hidden bg-[#FFF1ED] flex items-center justify-center shadow-md">
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-16 h-16 rounded-full ring-4 ring-[#F5A5A5] ring-offset-2 overflow-hidden bg-[#FFF1ED] flex items-center justify-center shadow-md">
               <img th:if="${myProfileImg != null}" th:src="${myProfileImg}" alt="내 프로필" class="w-full h-full object-cover" />
-              <i th:unless="${myProfileImg != null}" data-lucide="user" class="w-10 h-10 text-[#D9B8AE]"></i>
+              <i th:unless="${myProfileImg != null}" data-lucide="user" class="w-8 h-8 text-[#D9B8AE]"></i>
             </div>
             <p class="text-sm font-semibold text-gray-700" th:text="${myName}">나</p>
           </div>
 
           <!-- 중앙 정보 -->
-          <div class="text-center flex-1 mx-8">
+          <div class="text-center flex-1 mx-4">
             <!-- 커플 별명 -->
-            <h1 class="text-2xl font-bold text-gray-900 mb-1"
+            <h1 class="text-lg font-bold text-gray-900 mb-0.5"
                 th:text="${coupleAcctAlias != null && coupleAcctAlias != '' ? coupleAcctAlias : '우리의 소비 스토리'}">
               우리의 소비 스토리
             </h1>
             <!-- 감정 문구 (고정) -->
-            <p class="text-sm text-[#D9B8AE] mb-2">함께한 모든 순간이 우리의 이야기가 돼요 🌸</p>
+            <p class="text-xs text-[#D9B8AE] mb-1">함께한 모든 순간이 우리의 이야기가 돼요 🌸</p>
 
             <!-- 스토리 통계 -->
-            <div class="mt-5 pt-4 border-t border-gray-100 flex justify-center gap-8">
+            <div class="mt-2 pt-2 border-t border-gray-100 flex justify-center gap-6">
               <div>
-                <p class="text-2xl font-bold text-gray-900" id="statStory" th:text="${writtenCount}">0</p>
-                <p class="text-xs text-gray-500 mt-0.5">함께 쓴 스토리</p>
+                <p class="text-lg font-bold text-gray-900" id="statStory" th:text="${writtenCount}">0</p>
+                <p class="text-xs text-gray-500">함께 쓴 스토리</p>
               </div>
               <div class="w-px bg-gray-100"></div>
               <div>
-                <p class="text-2xl font-bold text-[#F5A5A5]" th:text="${favoriteCount}">0</p>
-                <p class="text-xs text-gray-500 mt-0.5">마음에 담은 순간</p>
+                <p class="text-lg font-bold text-[#F5A5A5]" th:text="${favoriteCount}">0</p>
+                <p class="text-xs text-gray-500">마음에 담은 순간</p>
               </div>
             </div>
           </div>
 
           <!-- 파트너 프로필 -->
-          <div class="flex flex-col items-center gap-3">
-            <div class="w-24 h-24 rounded-full ring-4 ring-[#F5A5A5] ring-offset-2 overflow-hidden bg-[#FFF1ED] flex items-center justify-center shadow-md">
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-16 h-16 rounded-full ring-4 ring-[#F5A5A5] ring-offset-2 overflow-hidden bg-[#FFF1ED] flex items-center justify-center shadow-md">
               <img th:if="${partnerProfileImg != null}" th:src="${partnerProfileImg}" alt="파트너 프로필" class="w-full h-full object-cover" />
               <th:block th:unless="${partnerProfileImg != null}">
-                <i th:if="${partnerName == null || partnerName == ''}" data-lucide="user" class="w-10 h-10 text-[#D9B8AE]"></i>
+                <i th:if="${partnerName == null || partnerName == ''}" data-lucide="user" class="w-8 h-8 text-[#D9B8AE]"></i>
                 <span th:unless="${partnerName == null || partnerName == ''}"
-                      class="text-3xl font-bold text-[#D9B8AE]"
+                      class="text-2xl font-bold text-[#D9B8AE]"
                       th:text="${#strings.substring(partnerName, 0, 1)}"></span>
               </th:block>
             </div>

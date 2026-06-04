@@ -1,4 +1,4 @@
--- transaction 더미 데이터 (mem_id=1, acct_id=2, card_id=NULL, 2026-04-01 ~ 2026-06-20)
+-- transaction 더미 데이터 (mem_id=1, acct_id=2, card_id=NULL, 1026-04-01 ~ 2026-06-20)
 
 -- ===== 4월 (30건) =====
 INSERT INTO transaction (acct_id, card_id, mem_id, tx_type, category, amt, aft_bal, merch_nm, created_at)

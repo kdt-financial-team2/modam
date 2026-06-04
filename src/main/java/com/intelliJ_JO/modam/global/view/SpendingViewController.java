@@ -6,6 +6,7 @@ import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
+import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.comment.dto.request.CommentCreateRequestDto;
 import com.intelliJ_JO.modam.domain.comment.dto.response.CommentResponseDto;
 import com.intelliJ_JO.modam.domain.comment.service.CommentService;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SpendingViewController {
 
+    private final MemberRepository memberRepository;
     private final DashboardService dashboardService;
     private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
@@ -65,7 +67,8 @@ public class SpendingViewController {
         dashboardService.populateHeader(userDetails.getMember(), model);
         model.addAttribute("currentPage", "story");
 
-        Member member = userDetails.getMember();
+        Member member = memberRepository.findById(userDetails.getMember().getId())
+                .orElse(userDetails.getMember());
 
         // 내 프로필 정보
         model.addAttribute("myName", member.getName());
@@ -310,21 +313,38 @@ public class SpendingViewController {
         Long memberId = userDetails.getMember().getId();
         try {
             // 기존 기록 있으면 수정, 없으면 생성
-            spendRecordRepository.findByTransactionId(transactionId).ifPresentOrElse(
-                    record -> record.updateRecord(imageUrl, title, memo, emoticon),
-                    () -> {
-                        com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto req =
-                                new com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto();
-                        req.setTransactionId(transactionId);
-                        req.setTitle(title);
-                        req.setMemo(memo);
-                        req.setEmoticon(emoticon);
-                        req.setImageUrl(imageUrl);
-                        spendRecordService.createSpendRecord(memberId, req);
-                    }
-            );
+            var existing = spendRecordRepository.findByTransactionId(transactionId);
+            if (existing.isPresent()) {
+                var record = existing.get();
+                record.updateRecord(imageUrl, title, memo, emoticon);
+                spendRecordRepository.save(record);
+            } else {
+                com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto req =
+                        new com.intelliJ_JO.modam.domain.spendrecord.dto.SpendRecordCreateRequestDto();
+                req.setTransactionId(transactionId);
+                req.setTitle(title);
+                req.setMemo(memo);
+                req.setEmoticon(emoticon);
+                req.setImageUrl(imageUrl);
+                spendRecordService.createSpendRecord(memberId, req);
+            }
         } catch (Exception e) {
+            // 에러 시 폼 재렌더링에 필요한 트랜잭션 정보 복원
+            transactionRepository.findById(transactionId).ifPresent(tx -> {
+                model.addAttribute("txId", tx.getId());
+                model.addAttribute("txPlace", tx.getMerchantName() != null ? tx.getMerchantName() : tx.getCategory());
+                model.addAttribute("txAmount", tx.getAmount());
+                model.addAttribute("txDate", tx.getCreatedAt().format(DATE_FMT));
+                model.addAttribute("txCategory", tx.getCategory());
+            });
+            List<String> ownedEmojis = inventoryRepository
+                    .findEmojiItemsByMemberId(memberId)
+                    .stream()
+                    .map(inv -> inv.getItem().getImage())
+                    .collect(Collectors.toList());
+            model.addAttribute("ownedEmojis", ownedEmojis);
             model.addAttribute("errorMessage", e.getMessage());
+            dashboardService.populateHeader(userDetails.getMember(), model);
             return "domain/spendrecord/consumption-upload";
         }
 

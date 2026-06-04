@@ -60,15 +60,11 @@
                     <th class="py-3 w-1/3 text-gray-600 font-bold">개설일 (Open Date)</th>
                     <td class="py-3 text-lg text-gray-800" th:text="${#temporals.format(createdAt, 'yyyy년 MM월 dd일')}">2026년 01월 15일</td>
                 </tr>
-                <tr class="border-b border-gray-200">
+                <tr>
                     <th class="py-3 w-1/3 text-gray-600 font-bold">공동 예금주 (Account Holders)</th>
                     <td class="py-3 text-lg font-bold text-gray-900">
                         <span th:text="${userName}">원석</span> <span class="text-gray-500 font-normal mx-1">및</span> <span th:text="${partnerName != null ? partnerName : '(연결 대기 중)'}">파트너</span>
                     </td>
-                </tr>
-                <tr>
-                    <th class="py-3 w-1/3 text-gray-600 font-bold">현재 잔액 (Balance)</th>
-                    <td class="py-3 text-xl font-bold text-[#F5A5A5]">₩ <span th:text="${accountBalance != null ? #numbers.formatInteger(accountBalance, 0, 'COMMA') : '0'}">0</span></td>
                 </tr>
                 </tbody>
             </table>
@@ -96,7 +92,6 @@
 
 <script>
     window.onload = function() {
-        // 창이 열리자마자 브라우저 인쇄(PDF 저장) 다이얼로그 호출
         setTimeout(() => {
             window.print();
         }, 500);

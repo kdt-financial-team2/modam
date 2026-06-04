@@ -18,18 +18,6 @@ public class SpendingLimitController {
     private final SpendingLimitService spendingLimitService;
 
     // =========================
-    // 소비 제한 조회
-    // =========================
-    @GetMapping
-    public List<SpendingLimitDto> getLimits(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        return spendingLimitService.getSpendingLimits(
-                userDetails.getMember().getId()
-        );
-    }
-
-    // =========================
     // 소비 제한 생성
     // =========================
     @PostMapping
