@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -64,10 +65,12 @@ public class DashboardService {
     public void populate(Member member, Model model) {
         // 1. 멤버의 GROUP 계좌 조회
         List<AccountMember> memberships = accountMemberRepository.findByMemberId(member.getId());
+
+        // 🔥 [버그 픽스] 가장 최근에 개설된(ID가 가장 큰) 계좌를 최우선으로 가져오도록 수정
         AccountMember myMembership = memberships.stream()
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
                 .filter(am -> "GROUP".equals(am.getAccount().getAccountType().name()))
-                .findFirst()
+                .max(Comparator.comparing(am -> am.getAccount().getId()))
                 .orElse(null);
 
         if (myMembership == null) {
@@ -158,7 +161,7 @@ public class DashboardService {
         AccountMember partner = allMembers.stream()
                 .filter(am -> !am.getMember().getId().equals(member.getId()))
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
-                .findFirst()
+                .findFirst() // 파트너는 기존 로직 유지 (동일 계좌 내에서 나와 다른 사람 1명)
                 .orElse(null);
         model.addAttribute("partnerConnected", partner != null);
         model.addAttribute("partnerName", partner != null ? partner.getMember().getName() : "");
