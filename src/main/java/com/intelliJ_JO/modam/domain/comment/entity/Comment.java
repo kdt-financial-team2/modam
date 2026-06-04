@@ -10,7 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "comment") // DB에 따라 comment가 예약어일 경우 문제가 생길 수 있으나, 일단 설계서 명칭을 따릅니다.
+@Table(name = "record_comment")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
