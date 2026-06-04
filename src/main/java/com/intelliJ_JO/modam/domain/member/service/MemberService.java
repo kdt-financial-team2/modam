@@ -28,12 +28,9 @@ public class MemberService {
 
     @Transactional
     public MemberCreateResponse createMember(MemberCreateRequest request) {
-        // 비밀번호 확인
         if (!request.getPw().equals(request.getPwConfirm())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
-
-        // 중복 체크
         if (memberRepository.existsByUserId(request.getUserId())) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
@@ -137,15 +134,12 @@ public class MemberService {
         member.deactivate();
     }
 
-    // ====================================================================
-    // 🔥 [마이페이지 전용] 프로필 & 비밀번호 업데이트 로직 추가
-    // ====================================================================
     @Transactional
-    public void updateMyPageProfile(Long memberId, String name, String phoneNo) {
+    public void updateMyPageProfile(Long memberId, String name, String phoneNo, String zipCode, String address, String addressDetail) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        member.updateInfo(name, null, null, null, null, null, null, null, null, null, phoneNo, null);
+        member.updateInfo(name, null, null, null, null, null, null, zipCode, address, addressDetail, phoneNo, null);
     }
 
     @Transactional
@@ -168,16 +162,12 @@ public class MemberService {
         return !memberRepository.existsByPersAcctNo(accountNumber);
     }
 
-    // 🔥 [추가] 탈퇴 전용 비밀번호 검증 헬퍼
     public boolean verifyPassword(Long memberId, String rawPassword) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
         return passwordEncoder.matches(rawPassword, member.getPwHash());
     }
 
-    // ====================================================================
-    // 조장님 작업분 (아이디/비밀번호 찾기) 유지
-    // ====================================================================
     public String findUserId(String name, String email) {
         Member member = memberRepository.findByNameAndEmail(name, email)
                 .orElseThrow(() -> new IllegalArgumentException("입력하신 정보와 일치하는 계정이 없습니다."));
