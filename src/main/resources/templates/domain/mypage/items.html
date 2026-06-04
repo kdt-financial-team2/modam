@@ -28,67 +28,23 @@
                 <span th:text="${errorMsg}"></span>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-sm p-8 mb-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-bold text-gray-800">보유 테마</h2>
-                    <a th:href="@{/point-shop}" href="/point-shop"
-                       class="text-[#F5A5A5] hover:text-[#F28B8B] transition-colors text-sm font-medium">더 구매하기</a>
-                </div>
-                <div class="grid grid-cols-3 gap-4">
-                    <th:block th:each="theme : ${purchasedThemes}">
-                        <div th:onclick="|equipItem(${theme.id})|"
-                             th:class="${theme.isActive} ? 'relative bg-gradient-to-br from-[#FFB6D9] to-[#FFE4F0] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5] cursor-pointer' : 'relative bg-gradient-to-br from-[#FFB6D9] to-[#FFE4F0] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer'">
-                            <div th:if="${theme.isActive}" class="absolute top-2 right-2 px-3 py-1 bg-[#F5A5A5] text-white text-xs rounded-full">사용 중</div>
-                            <div class="text-6xl mb-3" th:text="${theme.image}">🌸</div>
-                            <p class="text-sm text-gray-800 text-center font-medium" th:text="${theme.name}">테마 이름</p>
-                            <p class="text-xs text-gray-600 mt-1" th:text="${theme.purchasedDate}">2026.01.01</p>
-                        </div>
-                    </th:block>
-                    <th:block th:if="${#lists.isEmpty(purchasedThemes)}">
-                        <div class="static-theme-item relative bg-gradient-to-br from-[#FFB6D9] to-[#FFE4F0] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5]">
-                            <div class="absolute top-2 right-2 px-3 py-1 bg-[#F5A5A5] text-white text-xs rounded-full">사용 중</div>
-                            <div class="text-6xl mb-3">🌸</div>
-                            <p class="text-sm text-gray-800 text-center font-medium">봄날의 벚꽃 핑크</p>
-                            <p class="text-xs text-gray-600 mt-1">2026.03.15</p>
-                        </div>
-                        <div class="static-theme-item bg-gradient-to-br from-[#2D2D2D] to-[#1A1A1A] rounded-2xl p-6 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer">
-                            <div class="text-6xl mb-3">🌙</div>
-                            <p class="text-sm text-white text-center font-medium">다크 모드 감성</p>
-                            <p class="text-xs text-gray-400 mt-1">2025.11.05</p>
-                        </div>
-                    </th:block>
+            <div class="flex gap-4 border-b border-gray-200 mb-8">
+                <button onclick="switchItemTab('theme')" id="tab-theme" class="pb-3 px-2 text-lg font-bold text-gray-900 border-b-2 border-gray-900 transition-colors">테마 설정</button>
+                <button onclick="switchItemTab('emoticon')" id="tab-emoticon" class="pb-3 px-2 text-lg font-medium text-gray-400 hover:text-gray-600 transition-colors border-b-2 border-transparent">보유 이모티콘</button>
+            </div>
+
+            <div id="content-theme" class="space-y-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">보유 중인 테마</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="themeContainer">
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-sm p-8">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-bold text-gray-800">보유 이모티콘</h2>
-                    <a th:href="@{/point-shop}" href="/point-shop"
-                       class="text-[#F5A5A5] hover:text-[#F28B8B] transition-colors text-sm font-medium">더 구매하기</a>
+            <div id="content-emoticon" class="hidden space-y-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">내 이모티콘 보관함</h2>
+                    <span class="text-sm text-gray-500 font-medium bg-gray-100 px-3 py-1 rounded-full">총 <span id="emoticonCount">0</span>개</span>
                 </div>
-                <div class="grid grid-cols-4 gap-4">
-                    <th:block th:each="emoticon : ${purchasedEmoticons}">
-                        <div th:onclick="|equipItem(${emoticon.id})|"
-                             th:class="${emoticon.isActive} ? 'relative bg-[#FCE8E3] rounded-2xl p-5 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5] cursor-pointer' : 'bg-white border-2 border-gray-200 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer'">
-                            <div th:if="${emoticon.isActive}" class="absolute top-1 right-1 px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">사용 중</div>
-                            <div class="text-5xl mb-2" th:text="${emoticon.image}">🐶</div>
-                            <p class="text-xs text-gray-800 text-center font-medium" th:text="${emoticon.name}">이모티콘</p>
-                            <p class="text-xs text-gray-500 mt-1" th:text="${emoticon.purchasedDate}">2026.01.01</p>
-                        </div>
-                    </th:block>
-                    <th:block th:if="${#lists.isEmpty(purchasedEmoticons)}">
-                        <div class="static-emoticon-item relative bg-[#FCE8E3] rounded-2xl p-5 aspect-square flex flex-col items-center justify-center border-4 border-[#F5A5A5] hover:scale-105 transition-transform cursor-pointer">
-                            <div class="absolute top-1 right-1 px-2 py-0.5 bg-[#F5A5A5] text-white text-xs rounded-full">사용 중</div>
-                            <div class="text-5xl mb-2">🐶</div>
-                            <p class="text-xs text-gray-800 text-center font-medium">잔소리쟁이 멍멍이</p>
-                            <p class="text-xs text-gray-500 mt-1">2026.02.20</p>
-                        </div>
-                        <div class="static-emoticon-item bg-white border-2 border-gray-200 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer">
-                            <div class="text-5xl mb-2">💰</div>
-                            <p class="text-xs text-gray-800 text-center font-medium">월급날 기분 최고</p>
-                            <p class="text-xs text-gray-500 mt-1">2026.01.12</p>
-                        </div>
-                    </th:block>
+                <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" id="emoticonContainer">
                 </div>
             </div>
 
@@ -101,7 +57,12 @@
 <script th:inline="javascript">
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+      renderItems();
     });
+
+    // 서버에서 전달받은 진짜 인벤토리 데이터 (없으면 빈 배열)
+    const serverThemes = /*[[${purchasedThemes != null ? purchasedThemes : '[]'}]]*/ [];
+    const serverEmoticons = /*[[${purchasedEmoticons != null ? purchasedEmoticons : '[]'}]]*/ [];
 
     function equipItem(invId) {
         if(!confirm('해당 아이템을 장착하시겠습니까?')) return;
@@ -124,6 +85,90 @@
 
         document.body.appendChild(form);
         form.submit();
+    }
+
+    function switchItemTab(tab) {
+        const tBtn = document.getElementById('tab-theme');
+        const eBtn = document.getElementById('tab-emoticon');
+        const tContent = document.getElementById('content-theme');
+        const eContent = document.getElementById('content-emoticon');
+
+        if(tab === 'theme') {
+            tBtn.className = "pb-3 px-2 text-lg font-bold text-gray-900 border-b-2 border-gray-900 transition-colors";
+            eBtn.className = "pb-3 px-2 text-lg font-medium text-gray-400 hover:text-gray-600 transition-colors border-b-2 border-transparent";
+            tContent.classList.remove('hidden');
+            eContent.classList.add('hidden');
+        } else {
+            eBtn.className = "pb-3 px-2 text-lg font-bold text-gray-900 border-b-2 border-gray-900 transition-colors";
+            tBtn.className = "pb-3 px-2 text-lg font-medium text-gray-400 hover:text-gray-600 transition-colors border-b-2 border-transparent";
+            eContent.classList.remove('hidden');
+            tContent.classList.add('hidden');
+        }
+    }
+
+    // 아이템 렌더링 함수
+    function renderItems() {
+        // 테마 렌더링
+        const tContainer = document.getElementById('themeContainer');
+        if (serverThemes.length === 0) {
+            tContainer.innerHTML = `
+                <div class="col-span-full py-12 text-center bg-white rounded-3xl border border-dashed border-gray-200">
+                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i data-lucide="palette" class="w-8 h-8 text-gray-300"></i>
+                    </div>
+                    <p class="text-gray-500 font-medium">보유 중인 테마가 없습니다.</p>
+                    <a href="/point-shop" class="inline-block mt-4 text-sm text-[#F5A5A5] hover:text-[#F28B8B] font-bold">상점 둘러보기 →</a>
+                </div>
+            `;
+        } else {
+            tContainer.innerHTML = serverThemes.map(t => {
+                const isApplied = t.isApplied;
+                const statusBadge = isApplied
+                    ? `<div class="absolute top-3 right-3 px-3 py-1 bg-gray-900 text-white text-xs font-bold rounded-full shadow-md z-10">사용 중</div>`
+                    : '';
+                const clickAction = isApplied ? '' : `onclick="equipItem(${t.id})"`;
+                const hoverClass = isApplied ? '' : 'hover:-translate-y-1 hover:shadow-lg cursor-pointer';
+                const ringClass = isApplied ? 'ring-2 ring-gray-900' : 'border border-gray-100';
+
+                return `
+                    <div class="relative bg-white rounded-3xl overflow-hidden transition-all duration-300 ${hoverClass} ${ringClass}" ${clickAction}>
+                        ${statusBadge}
+                        <div class="h-32 p-4 bg-gray-50 flex items-center justify-center text-4xl">
+                            ${t.image || '🎨'}
+                        </div>
+                        <div class="p-5">
+                            <h3 class="font-bold text-gray-800 text-lg mb-1">${t.name}</h3>
+                            <p class="text-xs text-gray-500 font-medium">구매일: ${t.purchaseDate || '알 수 없음'}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 이모티콘 렌더링
+        const eContainer = document.getElementById('emoticonContainer');
+        document.getElementById('emoticonCount').textContent = serverEmoticons.length;
+
+        if (serverEmoticons.length === 0) {
+            eContainer.innerHTML = `
+                <div class="col-span-full py-12 text-center bg-white rounded-3xl border border-dashed border-gray-200">
+                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i data-lucide="smile" class="w-8 h-8 text-gray-300"></i>
+                    </div>
+                    <p class="text-gray-500 font-medium">보유 중인 이모티콘이 없습니다.</p>
+                    <a href="/point-shop" class="inline-block mt-4 text-sm text-[#F5A5A5] hover:text-[#F28B8B] font-bold">상점 둘러보기 →</a>
+                </div>
+            `;
+        } else {
+            eContainer.innerHTML = serverEmoticons.map(e => `
+                <div class="bg-white border border-gray-100 rounded-2xl p-5 aspect-square flex flex-col items-center justify-center hover:scale-105 transition-transform cursor-pointer shadow-sm">
+                    <div class="text-5xl mb-3">${e.image || '😀'}</div>
+                    <p class="text-xs text-gray-800 text-center font-bold px-2 line-clamp-1">${e.name}</p>
+                    <p class="text-[10px] text-gray-400 mt-1">${e.purchaseDate || ''}</p>
+                </div>
+            `).join('');
+        }
+        lucide.createIcons();
     }
 </script>
 <th:block th:replace="~{common/layout/header :: scripts}"></th:block>

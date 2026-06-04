@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -130,7 +131,7 @@ public class PointService {
         return accountMemberRepository.findByMemberId(memberId).stream()
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
                 .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
-                .findFirst()
+                .max(Comparator.comparing(am -> am.getAccount().getId())) // 🔥 최신 활성 계좌 맵핑으로 수정!
                 .flatMap(am -> coupleRepository.findByAccountId(am.getAccount().getId()));
     }
 
