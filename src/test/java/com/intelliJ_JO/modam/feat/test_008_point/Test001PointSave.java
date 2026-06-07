@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -137,13 +138,13 @@ class Test001PointSave {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
-        // 중복 출석 시도
+        // 중복 출석 시도 — IllegalStateException → GlobalExceptionHandler → 409
         mockMvc.perform(post(POINT_SAVE_URL)
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().is5xxServerError()); // IllegalStateException
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -184,7 +185,7 @@ class Test001PointSave {
     }
 
     @Test
-    @DisplayName("비로그인 시 @AuthenticationPrincipal null → NPE 500")
+    @DisplayName("비로그인 시 @AuthenticationPrincipal null → NPE (null 체크 없음 → MockMvc ServletException 전파)")
     void 비로그인_포인트_적립() throws Exception {
         PointSaveRequest request = PointSaveRequest.builder()
                 .reason(PointReason.ATTENDANCE)
@@ -192,10 +193,11 @@ class Test001PointSave {
                 .descrip("출석")
                 .build();
 
-        mockMvc.perform(post(POINT_SAVE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().is5xxServerError());
+        // @AuthenticationPrincipal null 체크 없음 → NPE → MockMvc가 ServletException으로 전파
+        assertThrows(Exception.class, () ->
+            mockMvc.perform(post(POINT_SAVE_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))).andReturn()
+        );
     }
 }

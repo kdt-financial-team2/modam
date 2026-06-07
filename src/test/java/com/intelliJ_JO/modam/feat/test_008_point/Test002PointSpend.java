@@ -146,7 +146,7 @@ class Test002PointSpend {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isConflict()); // IllegalStateException → GlobalExceptionHandler → 409
     }
 
     @Test

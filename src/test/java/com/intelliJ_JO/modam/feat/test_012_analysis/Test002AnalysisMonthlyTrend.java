@@ -113,14 +113,14 @@ class Test002AnalysisMonthlyTrend {
     }
 
     @Test
-    @DisplayName("존재하지 않는 계좌 월별 추이 → 200 (AnalysisService가 existsById 체크 없음)")
+    @DisplayName("존재하지 않는 계좌 월별 추이 → 400 (AnalysisService existsById 체크 → IllegalArgumentException)")
     void 존재하지_않는_계좌_월별_추이() throws Exception {
-        // monthly-trend 서비스는 existsById 체크가 없어 빈 데이터 반환
+        // AnalysisService.getMonthlyTrend: existsById 체크 → IllegalArgumentException → GlobalExceptionHandler → 400
         mockMvc.perform(get("/api/analysis/999999/monthly-trend")
                         .param("year", String.valueOf(year))
                         .param("month", String.valueOf(month)))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isBadRequest());
     }
 
     @Test

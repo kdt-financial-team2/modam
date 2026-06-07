@@ -113,7 +113,7 @@ class Test001InviteCreate {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andDo(print())
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isConflict()); // IllegalStateException → GlobalExceptionHandler → 409
     }
 
     @Test

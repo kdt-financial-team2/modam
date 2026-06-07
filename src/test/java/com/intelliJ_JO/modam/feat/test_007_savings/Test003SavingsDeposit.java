@@ -1,7 +1,10 @@
 package com.intelliJ_JO.modam.feat.test_007_savings;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
 import com.intelliJ_JO.modam.domain.account.entity.AccountType;
+import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
+import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
@@ -44,6 +47,7 @@ class Test003SavingsDeposit {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private AccountRepository accountRepository;
+    @Autowired private AccountMemberRepository accountMemberRepository;
     @Autowired private MemberRepository memberRepository;
     @Autowired private SavingsRepository savingsRepository;
     @Autowired private BCryptPasswordEncoder passwordEncoder;
@@ -73,6 +77,11 @@ class Test003SavingsDeposit {
                 .rrn(passwordEncoder.encode("900101123456"))
                 .account(testAccount)
                 .build());
+
+        // TransactionService는 AccountMember(ACCEPT) 존재 여부를 검증하므로 미리 등록
+        accountMemberRepository.save(AccountMember.builder()
+                .account(testAccount).member(testMember)
+                .inviteStatus(InviteStatus.ACCEPT).build());
 
         // 목표 금액 100만원 (납입은 소액만 테스트해 포인트 지급 트리거 방지)
         testSavings = savingsRepository.save(Savings.builder()
@@ -122,7 +131,7 @@ class Test003SavingsDeposit {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("9999999"))
                 .andDo(print())
-                .andExpect(status().is5xxServerError()); // 서비스에서 IllegalStateException
+                .andExpect(status().isConflict()); // IllegalStateException → GlobalExceptionHandler → 409
     }
 
     @Test

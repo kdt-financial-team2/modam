@@ -118,7 +118,7 @@ class Test002InviteAccept {
     void 이미_수락된_초대_재수락() throws Exception {
         mockMvc.perform(patch(INVITE_URL + "/" + acceptedInvite.getId() + "/accept"))
                 .andDo(print())
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isConflict()); // IllegalStateException → GlobalExceptionHandler → 409
     }
 
     @Test
@@ -126,7 +126,7 @@ class Test002InviteAccept {
     void 거절된_초대_수락_시도() throws Exception {
         mockMvc.perform(patch(INVITE_URL + "/" + rejectedInvite.getId() + "/accept"))
                 .andDo(print())
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isConflict()); // IllegalStateException → GlobalExceptionHandler → 409
     }
 
     @Test

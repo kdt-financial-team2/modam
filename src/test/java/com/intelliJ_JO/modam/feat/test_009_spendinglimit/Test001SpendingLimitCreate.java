@@ -179,6 +179,6 @@ class Test001SpendingLimitCreate {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isBadRequest()); // IllegalArgumentException → GlobalExceptionHandler → 400
     }
 }
