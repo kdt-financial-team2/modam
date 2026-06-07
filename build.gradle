@@ -50,4 +50,6 @@ tasks.withType(JavaCompile) {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	// @Disabled 조건 비활성화 (테스트 실행 확인용 — 확인 후 제거)
+	systemProperty 'junit.jupiter.conditions.deactivate', 'org.junit.jupiter.engine.extension.DisabledCondition'
 }
