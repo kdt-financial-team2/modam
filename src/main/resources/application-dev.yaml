@@ -1,0 +1,40 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:modamdev;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # dev 환경에서는 메일 발송을 비활성화 (실제 전송 없이 로그만 출력)
+  mail:
+    host: localhost
+    port: 1025
+    username: dev@modam.local
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+logging:
+  level:
+    root: DEBUG
+    "[com.intelliJ_JO.modam]": DEBUG
+    "[org.hibernate.SQL]": DEBUG
+    "[org.hibernate.type.descriptor.sql]": TRACE
