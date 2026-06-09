@@ -32,9 +32,9 @@
             <div th:each="noti : ${notifications}"
                  th:id="'noti-' + ${noti.id}"
                  th:data-target-url="${noti.targetUrl}"
-                 onclick="handleNotiClick(this)"
-                 th:classappend="${noti.isRead == 'N'} ? 'bg-[#FFF7F5] border-l-4 border-[#F5A5A5]' : 'bg-white'"
-                 class="flex items-start gap-4 p-5 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+                 th:onclick="${not #strings.isEmpty(noti.targetUrl)} ? 'handleNotiClick(this)' : null"
+                 th:classappend="(${noti.isRead == 'N'} ? 'bg-[#FFF7F5] border-l-4 border-[#F5A5A5]' : 'bg-white') + ' ' + (${not #strings.isEmpty(noti.targetUrl)} ? 'cursor-pointer hover:shadow-md' : '')"
+                 class="flex items-start gap-4 p-5 rounded-2xl shadow-sm transition-shadow">
 
                 <!-- 아이콘 -->
                 <div class="w-12 h-12 bg-[#FCE8E3] rounded-full flex items-center justify-center flex-shrink-0">
@@ -94,42 +94,24 @@
 <th:block th:replace="~{common/layout/footer :: footer}"></th:block>
 
 <script>
-    window.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+    window.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+        markAllReadPage(); // 페이지 진입 시 전체 읽음 처리
+    });
 
     // CSRF 토큰 쿠키에서 추출
     function getCsrfToken() {
         return document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || '';
     }
 
-    // 클릭 핸들러: targetUrl 유무에 따라 분기
+    // 클릭 핸들러: 읽음 처리 후 /notifications로 이동
     function handleNotiClick(el) {
-        const url = el.dataset.targetUrl;
-        if (url) {
-            markReadAndGo(el, url);
-        } else {
-            markReadItem(el);
-        }
-    }
-
-    // 단건 읽음 처리 (이동 없음)
-    function markReadItem(el) {
         const notiId = el.id.replace('noti-', '');
         fetch(`/api/notifications/${notiId}/read`, {
             method: 'PATCH',
             headers: { 'X-CSRF-TOKEN': getCsrfToken() }
-        }).then(() => applyReadStyle(el));
-    }
-
-    // 단건 읽음 처리 후 targetUrl로 이동
-    function markReadAndGo(el, url) {
-        const notiId = el.id.replace('noti-', '');
-        fetch(`/api/notifications/${notiId}/read`, {
-            method: 'PATCH',
-            headers: { 'X-CSRF-TOKEN': getCsrfToken() }
-        }).then(() => {
-            applyReadStyle(el);
-            if (url) window.location.href = url;
-        });
+        }).catch(() => {});
+        window.location.href = '/notifications';
     }
 
     // 전체 읽음 처리

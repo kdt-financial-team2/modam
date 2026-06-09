@@ -428,7 +428,13 @@
       const today = new Date();
       const oneYearAgo = new Date(today);
       oneYearAgo.setFullYear(today.getFullYear() - 1);
-      const fmt = d => d.toISOString().slice(0, 10); // 'yyyy-MM-dd'
+      // toISOString()은 UTC 기준이라 KST(+9)에서 하루 밀림 → 로컬 날짜로 포맷
+      const fmt = d => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      };
 
       document.getElementById('startDateInput').value = fmt(oneYearAgo);
       document.getElementById('endDateInput').value   = fmt(today);

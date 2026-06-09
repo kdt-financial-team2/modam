@@ -95,6 +95,14 @@ public class TransferViewController {
     @GetMapping("/transfer/complete")
     public String transferComplete(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         if (!model.containsAttribute("transfer")) return "redirect:/transfer";
+
+        // 송금 후 최신 그룹 계좌 잔액 조회하여 모델에 추가
+        GroupAccountStatusDto status = accountService.getGroupAccountStatus(userDetails.getMember());
+        if (status.isHasGroupAccount()) {
+            AccountResponseDto account = accountService.getAccount(status.getAccountId());
+            model.addAttribute("currentBalance", account.getAvailableBalance());
+        }
+
         dashboardService.populateHeader(userDetails.getMember(), model);
         return "domain/transfer/transfer-complete";
     }

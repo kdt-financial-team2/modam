@@ -1,6 +1,9 @@
 package com.intelliJ_JO.modam.domain.spendinglimit.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
+import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
+import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.spendinglimit.dto.SpendingLimitDto;
@@ -28,6 +31,17 @@ public class SpendingLimitService {
     private final SpendingLimitRepository spendingLimitRepository;
     private final TransactionRepository transactionRepository;
     private final MemberRepository memberRepository;
+    private final AccountMemberRepository accountMemberRepository;
+
+    // account_member 조인 테이블을 통해 수락된 그룹 계좌를 조회하는 헬퍼
+    private Account getGroupAccount(Long memberId) {
+        return accountMemberRepository.findByMemberId(memberId).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
+                .findFirst()
+                .map(am -> am.getAccount())
+                .orElse(null);
+    }
 
     // =========================
     // 소비 제한 조회
@@ -39,7 +53,7 @@ public class SpendingLimitService {
                                 "존재하지 않는 회원입니다."
                         ));
 
-        Account account = member.getAccount();
+        Account account = getGroupAccount(memberId);
 
         LocalDateTime start =
                 LocalDate.now()
@@ -108,8 +122,8 @@ public class SpendingLimitService {
     public String saveSpendingLimits(Long memberId, SpendingLimitSaveRequest request) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        // account 조회
-        Account account = member.getAccount();
+        // account_member 조인 테이블을 통해 수락된 그룹 계좌 조회
+        Account account = getGroupAccount(memberId);
 
         // account 연결 안 된 경우
         if (account == null) {
@@ -132,7 +146,7 @@ public class SpendingLimitService {
             joinedCategories =
                     String.join(",", request.getCategories());
         }
-        // 기존 제한 조회
+        // 기존 제한 조회 — 있으면 업데이트, 없으면 신규 생성 (upsert)
         Optional<SpendingLimit> existingLimit =
                 spendingLimitRepository
                         .findByAccountIdAndCategory(
@@ -140,25 +154,20 @@ public class SpendingLimitService {
                                 joinedCategories
                         );
 
-        // 이미 존재하면 프론트에 상태값 전달
-        if (existingLimit.isPresent()) {
-            return "EXISTS";
-        }
-
-        // 신규 생성
-        SpendingLimit limit =
+        SpendingLimit limit = existingLimit.orElseGet(() ->
                 SpendingLimit.builder()
                         .member(member)
                         .account(account)
                         .category(joinedCategories)
-                        .build();
+                        .build()
+        );
 
-        // 소비 한도 저장
+        // 소비 한도 저장/수정
         limit.updateBudget(
                 request.getBudgetAmount()
         );
 
-        // 알림 설정 저장
+        // 알림 설정 저장/수정
         limit.updateSettings(
                 request.isAlertAt80(),
                 request.isAlertAt100(),
@@ -174,7 +183,7 @@ public class SpendingLimitService {
 
         spendingLimitRepository.save(limit);
 
-        return "SUCCESS";
+        return existingLimit.isPresent() ? "UPDATED" : "SUCCESS";
     }
 
     // =========================
@@ -185,14 +194,14 @@ public class SpendingLimitService {
             Long memberId,
             SpendingLimitSaveRequest request
     ) {
-        Member member =
-                memberRepository.findById(memberId)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "존재하지 않는 회원입니다."
-                                ));
+        // 회원 존재 여부 확인
+        memberRepository.findById(memberId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "존재하지 않는 회원입니다."
+                        ));
 
-        Account account = member.getAccount();
+        Account account = getGroupAccount(memberId);
 
         if (account == null) {
             throw new IllegalArgumentException(
