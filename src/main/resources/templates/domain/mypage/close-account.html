@@ -9,7 +9,7 @@
 </head>
 <body class="min-h-screen bg-[#FAFAFA] flex flex-col">
 
-<th:block th:replace="~{common/layout/header :: nav}"></th:block>
+<th:block th:replace="~{common/layout/header-dashboard :: nav}"></th:block>
 
 <div class="flex flex-1">
 
@@ -372,5 +372,6 @@
       document.getElementById('refundPartnerContrib3').textContent = '기여도 ' + prC.toFixed(1) + '% 기준';
     }
 </script>
+<th:block th:replace="~{common/layout/header-dashboard :: scripts}"></th:block>
 </body>
 </html>

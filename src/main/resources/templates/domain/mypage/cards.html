@@ -17,7 +17,7 @@
 </head>
 <body class="min-h-screen bg-[#FAFAFA] flex flex-col relative">
 
-<th:block th:replace="~{common/layout/header :: nav}"></th:block>
+<th:block th:replace="~{common/layout/header-dashboard :: nav}"></th:block>
 
 <div class="flex flex-1">
 
@@ -388,6 +388,6 @@
     if (confirm('정말 분실 신고하시겠어요?\n\n신고하면:\n• 즉시 사용이 중지됩니다\n• 재발급이 필요합니다\n• 되돌릴 수 없어요')) { updateCardStatus('LOST'); }
   }
 </script>
-<th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+<th:block th:replace="~{common/layout/header-dashboard :: scripts}"></th:block>
 </body>
 </html>

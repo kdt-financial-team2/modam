@@ -125,9 +125,20 @@ public class MypageCardViewController {
     // [기존 MypageViewController - 8. 카드 발급 워크플로우 파트]
     // =========================================================================
     @GetMapping("/mypage/card/step1")
-    public String cardStep1(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+    public String cardStep1(@AuthenticationPrincipal CustomUserDetails userDetails, Model model,
+                            RedirectAttributes rttr) {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         populateAccountData(freshMember, model);
+
+        // 공통 계좌(GROUP)가 없으면 카드 발급 불가 — 카드 관리 페이지로 돌려보냄
+        boolean hasGroupAccount = accountMemberRepository.findByMemberId(freshMember.getId()).stream()
+                .anyMatch(am -> am.getInviteStatus() == InviteStatus.ACCEPT
+                        && "GROUP".equals(am.getAccount().getAccountType().name()));
+        if (!hasGroupAccount) {
+            rttr.addFlashAttribute("errorMsg", "카드 발급은 공통 계좌(모임 통장)가 있어야 합니다. 먼저 모임 통장을 개설하거나 파트너의 초대를 수락해주세요.");
+            return "redirect:/mypage/cards";
+        }
+
         return "domain/mypage/card-step1";
     }
 
@@ -135,19 +146,27 @@ public class MypageCardViewController {
     public String processStep1(@ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto,
                                @AuthenticationPrincipal CustomUserDetails userDetails,
                                RedirectAttributes rttr) {
-        Account account = accountMemberRepository.findByMemberId(userDetails.getMember().getId()).stream()
-                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()))
-                .max(Comparator.comparing(am -> am.getAccount().getId()))
-                .orElseThrow(() -> new IllegalArgumentException("연결된 공동 계좌가 없습니다."))
-                .getAccount();
+        try {
+            // 공통 계좌(GROUP)만 대상으로 조회 — 개인 계좌는 카드와 연결되지 않음
+            Account account = accountMemberRepository.findByMemberId(userDetails.getMember().getId()).stream()
+                    .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT
+                            && "GROUP".equals(am.getAccount().getAccountType().name()))
+                    .max(Comparator.comparing(am -> am.getAccount().getId()))
+                    .orElseThrow(() -> new IllegalArgumentException("연결된 공통 계좌가 없습니다."))
+                    .getAccount();
 
-        if ("CLOSED".equals(account.getStatus().name())) {
-            rttr.addFlashAttribute("errorMsg", "해지된 계좌에서는 새로운 카드를 발급할 수 없습니다.");
+            if ("CLOSED".equals(account.getStatus().name())) {
+                rttr.addFlashAttribute("errorMsg", "해지된 계좌에서는 새로운 카드를 발급할 수 없습니다.");
+                return "redirect:/mypage/cards";
+            }
+
+            sessionDto.setTargetAccountId(account.getId());
+            return "redirect:/mypage/card/step2";
+
+        } catch (Exception e) {
+            rttr.addFlashAttribute("errorMsg", "공통 계좌를 찾을 수 없습니다: " + e.getMessage());
             return "redirect:/mypage/cards";
         }
-
-        sessionDto.setTargetAccountId(account.getId());
-        return "redirect:/mypage/card/step2";
     }
 
     @GetMapping("/mypage/card/step2") public String cardStep2() { return "domain/mypage/card-step2"; }
