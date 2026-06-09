@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:modamdev;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    url: jdbc:h2:file:./data/modamdb;MODE=Oracle
     driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    username: ${DEV_DB_USERNAME}
+    password: ${DEV_DB_PASSWORD}
 
   h2:
     console:
@@ -13,10 +13,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
 
   # dev 환경에서는 메일 발송을 비활성화 (실제 전송 없이 로그만 출력)
@@ -34,7 +33,7 @@ spring:
 
 logging:
   level:
-    root: DEBUG
-    "[com.intelliJ_JO.modam]": DEBUG
-    "[org.hibernate.SQL]": DEBUG
-    "[org.hibernate.type.descriptor.sql]": TRACE
+    root: WARN
+    "[com.intelliJ_JO.modam]": INFO
+    "[org.hibernate.SQL]": WARN
+    "[org.hibernate.type.descriptor.sql]": WARN
