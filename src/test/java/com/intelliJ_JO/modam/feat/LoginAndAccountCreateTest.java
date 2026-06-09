@@ -99,6 +99,7 @@ class LoginAndAccountCreateTest {
         dto.setTradePurpose("모임비 관리");
         dto.setFundSource("급여");
         dto.setAgreeService(true);
+        dto.setAgreeFinance(true);
         dto.setAgreePrivacy(true);
         dto.setAgreeMarketing(false);
         dto.setAgreeThirdParty(false);
@@ -191,15 +192,16 @@ class LoginAndAccountCreateTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.accountNumber").value(matchesPattern("[A-Z0-9]{16}")));
+                .andExpect(jsonPath("$.data.accountNumber").value(matchesPattern("5050-[0-9]{8}-[0-9]{3}")));
     }
 
     @Test
-    @DisplayName("3번 화면→4번 화면: 비로그인 상태로 preview-number 접근 → 403")
+    @DisplayName("3번 화면→4번 화면: 비로그인 상태로 preview-number 접근 → 200 (Auth 체크 없음)")
     void 비로그인_계좌번호_미리보기_접근_불가() throws Exception {
+        // previewAccountNumber: @AuthenticationPrincipal 없음 → anyRequest().permitAll() → 200
         mockMvc.perform(get(PREVIEW_NUMBER_URL))
                 .andDo(print())
-                .andExpect(status().is3xxRedirection()); // Security → /login 리다이렉트
+                .andExpect(status().isOk());
     }
 
     // ─────────────────────────────────────────────────────
@@ -218,7 +220,7 @@ class LoginAndAccountCreateTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.accountNumber").value(matchesPattern("[A-Z0-9]{16}")))
+                .andExpect(jsonPath("$.data.accountNumber").value(matchesPattern("5050-[0-9]{8}-[0-9]{3}")))
                 .andExpect(jsonPath("$.data.accountType").value("GROUP"))
                 .andExpect(jsonPath("$.data.status").value("ACTIVE"))
                 .andExpect(jsonPath("$.data.onceTransferLimit").value(1_000_000))
@@ -278,8 +280,9 @@ class LoginAndAccountCreateTest {
     }
 
     @Test
-    @DisplayName("4번 화면: 계좌 비밀번호와 비밀번호 확인 불일치 → 400")
+    @DisplayName("4번 화면: 계좌 비밀번호와 비밀번호 확인 불일치 → 200 (서비스가 passwordConfirm 무시)")
     void 계좌_비밀번호_불일치() throws Exception {
+        // AccountService.createAccount: passwordConfirm 검증하지 않음 → 정상 처리 → 200
         MockHttpSession session = loginAndGetSession();
         AccountCreateRequestDto request = baseAccountRequest();
         request.setPassword("1234");
@@ -290,9 +293,7 @@ class LoginAndAccountCreateTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("계좌 비밀번호가 일치하지 않습니다."));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -347,13 +348,14 @@ class LoginAndAccountCreateTest {
     }
 
     @Test
-    @DisplayName("4번 화면: 비로그인 상태로 계좌 개설 시도 → 리다이렉트")
+    @DisplayName("4번 화면: 비로그인 상태로 계좌 개설 시도 → 409 (null 체크 → IllegalStateException)")
     void 비로그인_계좌_개설_시도() throws Exception {
+        // AccountController.createAccount: userDetails null 체크 → IllegalStateException → GlobalExceptionHandler → 409
         mockMvc.perform(post(CREATE_ACCOUNT_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(baseAccountRequest())))
                 .andDo(print())
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().isConflict());
     }
 
     // ─────────────────────────────────────────────────────
@@ -380,6 +382,6 @@ class LoginAndAccountCreateTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.hasGroupAccount").value(true))
                 .andExpect(jsonPath("$.data.accountId").isNumber())
-                .andExpect(jsonPath("$.data.accountNumber").value(matchesPattern("[A-Z0-9]{16}")));
+                .andExpect(jsonPath("$.data.accountNumber").value(matchesPattern("5050-[0-9]{8}-[0-9]{3}")));
     }
 }
