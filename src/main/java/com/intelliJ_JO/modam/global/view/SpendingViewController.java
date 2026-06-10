@@ -301,11 +301,12 @@ public class SpendingViewController {
                     model.addAttribute("record", record));
         });
 
-        // 보유 이모티콘 목록 (포인트 샵에서 구매한 것만)
+        // 보유 이모티콘 목록 (포인트 샵에서 구매한 emoticon 타입만, image null 제외)
         List<String> ownedEmojis = inventoryRepository
                 .findEmojiItemsByMemberId(userDetails.getMember().getId())
                 .stream()
                 .map(inv -> inv.getItem().getImage())
+                .filter(img -> img != null && !img.isEmpty())
                 .collect(Collectors.toList());
         model.addAttribute("ownedEmojis", ownedEmojis);
 
@@ -361,6 +362,7 @@ public class SpendingViewController {
                     .findEmojiItemsByMemberId(memberId)
                     .stream()
                     .map(inv -> inv.getItem().getImage())
+                    .filter(img -> img != null && !img.isEmpty())
                     .collect(Collectors.toList());
             model.addAttribute("ownedEmojis", ownedEmojis);
             model.addAttribute("errorMessage", e.getMessage());

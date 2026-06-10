@@ -2,12 +2,14 @@ package com.intelliJ_JO.modam.domain.notification.dto.response;
 
 import com.intelliJ_JO.modam.domain.notification.entity.Notification;
 import com.intelliJ_JO.modam.domain.notification.entity.NotificationType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
+@Schema(description = "알림 응답 DTO")
 @Getter
 public class NotificationResponseDto {
 
@@ -33,17 +35,37 @@ public class NotificationResponseDto {
             NotificationType.POINT_SPEND, "포인트 사용"
     );
 
+    @Schema(description = "알림 ID", example = "1")
     private final Long id;
+
+    @Schema(description = "알림 유형 (DEPOSIT / WITHDRAW / LIMIT_WARNING / INVITE / SAVINGS_GOAL / STORY_CREATED / FAVORITE / POINT_SPEND)", example = "DEPOSIT")
     private final NotificationType notiType;
+
+    @Schema(description = "알림 메시지", example = "50,000원이 입금되었습니다.")
     private final String message;
+
+    @Schema(description = "이동할 URL", example = "/accounts/1/transactions")
     private final String targetUrl;
+
+    @Schema(description = "읽음 여부 (Y / N)", example = "N")
     private final String isRead;
+
+    @Schema(description = "알림 생성일시")
     private final LocalDateTime createdAt;
 
+    @Schema(description = "읽음 여부 (boolean)", example = "false")
     private final boolean read;
+
+    @Schema(description = "알림 아이콘명", example = "arrow-down-circle")
     private final String icon;
+
+    @Schema(description = "알림 제목", example = "입금 알림")
     private final String title;
+
+    @Schema(description = "알림 상세 설명", example = "50,000원이 입금되었습니다.")
     private final String description;
+
+    @Schema(description = "알림 시간 (MM.dd HH:mm 형식)", example = "06.11 14:30")
     private final String time;
 
     public NotificationResponseDto(Notification notification) {

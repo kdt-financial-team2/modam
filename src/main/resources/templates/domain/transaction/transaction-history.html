@@ -159,7 +159,8 @@
                 <span th:classappend="${tx.type == 'deposit'} ? 'text-blue-600' : 'text-gray-900'"
                       class="text-sm font-bold">
                   <th:block th:if="${tx.type == 'deposit'}">+</th:block>
-                  <th:block th:text="${#numbers.formatInteger(tx.amount, 0, 'COMMA')}">-12,500</th:block>원
+                  <th:block th:unless="${tx.type == 'deposit'}">-</th:block>
+                  <th:block th:text="${#numbers.formatInteger(tx.amount, 0, 'COMMA')}">12,500</th:block>원
                 </span>
               </div>
 
@@ -308,7 +309,7 @@
         </div>
         <div class="col-span-2 text-right">
           <span class="text-sm font-bold ${tx.type === 'deposit' ? 'text-blue-600' : 'text-gray-900'}">
-            ${tx.amount > 0 ? '+' : ''}${tx.amount.toLocaleString()}원
+            ${tx.type === 'deposit' ? '+' : '-'}${tx.amount.toLocaleString()}원
           </span>
         </div>
         <div class="col-span-1 text-right text-xs text-gray-500">${tx.balance.toLocaleString()}</div>
