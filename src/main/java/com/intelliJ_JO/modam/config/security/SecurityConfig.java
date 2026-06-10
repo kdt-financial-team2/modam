@@ -74,21 +74,24 @@ public class SecurityConfig {
             // 요청별 접근 권한 설정
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    // 로그인·회원가입 관련 경로 (비로그인 접근 허용)
-                    "/", "/landing", "/auth/login", "/auth/login?*", "/login",
+                    // 로그인·회원가입 관련 뷰 경로 (비로그인 접근 허용)
+                    "/", "/landing",
+                    "/auth/login", "/auth/login?*", "/login",
                     "/auth/find-id", "/auth/find-password", "/auth/find-password/**",
                     "/signup/**", "/terms",
-                    "/members/join",
-                    // 정적 리소스 (CSS, JS, 이미지)
-                    "/css/**", "/js/**", "/images/**",
-                    // Swagger API 문서 경로
+                    // 회원가입 시 비로그인 상태에서 호출되는 API
+                    "/api/member",               // POST: 회원 가입
+                    "/api/member/check-userid",  // GET: 아이디 중복 확인
+                    "/api/member/check-account", // GET: 계좌 확인
+                    // 정적 리소스 (CSS, JS, 이미지, 폰트)
+                    "/css/**", "/js/**", "/images/**", "/fonts/**",
+                    // Swagger API 문서 (개발용)
                     "/swagger-ui/**", "/swagger-ui.html",
                     "/v3/api-docs", "/v3/api-docs/**",
                     // H2 콘솔 (개발용 DB 관리 도구)
                     "/h2-console/**"
-                ).permitAll()                   // 위 경로는 인증 없이 접근 허용
-                .requestMatchers("/dashboard/**").authenticated() // 대시보드는 인증 필요
-                .anyRequest().permitAll()       // 나머지 요청은 인증 없이 접근 허용
+                ).permitAll()
+                .anyRequest().authenticated()   // 그 외 모든 요청은 로그인 필요
             )
 
             // 폼 로그인 설정

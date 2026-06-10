@@ -165,6 +165,17 @@ public class MypageProfileViewController {
                 rttr.addFlashAttribute("errorMsg", "비밀번호 검증에 실패하여 탈퇴가 취소되었습니다.");
                 return "redirect:/mypage/withdrawal";
             }
+
+            // 활성 공통 계좌가 남아있으면 탈퇴 차단
+            boolean hasActiveGroupAccount = accountMemberRepository.findByMemberId(memberId).stream()
+                    .anyMatch(am -> am.getInviteStatus() == InviteStatus.ACCEPT
+                            && "GROUP".equals(am.getAccount().getAccountType().name())
+                            && !"CLOSED".equals(am.getAccount().getStatus().name()));
+            if (hasActiveGroupAccount) {
+                rttr.addFlashAttribute("errorMsg", "활성 공통 계좌가 있어 탈퇴할 수 없습니다. 계좌 해지 후 다시 시도해주세요.");
+                return "redirect:/mypage/withdrawal";
+            }
+
             memberService.deleteMember(memberId);
             request.getSession().invalidate();
             SecurityContextHolder.clearContext();

@@ -15,4 +15,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findByMemberIdAndIsRead(Long memberId, String isRead);
 
     long countByMemberIdAndIsRead(Long memberId, String isRead);
+
+    void deleteByMemberId(Long memberId);
 }

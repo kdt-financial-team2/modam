@@ -55,12 +55,23 @@ public class CardService {
         // 5) 4자리 비밀번호 암호화 처리
         String encryptedPassword = requestDto.getPassword() != null ? aes256Util.encrypt(requestDto.getPassword()) : null;
 
-        // 6) 카드 중복 번호 검증 한 번 더 방어 (DB에는 암호화되어 저장되므로, 암호화된 값으로 비교해야 함)
+        // 6) 계좌의 기존 카드 확인 — LOST만 있으면 전부 삭제 후 재발급, 그 외(ACTIVE/STOPPED)이면 차단
+        List<Card> existingCards = cardRepository.findByAccountId(requestDto.getAccountId());
+        if (!existingCards.isEmpty()) {
+            boolean allLost = existingCards.stream().allMatch(c -> c.getStatus() == CardStatus.LOST);
+            if (allLost) {
+                cardRepository.deleteAll(existingCards);
+            } else {
+                throw new IllegalArgumentException("이미 이 계좌에 발급된 카드가 있습니다.");
+            }
+        }
+
+        // 7) 카드 번호 중복 방어
         if (cardRepository.findByCardNumber(encryptedCardNumber).isPresent()) {
             throw new IllegalArgumentException("이미 등록된 카드 번호입니다.");
         }
 
-        // 7) 카드 엔티티 생성
+        // 8) 카드 엔티티 생성
         Card card = Card.builder()
                 .account(account)
                 .member(member)
@@ -72,7 +83,7 @@ public class CardService {
                 // status는 @Builder.Default 처리가 되어 있으므로 자동으로 ACTIVE가 들어갑니다
                 .build();
 
-        // 8) DB에 저장
+        // 9) DB에 저장
         cardRepository.save(card);
     }
 
@@ -95,8 +106,13 @@ public class CardService {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 카드를 찾을 수 없습니다."));
 
-        if (!card.getMember().getId().equals(memberId)) {
-            throw new IllegalArgumentException("본인 카드만 상태를 변경할 수 있습니다.");
+        // 같은 계좌의 멤버라면 파트너 카드도 상태 변경 가능
+        boolean isMemberOfAccount = accountMemberRepository
+                .findByAccountIdAndMemberId(card.getAccount().getId(), memberId)
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .isPresent();
+        if (!isMemberOfAccount) {
+            throw new IllegalArgumentException("해당 계좌의 구성원만 카드 상태를 변경할 수 있습니다.");
         }
 
         card.updateStatus(newStatus);

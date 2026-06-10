@@ -19,6 +19,19 @@
       <!-- ===== 고정 상단: 페이지 헤더 + 포인트 카드 + 메인 탭 ===== -->
       <div class="flex-shrink-0 pt-6 pb-0">
 
+        <!-- 계좌 해지 안내 배너 -->
+        <div th:if="${accountClosed}"
+             class="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3 mb-4">
+          <div class="flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5 text-amber-500 flex-shrink-0"></i>
+            <p class="text-sm text-amber-800 font-medium">공동 계좌가 해지되어 포인트 구매가 제한됩니다. 새 공동 계좌를 만들어 이용해 주세요.</p>
+          </div>
+          <a href="/group-account/new"
+             class="ml-4 flex-shrink-0 px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-xl hover:bg-amber-600 transition-colors">
+            계좌 만들기
+          </a>
+        </div>
+
         <!-- 페이지 헤더 -->
         <div class="mb-4">
           <h1 class="text-2xl font-bold text-gray-900 mb-1">포인트 상점</h1>

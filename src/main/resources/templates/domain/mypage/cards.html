@@ -257,6 +257,7 @@
   const serverCardType   = /*[[${cardType}]]*/ 'domestic';
   const serverCvv        = /*[[${cardCvv != null ? cardCvv : '123'}]]*/ '123';
   const serverAccountClosed = /*[[${isAccountClosed}]]*/ false;
+  const serverCardId     = /*[[${cardId}]]*/ null;
   let cardStatus         = /*[[${cardStatus}]]*/ 'ACTIVE';
 
   const cardColors = {
@@ -378,14 +379,34 @@
     window.location.href = url;
   }
 
-  function handleStopCard() {
-    if (confirm('카드를 일시 정지할까요?\n\n정지하면:\n• 모든 결제가 차단됩니다\n• 언제든 재개할 수 있어요')) { updateCardStatus('STOPPED'); }
+  async function changeCardStatusApi(newStatus) {
+    if (!serverCardId) {
+      alert('카드 정보를 불러올 수 없습니다.');
+      return false;
+    }
+    const res = await fetch(`/api/cards/${serverCardId}/status?status=${newStatus}`, { method: 'PATCH' });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      alert(body.message || '카드 상태 변경 중 오류가 발생했습니다.');
+      return false;
+    }
+    return true;
   }
-  function handleResumeCard() {
-    if (confirm('카드 사용을 재개할까요?\n\n재개하면:\n• 즉시 결제가 가능합니다')) { updateCardStatus('ACTIVE'); }
+
+  async function handleStopCard() {
+    if (confirm('카드를 일시 정지할까요?\n\n정지하면:\n• 모든 결제가 차단됩니다\n• 언제든 재개할 수 있어요')) {
+      if (await changeCardStatusApi('STOPPED')) updateCardStatus('STOPPED');
+    }
   }
-  function handleReportLost() {
-    if (confirm('정말 분실 신고하시겠어요?\n\n신고하면:\n• 즉시 사용이 중지됩니다\n• 재발급이 필요합니다\n• 되돌릴 수 없어요')) { updateCardStatus('LOST'); }
+  async function handleResumeCard() {
+    if (confirm('카드 사용을 재개할까요?\n\n재개하면:\n• 즉시 결제가 가능합니다')) {
+      if (await changeCardStatusApi('ACTIVE')) updateCardStatus('ACTIVE');
+    }
+  }
+  async function handleReportLost() {
+    if (confirm('정말 분실 신고하시겠어요?\n\n신고하면:\n• 즉시 사용이 중지됩니다\n• 재발급이 필요합니다\n• 되돌릴 수 없어요')) {
+      if (await changeCardStatusApi('LOST')) location.reload();
+    }
   }
 </script>
 <th:block th:replace="~{common/layout/header-dashboard :: scripts}"></th:block>

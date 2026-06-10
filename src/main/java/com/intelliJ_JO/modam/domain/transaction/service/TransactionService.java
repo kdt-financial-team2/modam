@@ -2,6 +2,7 @@ package com.intelliJ_JO.modam.domain.transaction.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
+import com.intelliJ_JO.modam.domain.account.entity.AccountStatus;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
@@ -191,8 +192,11 @@ public class TransactionService {
     public List<TransactionResponseDto> getTransactions(Long accountId,
                                                         Long lastTransactionId,
                                                         int size) {
-        if (!accountRepository.existsById(accountId)) {
-            throw new IllegalArgumentException("계좌를 찾을 수 없습니다.");
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다."));
+
+        if (account.getStatus() == AccountStatus.CLOSED) {
+            return List.of();
         }
 
         Pageable pageable = PageRequest.of(0, size);

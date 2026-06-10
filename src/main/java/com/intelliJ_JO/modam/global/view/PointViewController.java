@@ -35,6 +35,7 @@ public class PointViewController {
     public String pointShop(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         dashboardService.populateHeader(userDetails.getMember(), model);
         model.addAttribute("currentPage", "point");
+        model.addAttribute("accountClosed", shopService.isGroupAccountClosed(userDetails.getMember().getId()));
 
         Long memberId = userDetails.getMember().getId();
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
@@ -88,6 +89,10 @@ public class PointViewController {
                                   @PathVariable("id") Long id,
                                   Model model, RedirectAttributes redirectAttributes) {
         Long memberId = userDetails.getMember().getId();
+        if (shopService.isGroupAccountClosed(memberId)) {
+            redirectAttributes.addFlashAttribute("accountClosed", true);
+            return "redirect:/point-shop";
+        }
         if (shopService.isOwned(memberId, id)) {
             redirectAttributes.addFlashAttribute("product", shopService.getProduct(id));
             return "redirect:/point-shop/already-owned";
@@ -110,6 +115,10 @@ public class PointViewController {
             redirectAttributes.addFlashAttribute("remainingPoints", remainingPoints);
             return "redirect:/point-shop/purchase/complete";
         } catch (IllegalStateException e) {
+            if ("ACCOUNT_CLOSED".equals(e.getMessage())) {
+                redirectAttributes.addFlashAttribute("accountClosed", true);
+                return "redirect:/point-shop";
+            }
             redirectAttributes.addFlashAttribute("product", shopService.getProduct(id));
             return "redirect:/point-shop/already-owned";
         }

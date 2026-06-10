@@ -167,13 +167,7 @@ public class AuthViewController {
     // ===== 가입 완료 =====
 
     @GetMapping("/signup/complete")
-    public String signupComplete(HttpServletRequest request) {
-        // 가입 완료 후 자동 로그인 세션 정리 — 이후 로그인 페이지에서 자격증명을 다시 입력하도록 유도
-        SecurityContextHolder.clearContext();
-        HttpSession existing = request.getSession(false);
-        if (existing != null) {
-            existing.invalidate();
-        }
+    public String signupComplete() {
         return "domain/auth/signup-complete";
     }
 

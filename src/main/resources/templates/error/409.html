@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>요청이 충돌했어요 - 모담</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-[#FAFAFA] flex flex-col items-center justify-center px-4">
+  <div class="text-center max-w-md">
+    <div class="w-28 h-28 bg-[#FCE8E3] rounded-full flex items-center justify-center mx-auto mb-6">
+      <i data-lucide="shield-alert" class="w-14 h-14 text-[#F5A5A5]"></i>
+    </div>
+    <p class="text-6xl font-bold text-[#F5A5A5] mb-2">409</p>
+    <h1 class="text-xl font-semibold text-gray-700 mb-3">요청이 충돌했어요</h1>
+    <p class="text-sm text-gray-400 mb-8 leading-relaxed">
+      이미 처리된 요청이거나 중복된 데이터예요.<br>
+      새로고침 후 다시 시도해 주세요.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <button onclick="history.back()"
+              class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 text-gray-600 rounded-full hover:border-[#F5A5A5] hover:text-[#F5A5A5] transition-colors font-medium">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        이전 페이지
+      </button>
+      <a href="/dashboard"
+         class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#F5A5A5] text-white rounded-full hover:bg-[#F28B8B] transition-colors font-medium">
+        <i data-lucide="home" class="w-4 h-4"></i>
+        홈으로 가기
+      </a>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

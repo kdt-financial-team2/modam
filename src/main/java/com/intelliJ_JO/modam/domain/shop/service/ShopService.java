@@ -6,6 +6,10 @@ import com.intelliJ_JO.modam.domain.inventory.repository.InventoryRepository;
 import com.intelliJ_JO.modam.domain.item.entity.ItemEntity;
 import com.intelliJ_JO.modam.domain.item.enums.ItemStatus;
 import com.intelliJ_JO.modam.domain.item.repository.ItemRepository;
+import com.intelliJ_JO.modam.domain.account.entity.AccountStatus;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
+import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
+import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.couple.entity.Couple;
 import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
@@ -49,6 +53,7 @@ public class ShopService {
     private final PointRepository pointRepository;
     private final MemberRepository memberRepository;
     private final CoupleRepository coupleRepository;
+    private final AccountMemberRepository accountMemberRepository;
 
     public Page<ProductDto> getProducts(String category, int page) {
         Pageable pageable = PageRequest.of(page - 1, PRODUCT_PAGE_SIZE);
@@ -89,8 +94,19 @@ public class ShopService {
                 .map(HistoryItemDto::from);
     }
 
+    public boolean isGroupAccountClosed(Long memberId) {
+        return accountMemberRepository.findByMemberId(memberId).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .filter(am -> am.getAccount().getAccountType() == AccountType.GROUP)
+                .anyMatch(am -> am.getAccount().getStatus() == AccountStatus.CLOSED);
+    }
+
     @Transactional
     public int purchaseItem(Long memberId, Long itemId) {
+        if (isGroupAccountClosed(memberId)) {
+            throw new IllegalStateException("ACCOUNT_CLOSED");
+        }
+
         ItemEntity item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
 

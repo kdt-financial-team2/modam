@@ -8,6 +8,7 @@ import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.card.dto.CardCreateRequestDto;
 import com.intelliJ_JO.modam.domain.card.dto.CardIssueSessionDto;
 import com.intelliJ_JO.modam.domain.card.entity.Card;
+import com.intelliJ_JO.modam.domain.card.entity.CardStatus;
 import com.intelliJ_JO.modam.domain.card.repository.CardRepository;
 import com.intelliJ_JO.modam.domain.card.service.CardService;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
@@ -22,7 +23,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -72,28 +72,30 @@ public class MypageCardViewController {
 
         if (accountId != null) {
             List<Card> accountCards = cardRepository.findByAccountId(accountId);
-            Card myLatestCard = accountCards.stream()
-                    .filter(c -> c.getMember().getId().equals(freshMember.getId()))
+
+            // 공통 계좌의 최신 카드 1개를 모든 멤버에게 동일하게 표시
+            Card displayCard = accountCards.stream()
                     .max(Comparator.comparing(Card::getCreatedAt))
                     .orElse(null);
 
-            if (myLatestCard != null) {
+            if (displayCard != null) {
                 isIssued = true;
                 model.addAttribute("cardIssued", true);
-                model.addAttribute("cardDesign", myLatestCard.getCardDesign() != null ? myLatestCard.getCardDesign() : "pink");
-                model.addAttribute("cardType", myLatestCard.getCardType() != null ? myLatestCard.getCardType() : "domestic");
+                model.addAttribute("isMyCard", true);
+                model.addAttribute("cardId", displayCard.getId());
+                model.addAttribute("cardDesign", displayCard.getCardDesign() != null ? displayCard.getCardDesign() : "pink");
+                model.addAttribute("cardType", displayCard.getCardType() != null ? displayCard.getCardType() : "domestic");
 
-                // 해지된 계좌라면 카드를 강제 INACTIVE 처리
                 if (isAccountClosed) {
                     model.addAttribute("cardStatus", "INACTIVE");
                 } else {
-                    model.addAttribute("cardStatus", myLatestCard.getStatus().name());
+                    model.addAttribute("cardStatus", displayCard.getStatus().name());
                 }
 
-                model.addAttribute("expiryDate", myLatestCard.getExpiryDate());
+                model.addAttribute("expiryDate", displayCard.getExpiryDate());
 
                 try {
-                    String decrypted = aes256Util.decrypt(myLatestCard.getCardNumber());
+                    String decrypted = aes256Util.decrypt(displayCard.getCardNumber());
                     model.addAttribute("fullCardNumber", decrypted.replace("-", " "));
                     model.addAttribute("maskedCardNumber", "**** **** **** " + decrypted.substring(decrypted.length() - 4));
                     String cvv = String.format("%03d", (Math.abs(decrypted.hashCode()) % 900) + 100);
@@ -108,6 +110,7 @@ public class MypageCardViewController {
 
         if (!isIssued) {
             model.addAttribute("cardIssued", false);
+            model.addAttribute("isMyCard", false);
             model.addAttribute("cardDesign", "pink");
             model.addAttribute("cardType", "domestic");
             model.addAttribute("cardStatus", "ACTIVE");
@@ -130,12 +133,24 @@ public class MypageCardViewController {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         populateAccountData(freshMember, model);
 
-        // 공통 계좌(GROUP)가 없으면 카드 발급 불가 — 카드 관리 페이지로 돌려보냄
-        boolean hasGroupAccount = accountMemberRepository.findByMemberId(freshMember.getId()).stream()
-                .anyMatch(am -> am.getInviteStatus() == InviteStatus.ACCEPT
-                        && "GROUP".equals(am.getAccount().getAccountType().name()));
-        if (!hasGroupAccount) {
+        // 공통 계좌(GROUP)가 없으면 카드 발급 불가
+        AccountMember groupMembership = accountMemberRepository.findByMemberId(freshMember.getId()).stream()
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT
+                        && "GROUP".equals(am.getAccount().getAccountType().name()))
+                .max(Comparator.comparing(am -> am.getAccount().getId()))
+                .orElse(null);
+
+        if (groupMembership == null) {
             rttr.addFlashAttribute("errorMsg", "카드 발급은 공통 계좌(모임 통장)가 있어야 합니다. 먼저 모임 통장을 개설하거나 파트너의 초대를 수락해주세요.");
+            return "redirect:/mypage/cards";
+        }
+
+        // 계좌 전체에 LOST가 아닌 카드가 있으면 재발급 불가 (공통 계좌당 카드 1개)
+        Long groupAccountId = groupMembership.getAccount().getId();
+        boolean hasActiveCard = cardRepository.findByAccountId(groupAccountId).stream()
+                .anyMatch(c -> c.getStatus() != CardStatus.LOST);
+        if (hasActiveCard) {
+            rttr.addFlashAttribute("errorMsg", "이미 발급된 카드가 있습니다.");
             return "redirect:/mypage/cards";
         }
 
@@ -169,30 +184,50 @@ public class MypageCardViewController {
         }
     }
 
-    @GetMapping("/mypage/card/step2") public String cardStep2() { return "domain/mypage/card-step2"; }
+    @GetMapping("/mypage/card/step2")
+    public String cardStep2(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        dashboardService.populateHeader(getFreshMember(userDetails.getMember().getId()), model);
+        return "domain/mypage/card-step2";
+    }
     @PostMapping("/mypage/card/step2")
     public String processStep2(@RequestParam String cardDesign, @ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto) {
         sessionDto.setCardDesign(cardDesign);
         return "redirect:/mypage/card/step3";
     }
 
-    @GetMapping("/mypage/card/step3") public String cardStep3() { return "domain/mypage/card-step3"; }
+    @GetMapping("/mypage/card/step3")
+    public String cardStep3(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        dashboardService.populateHeader(getFreshMember(userDetails.getMember().getId()), model);
+        return "domain/mypage/card-step3";
+    }
     @PostMapping("/mypage/card/step3")
     public String processStep3(@RequestParam String cardType, @ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto) {
         sessionDto.setCardType(cardType);
         return "redirect:/mypage/card/step4";
     }
 
-    @GetMapping("/mypage/card/step4") public String cardStep4() { return "domain/mypage/card-step4"; }
+    @GetMapping("/mypage/card/step4")
+    public String cardStep4(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        dashboardService.populateHeader(getFreshMember(userDetails.getMember().getId()), model);
+        return "domain/mypage/card-step4";
+    }
     @PostMapping("/mypage/card/step4")
     public String processStep4(@ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto) {
         sessionDto.setTermsAgreed(true);
         return "redirect:/mypage/card/step5";
     }
 
-    @GetMapping("/mypage/card/step5") public String cardStep5() { return "domain/mypage/card-step5"; }
+    @GetMapping("/mypage/card/step5")
+    public String cardStep5(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        dashboardService.populateHeader(getFreshMember(userDetails.getMember().getId()), model);
+        return "domain/mypage/card-step5";
+    }
 
-    @GetMapping("/mypage/card/step6") public String cardStep6() { return "domain/mypage/card-step6"; }
+    @GetMapping("/mypage/card/step6")
+    public String cardStep6(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        dashboardService.populateHeader(getFreshMember(userDetails.getMember().getId()), model);
+        return "domain/mypage/card-step6";
+    }
     @PostMapping("/mypage/card/step6")
     public String processStep6(@RequestParam String cardPassword, @ModelAttribute("cardIssueSession") CardIssueSessionDto sessionDto) {
         sessionDto.setCardPassword(cardPassword);
@@ -201,7 +236,9 @@ public class MypageCardViewController {
 
     @GetMapping("/mypage/card/step7")
     public String cardStep7(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        model.addAttribute("user", getFreshMember(userDetails.getMember().getId()));
+        Member freshMember = getFreshMember(userDetails.getMember().getId());
+        dashboardService.populateHeader(freshMember, model);
+        model.addAttribute("user", freshMember);
         return "domain/mypage/card-step7";
     }
 
@@ -227,13 +264,6 @@ public class MypageCardViewController {
                     .max(Comparator.comparing(am -> am.getAccount().getId()))
                     .orElseThrow(() -> new IllegalArgumentException("연결된 공동 계좌가 없습니다."))
                     .getAccount().getId();
-
-            List<Card> existingCards = cardRepository.findByAccountId(accountId).stream()
-                    .filter(c -> c.getMember().getId().equals(userDetails.getMember().getId()))
-                    .collect(Collectors.toList());
-            if (!existingCards.isEmpty()) {
-                cardRepository.deleteAll(existingCards);
-            }
 
             String randomCardNum = String.format("%04d-%04d-%04d-%04d",
                     (int)(Math.random()*10000), (int)(Math.random()*10000),
@@ -263,6 +293,7 @@ public class MypageCardViewController {
     @GetMapping("/mypage/card/step8")
     public String cardStep8(@AuthenticationPrincipal CustomUserDetails userDetails, Model model, org.springframework.web.bind.support.SessionStatus status) {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
+        dashboardService.populateHeader(freshMember, model);
 
         Long accountId = accountMemberRepository.findByMemberId(freshMember.getId()).stream()
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT && "GROUP".equals(am.getAccount().getAccountType().name()))

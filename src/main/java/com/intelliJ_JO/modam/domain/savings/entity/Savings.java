@@ -67,6 +67,10 @@ public class Savings {
     private LocalDateTime updatedAt;
 
     @Builder.Default
+    @Column(name = "is_active", nullable = false, length = 1)
+    private String isActive = "Y";
+
+    @Builder.Default
     @Column(name = "is_half_awarded", nullable = false, length = 1)
     private String isHalfAwarded = "N";
 
@@ -76,6 +80,10 @@ public class Savings {
 
     public void addAmount(Long amount) {
         this.currentAmount += amount;
+    }
+
+    public void deactivate() {
+        this.isActive = "N";
     }
 
     public void completeHalfAward() {

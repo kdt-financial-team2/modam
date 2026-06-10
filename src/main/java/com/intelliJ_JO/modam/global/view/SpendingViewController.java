@@ -3,6 +3,7 @@ package com.intelliJ_JO.modam.global.view;
 import com.intelliJ_JO.modam.config.security.CustomUserDetails;
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
+import com.intelliJ_JO.modam.domain.account.entity.AccountStatus;
 import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
@@ -73,6 +74,25 @@ public class SpendingViewController {
         // 내 프로필 정보
         model.addAttribute("myName", member.getName());
         model.addAttribute("myProfileImg", member.getProfileImg());
+
+        // 공동 계좌 없거나 해지 시 안내 화면 렌더
+        Account groupAccount = getGroupAccount(member.getId());
+        boolean accountClosed = (groupAccount == null || groupAccount.getStatus() == AccountStatus.CLOSED);
+        model.addAttribute("accountClosed", accountClosed);
+
+        if (accountClosed) {
+            model.addAttribute("partnerConnected", false);
+            model.addAttribute("partnerName", "");
+            model.addAttribute("partnerProfileImg", null);
+            model.addAttribute("coupleAcctAlias", "");
+            model.addAttribute("records", List.of());
+            model.addAttribute("storyRecords", List.of());
+            model.addAttribute("totalAmount", 0L);
+            model.addAttribute("writtenCount", 0L);
+            model.addAttribute("favoriteCount", 0L);
+            model.addAttribute("totalCount", 0);
+            return "domain/spendrecord/consumption-history";
+        }
 
         // 파트너 연결 여부 확인 — 미연결 시 잠금 화면 렌더
         boolean partnerConnected = isPartnerConnected(member.getId());

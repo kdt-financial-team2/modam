@@ -201,26 +201,7 @@
     /* ===== 서버 데이터 주입 ===== */
     const serverTransactions = /*[[${transactions}]]*/ null;
 
-    /* ===== 클라이언트 폴백 데이터 ===== */
-    const fallbackTransactions = [
-      { id:1,  type:'withdrawal', merchant:'스타벅스 강남점',      amount:-12500,   balance:1487500,  date:'2026.05.07', time:'14:30', category:'식비',   iconName:'coffee',       cardName:'모담 체크카드' },
-      { id:2,  type:'withdrawal', merchant:'홈플러스 광명점',       amount:-85000,   balance:1402500,  date:'2026.05.06', time:'18:45', category:'생활비', iconName:'shopping-bag', cardName:'모담 체크카드' },
-      { id:3,  type:'deposit',    merchant:'김민수',                amount:50000,    balance:1487500,  date:'2026.05.06', time:'10:20', category:'입금',   iconName:'wallet',       cardName:'-' },
-      { id:4,  type:'withdrawal', merchant:'CGV 여의도',            amount:-32000,   balance:1437500,  date:'2026.05.05', time:'19:20', category:'데이트', iconName:'heart',        cardName:'모담 체크카드' },
-      { id:5,  type:'withdrawal', merchant:'GS주유소',              amount:-65000,   balance:1405500,  date:'2026.05.04', time:'09:15', category:'교통비', iconName:'car',          cardName:'모담 체크카드' },
-      { id:6,  type:'withdrawal', merchant:'올리브영 압구정',        amount:-45000,   balance:1470500,  date:'2026.05.03', time:'16:00', category:'쇼핑',   iconName:'shopping-bag', cardName:'모담 체크카드' },
-      { id:7,  type:'withdrawal', merchant:'배달의민족',             amount:-28000,   balance:1515500,  date:'2026.05.02', time:'20:30', category:'식비',   iconName:'utensils',     cardName:'모담 체크카드' },
-      { id:8,  type:'deposit',    merchant:'급여',                  amount:3000000,  balance:1543500,  date:'2026.05.01', time:'09:00', category:'입금',   iconName:'wallet',       cardName:'-' },
-      { id:9,  type:'withdrawal', merchant:'쿠팡',                  amount:-120000,  balance:1456500,  date:'2026.04.30', time:'15:40', category:'쇼핑',   iconName:'shopping-bag', cardName:'모담 체크카드' },
-      { id:10, type:'withdrawal', merchant:'넷플릭스',               amount:-17000,   balance:1336500,  date:'2026.04.30', time:'00:05', category:'생활비', iconName:'home',         cardName:'모담 체크카드' },
-      { id:11, type:'withdrawal', merchant:'스타벅스 역삼점',        amount:-8500,    balance:1319500,  date:'2026.04.29', time:'11:15', category:'식비',   iconName:'coffee',       cardName:'모담 체크카드' },
-      { id:12, type:'withdrawal', merchant:'롯데시네마 월드타워',     amount:-36000,   balance:1311000,  date:'2026.04.28', time:'18:50', category:'데이트', iconName:'heart',        cardName:'모담 체크카드' },
-    ];
-
-    // 서버 데이터가 실제로 있을 때만 사용 (빈 배열은 truthy라 || 폴백이 동작 안 함)
-    const allTransactions = (serverTransactions && serverTransactions.length > 0)
-      ? serverTransactions
-      : fallbackTransactions;
+    const allTransactions = serverTransactions || [];
     const BATCH_SIZE = 20;       // 한 번에 불러오는 건수
     let filteredData = [...allTransactions];
     let displayedCount = 0;      // 현재 화면에 표시된 건수

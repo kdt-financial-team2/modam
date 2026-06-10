@@ -173,9 +173,28 @@
         <!-- ===== 오른쪽 컬럼 (30%) ===== -->
         <div class="col-span-3 space-y-8">
 
+          <!-- 커플 정보 카드: 계좌 해지 안내 -->
+          <div th:if="${accountClosed}"
+               class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+            <div class="text-center">
+              <div class="w-16 h-16 bg-[#FCE8E3] rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="heart-crack" class="w-8 h-8 text-[#F5A5A5]"></i>
+              </div>
+              <h3 class="text-lg font-bold text-gray-800 mb-2">공동 계좌가 해지되었어요</h3>
+              <p class="text-sm text-gray-400 leading-relaxed mb-6">
+                새 공동 계좌를 만들면<br/>커플 정보를 다시 설정할 수 있어요.
+              </p>
+              <a href="/group-account/new"
+                 class="inline-flex items-center gap-2 px-5 py-3 bg-[#F5A5A5] text-white rounded-full hover:bg-[#F28B8B] transition-colors text-sm font-medium">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                계좌 만들기
+              </a>
+            </div>
+          </div>
+
           <!-- 커플 정보 카드: 온보딩 상태 (정보 미저장 시에만 렌더링) -->
           <div id="coupleOnboarding"
-               th:if="${!isCoupleInfoSaved}"
+               th:if="${!accountClosed and !isCoupleInfoSaved}"
                class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
             <div class="text-center mb-6">
               <div class="w-16 h-16 bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -239,7 +258,7 @@
 
           <!-- 커플 정보 카드: 저장된 상태 (보기/편집 토글) -->
           <div id="coupleSaved"
-               th:if="${isCoupleInfoSaved}"
+               th:if="${!accountClosed and isCoupleInfoSaved}"
                class="bg-gradient-to-br from-[#FCE8E3] to-[#FFE4E8] rounded-3xl shadow-sm border border-gray-100 p-6">
 
             <!-- 헤더: 편집 아이콘 클릭 시 모드 전환 -->

@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.domain.savings.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
@@ -40,6 +41,9 @@ public class SavingsService {
     public void createSavings(SavingsCreateRequestDto requestDto) {
         Account account = accountRepository.findById(requestDto.getAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 모임 통장을 찾을 수 없습니다."));
+        if (account.getStatus() == AccountStatus.CLOSED) {
+            throw new IllegalStateException("해지된 계좌에는 저축 목표를 생성할 수 없습니다.");
+        }
 
         Savings savings = Savings.builder()
                 .account(account)
