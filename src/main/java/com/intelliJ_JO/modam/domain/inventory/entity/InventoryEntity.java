@@ -19,16 +19,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SequenceGenerator(
-        name = "inventory_seq_generator",
-        sequenceName = "inventory_seq",
-        allocationSize = 1
-)
-
-
 public class InventoryEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "inventory_seq_generator")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // 회원 (N:1)

@@ -13,15 +13,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SequenceGenerator(
-        name = "item_seq_generator",
-        sequenceName = "item_seq",
-        allocationSize = 1
-)
 public class ItemEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "item_seq_generator")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // ==============================
