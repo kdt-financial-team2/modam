@@ -72,7 +72,7 @@
                             <div class="text-lg font-bold text-gray-900">₩<span th:text="${thisMonthSpend != null ? #numbers.formatInteger(thisMonthSpend, 0, 'COMMA') : '0'}">0</span></div>
                         </div>
                         <div class="text-center">
-                            <div class="text-xs text-gray-500 mb-1">목표 저축</div>
+                            <div class="text-xs text-gray-500 mb-1">저축한 금액</div>
                             <div class="text-lg font-bold text-gray-900">₩<span th:text="${targetSavings != null ? #numbers.formatInteger(targetSavings, 0, 'COMMA') : '0'}">0</span></div>
                         </div>
                         <div class="text-center">
@@ -175,11 +175,19 @@
                     <div id="refundMyName2" class="text-sm text-gray-600 mb-1">나</div>
                     <div id="refundMyAmt" class="text-3xl font-bold text-blue-600 mb-1">₩0</div>
                     <div id="refundMyContrib3" class="text-xs text-gray-500">기여도 0.0% 기준</div>
+                    <div class="mt-2 pt-2 border-t border-blue-100 text-xs text-gray-500 space-y-0.5">
+                        <div class="flex justify-between"><span>계좌 잔액</span><span id="refundMyBalanceAmt">₩0</span></div>
+                        <div class="flex justify-between"><span>저축 환급</span><span id="refundMySavingsAmt" class="text-blue-500">+₩0</span></div>
+                    </div>
                 </div>
                 <div class="bg-white rounded-xl p-5 border-2 border-pink-200">
                     <div id="refundPartnerName2" class="text-sm text-gray-600 mb-1">파트너</div>
                     <div id="refundPartnerAmt" class="text-3xl font-bold text-pink-600 mb-1">₩0</div>
                     <div id="refundPartnerContrib3" class="text-xs text-gray-500">기여도 0.0% 기준</div>
+                    <div class="mt-2 pt-2 border-t border-pink-100 text-xs text-gray-500 space-y-0.5">
+                        <div class="flex justify-between"><span>계좌 잔액</span><span id="refundPartnerBalanceAmt">₩0</span></div>
+                        <div class="flex justify-between"><span>저축 환급</span><span id="refundPartnerSavingsAmt" class="text-pink-500">+₩0</span></div>
+                    </div>
                 </div>
             </div>
 
@@ -189,6 +197,10 @@
                     <div>
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">환급 방식 안내</h4>
                         <p class="text-sm text-gray-700">환급액은 사용 후 남은 잔액을 기준으로, 각자가 송금한 총액의 비율(기여도)에 따라 정확히 계산됩니다.</p>
+                        <ul class="text-sm text-red-600 mt-2 space-y-1 list-disc list-inside">
+                            <li>보유 중인 적립 포인트는 모두 삭제됩니다.</li>
+                            <li>소비 기록 및 구매 내역은 모두 삭제됩니다.</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -213,8 +225,10 @@
     const serverMyContrib    = /*[[${myContribution}]]*/ null;
     const serverPartnerContrib= /*[[${partnerContribution}]]*/ null;
     const serverBalance      = /*[[${accountBalance}]]*/ null;
-    const serverMyDeposit    = /*[[${myDeposit}]]*/ 0;
-    const serverPartnerDeposit= /*[[${partnerDeposit}]]*/ 0;
+    const serverMyDeposit         = /*[[${myDeposit}]]*/ 0;
+    const serverPartnerDeposit    = /*[[${partnerDeposit}]]*/ 0;
+    const serverMySavingsRefund   = /*[[${mySavingsRefund}]]*/ 0;
+    const serverPartnerSavingsRefund = /*[[${partnerSavingsRefund}]]*/ 0;
 
     let userName          = serverUserName || '나';
     let partnerName       = serverPartnerName || '파트너';
@@ -350,6 +364,8 @@
       const bal = serverBalance !== null ? serverBalance : 0;
       const myDep = serverMyDeposit !== null ? serverMyDeposit : 0;
       const prDep = serverPartnerDeposit !== null ? serverPartnerDeposit : 0;
+      const mySavR = serverMySavingsRefund !== null ? serverMySavingsRefund : 0;
+      const prSavR = serverPartnerSavingsRefund !== null ? serverPartnerSavingsRefund : 0;
 
       document.getElementById('refundBalance').textContent     = bal.toLocaleString();
 
@@ -370,6 +386,14 @@
 
       document.getElementById('refundMyContrib3').textContent  = '기여도 ' + myC.toFixed(1) + '% 기준';
       document.getElementById('refundPartnerContrib3').textContent = '기여도 ' + prC.toFixed(1) + '% 기준';
+
+      // 계좌 잔액 환급 + 저축 환급 breakdown
+      const myBalR = myR - mySavR;
+      const prBalR = prR - prSavR;
+      document.getElementById('refundMyBalanceAmt').textContent    = '₩' + myBalR.toLocaleString();
+      document.getElementById('refundMySavingsAmt').textContent    = '+₩' + mySavR.toLocaleString();
+      document.getElementById('refundPartnerBalanceAmt').textContent = '₩' + prBalR.toLocaleString();
+      document.getElementById('refundPartnerSavingsAmt').textContent = '+₩' + prSavR.toLocaleString();
     }
 </script>
 <th:block th:replace="~{common/layout/header-dashboard :: scripts}"></th:block>

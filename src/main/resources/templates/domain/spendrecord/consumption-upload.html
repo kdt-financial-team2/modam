@@ -292,6 +292,8 @@
         alert('메모를 입력해주세요.');
         return false;
       }
+      // base64로 이미 변환했으므로 원본 파일은 전송하지 않음 (용량 초과 방지)
+      document.getElementById('fileInput').value = '';
       return true;
     }
 

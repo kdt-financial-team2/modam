@@ -20,6 +20,11 @@ spring:
     show-sql: false
 
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html

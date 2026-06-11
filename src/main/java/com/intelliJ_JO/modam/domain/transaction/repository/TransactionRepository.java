@@ -83,4 +83,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                                         @Param("end") LocalDateTime end);
 
     boolean existsByAccountId(Long accountId);
+
+    // 저축 환급 분배용 — 계좌 내 특정 멤버의 '저축 납입' 트랜잭션 합계
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
+           "WHERE t.account.id = :accountId AND t.member.id = :memberId " +
+           "AND t.category = '저축 납입'")
+    Long sumSavingsDepositByMember(@Param("accountId") Long accountId,
+                                   @Param("memberId") Long memberId);
 }

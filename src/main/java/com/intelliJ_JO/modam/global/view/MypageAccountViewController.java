@@ -10,7 +10,11 @@ import com.intelliJ_JO.modam.domain.account.service.AccountService;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
 import com.intelliJ_JO.modam.domain.transaction.dto.TransactionResponseDto;
+import com.intelliJ_JO.modam.domain.savings.entity.Savings;
+import com.intelliJ_JO.modam.domain.savings.repository.SavingsRepository;
+import com.intelliJ_JO.modam.domain.transaction.repository.TransactionRepository;
 import com.intelliJ_JO.modam.domain.transaction.service.TransactionService;
+import com.intelliJ_JO.modam.global.view.dto.SavingsGoalDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -33,6 +37,8 @@ public class MypageAccountViewController {
     private final DashboardService dashboardService;
     private final AccountService accountService;
     private final TransactionService transactionService;
+    private final TransactionRepository transactionRepository;
+    private final SavingsRepository savingsRepository;
 
     // [기존 MypageViewController 공통 헬퍼]
     private Member getFreshMember(Long memberId) {
@@ -176,8 +182,19 @@ public class MypageAccountViewController {
         Member freshMember = getFreshMember(userDetails.getMember().getId());
         populateAccountData(freshMember, model);
         model.addAttribute("userName", freshMember.getName());
-        model.addAttribute("thisMonthSpend", 0L);
-        model.addAttribute("targetSavings", 0L);
+
+        // 이번 달 지출: 대시보드에서 계산한 totalExpense 재사용
+        Long totalExpense = (Long) model.asMap().get("totalExpense");
+        model.addAttribute("thisMonthSpend", totalExpense != null ? totalExpense : 0L);
+
+        // 목표 저축: 저축 목표별 현재 저축 금액 합계
+        @SuppressWarnings("unchecked")
+        List<SavingsGoalDto> savingsGoals = (List<SavingsGoalDto>) model.asMap().get("savingsGoals");
+        long targetSavings = savingsGoals != null
+                ? savingsGoals.stream().mapToLong(SavingsGoalDto::getCurrentAmount).sum()
+                : 0L;
+        model.addAttribute("targetSavings", targetSavings);
+
         model.addAttribute("activeMenu", "close-account");
         return "domain/mypage/close-account";
     }
@@ -229,7 +246,8 @@ public class MypageAccountViewController {
     // 🔥 (수정됨) 무조건 최신 생성된 계좌(.max)를 우선 렌더링하도록 픽스!
     // =========================================================================
     private void populateAccountData(Member member, Model model) {
-        dashboardService.populateHeader(member, model);
+        // populate()로 totalExpense, savingsGoals 등 전체 데이터 설정
+        dashboardService.populate(member, model);
         List<AccountMember> memberships = accountMemberRepository.findByMemberId(member.getId());
 
         AccountMember myMembership = memberships.stream()
@@ -283,27 +301,61 @@ public class MypageAccountViewController {
                     model.addAttribute("closureRequestedBy", "");
                 }
 
+                // 저축 환급액: '저축 납입' 트랜잭션을 멤버별로 합산해 실제 기여 비율로 분배
+                List<Savings> savingsList = savingsRepository.findByAccountId(accountId);
+                long totalSavingsToRefund = savingsList.stream()
+                        .mapToLong(Savings::getCurrentAmount).sum();
+
+                long mySavingsDeposit = transactionRepository.sumSavingsDepositByMember(accountId, member.getId());
+                long partnerSavingsDeposit = transactionRepository
+                        .sumSavingsDepositByMember(accountId, partner.getMember().getId());
+                long totalSavingsDeposit = mySavingsDeposit + partnerSavingsDeposit;
+
+                long mySavingsRefund;
+                long partnerSavingsRefund;
+                if (totalSavingsDeposit > 0) {
+                    // 실제 납입 트랜잭션 비율로 분배
+                    mySavingsRefund = (long) Math.floor(totalSavingsToRefund * (double) mySavingsDeposit / totalSavingsDeposit);
+                    partnerSavingsRefund = totalSavingsToRefund - mySavingsRefund;
+                } else if (totalDepositAmt > 0) {
+                    // 저축 납입 기록이 없으면 계좌 전체 입금 비율로 fallback
+                    mySavingsRefund = (long) Math.floor(totalSavingsToRefund * (double) myDepositAmt / totalDepositAmt);
+                    partnerSavingsRefund = totalSavingsToRefund - mySavingsRefund;
+                } else {
+                    // 둘 다 없으면 50/50
+                    mySavingsRefund = totalSavingsToRefund / 2;
+                    partnerSavingsRefund = totalSavingsToRefund - mySavingsRefund;
+                }
+
                 if (totalDepositAmt > 0) {
                     double myRatio = (double) myDepositAmt / totalDepositAmt;
                     double partnerRatio = (double) partnerDepositAmt / totalDepositAmt;
+                    long myBalanceRefund = (long) Math.floor(totalBalance * myRatio);
                     model.addAttribute("myContribution", myRatio * 100.0);
                     model.addAttribute("partnerContribution", partnerRatio * 100.0);
-                    model.addAttribute("myRefund", (long) Math.floor(totalBalance * myRatio));
-                    model.addAttribute("partnerRefund", totalBalance - (long) Math.floor(totalBalance * myRatio));
+                    model.addAttribute("myRefund", myBalanceRefund + mySavingsRefund);
+                    model.addAttribute("partnerRefund", (totalBalance - myBalanceRefund) + partnerSavingsRefund);
                 } else {
                     model.addAttribute("myContribution", 50.0);
                     model.addAttribute("partnerContribution", 50.0);
-                    model.addAttribute("myRefund", totalBalance / 2);
-                    model.addAttribute("partnerRefund", totalBalance - (totalBalance / 2));
+                    model.addAttribute("myRefund", (totalBalance / 2) + mySavingsRefund);
+                    model.addAttribute("partnerRefund", (totalBalance - (totalBalance / 2)) + partnerSavingsRefund);
                 }
+                model.addAttribute("mySavingsRefund", mySavingsRefund);
+                model.addAttribute("partnerSavingsRefund", partnerSavingsRefund);
             } else {
                 model.addAttribute("partnerName", "연결 대기 중");
                 model.addAttribute("accountClosureStatus", isClosed ? "closed" : "none");
                 model.addAttribute("closureRequestedBy", "");
+                List<Savings> savingsListSingle = savingsRepository.findByAccountId(accountId);
+                long totalSavingsSingle = savingsListSingle.stream()
+                        .mapToLong(Savings::getCurrentAmount).sum();
                 model.addAttribute("myContribution", 100.0);
                 model.addAttribute("partnerContribution", 0.0);
-                model.addAttribute("myRefund", totalBalance);
+                model.addAttribute("myRefund", totalBalance + totalSavingsSingle);
                 model.addAttribute("partnerRefund", 0L);
+                model.addAttribute("mySavingsRefund", totalSavingsSingle);
+                model.addAttribute("partnerSavingsRefund", 0L);
             }
         } else {
             model.addAttribute("accountBalance", 0L);

@@ -278,17 +278,21 @@ public class AccountService {
             personalAccount.updateBalance(refundAmount);
         }
 
-        // 3. 저축 목표 기여도 비례 환급 및 비활성화
+        // 3. 저축 환급 — '저축 납입' 트랜잭션을 멤버별로 합산한 비율로 전체 저축 잔액 분배
         List<Savings> savingsList = savingsRepository.findByAccountId(groupAccount.getId());
-        for (Savings savings : savingsList) {
-            long savingsTotal = savings.getCurrentAmount();
-            if (savingsTotal <= 0) {
-                savings.deactivate();
-                continue;
-            }
+        long totalSavingsToRefund = savingsList.stream()
+                .mapToLong(Savings::getCurrentAmount).sum();
 
-            long totalSavingsDeposit = activeMembers.stream().mapToLong(AccountMember::getTotalDeposit).sum();
-            long remainingSavings = savingsTotal;
+        if (totalSavingsToRefund > 0) {
+            // 각 멤버가 실제로 납입한 저축 트랜잭션 합계
+            long totalSavingsTxDeposit = activeMembers.stream()
+                    .mapToLong(am -> transactionRepository
+                            .sumSavingsDepositByMember(groupAccount.getId(), am.getMember().getId()))
+                    .sum();
+            long totalAccountDeposit = activeMembers.stream()
+                    .mapToLong(AccountMember::getTotalDeposit).sum();
+
+            long remainingSavings = totalSavingsToRefund;
 
             for (int i = 0; i < activeMembers.size(); i++) {
                 AccountMember am = activeMembers.get(i);
@@ -299,16 +303,22 @@ public class AccountService {
                         .orElseThrow(() -> new IllegalStateException(am.getMember().getName() + "님의 환급받을 개인 주계좌가 존재하지 않습니다."));
 
                 long savingsRefund;
-                if (totalSavingsDeposit > 0) {
-                    if (i == activeMembers.size() - 1) {
-                        savingsRefund = remainingSavings;
-                    } else {
-                        double ratio = (double) am.getTotalDeposit() / totalSavingsDeposit;
-                        savingsRefund = (long) Math.floor(savingsTotal * ratio);
-                        remainingSavings -= savingsRefund;
-                    }
+                if (i == activeMembers.size() - 1) {
+                    // 마지막 멤버는 자투리 금액까지 수령해 총합이 정확히 맞도록
+                    savingsRefund = remainingSavings;
+                } else if (totalSavingsTxDeposit > 0) {
+                    // 실제 납입 트랜잭션 비율로 분배
+                    long memberTx = transactionRepository
+                            .sumSavingsDepositByMember(groupAccount.getId(), am.getMember().getId());
+                    savingsRefund = (long) Math.floor(totalSavingsToRefund * (double) memberTx / totalSavingsTxDeposit);
+                    remainingSavings -= savingsRefund;
+                } else if (totalAccountDeposit > 0) {
+                    // 저축 납입 기록이 없으면 계좌 전체 입금 비율로 fallback
+                    savingsRefund = (long) Math.floor(totalSavingsToRefund * (double) am.getTotalDeposit() / totalAccountDeposit);
+                    remainingSavings -= savingsRefund;
                 } else {
-                    savingsRefund = savingsTotal / activeMembers.size();
+                    savingsRefund = totalSavingsToRefund / activeMembers.size();
+                    remainingSavings -= savingsRefund;
                 }
 
                 personalAccount.updateBalance(savingsRefund);
@@ -322,7 +332,10 @@ public class AccountService {
                         .category("환급")
                         .build());
             }
+        }
 
+        // 저축 목표 전체 비활성화
+        for (Savings savings : savingsList) {
             savings.deactivate();
         }
 

@@ -147,8 +147,8 @@ public class SpendingViewController {
                 .stream()
                 .collect(Collectors.toMap(r -> r.getTransaction().getId(), r -> r, (a, b) -> a));
 
-        // 현재 회원의 즐겨찾기 SpendRecord id 집합
-        java.util.Set<Long> favIds = favoriteService.getFavoriteRecordIds(member.getId());
+        // 커플 계좌 기준 즐겨찾기 SpendRecord id 집합 (파트너 즐겨찾기도 포함)
+        java.util.Set<Long> favIds = favoriteService.getFavoriteRecordIdsByAccount(account.getId());
 
         List<ConsumptionHistoryItemDto> records = txList.stream()
                 .map(tx -> {
@@ -389,7 +389,8 @@ public class SpendingViewController {
         SpendRecord record = spendRecordService.getSpendRecordEntityById(id);
         var tx = record.getTransaction();
 
-        boolean liked = favoriteService.getFavoriteRecordIds(userDetails.getMember().getId())
+        // 커플 계좌 기준 즐겨찾기 여부 확인 (파트너 즐겨찾기도 포함)
+        boolean liked = favoriteService.getFavoriteRecordIdsByAccount(record.getTransaction().getAccount().getId())
                 .contains(record.getId());
 
         ConsumptionDetailDto consumption = ConsumptionDetailDto.builder()
