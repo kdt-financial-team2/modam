@@ -67,4 +67,11 @@ public class FavoriteService {
     public Set<Long> getFavoriteRecordIds(Long memberId) {
         return favoriteRepository.findRecordIdsByMemberId(memberId);
     }
+
+    /**
+     * 커플 계좌 기준 즐겨찾기 SpendRecord id 집합 반환 — 파트너가 즐겨찾기한 스토리도 포함
+     */
+    public Set<Long> getFavoriteRecordIdsByAccount(Long accountId) {
+        return favoriteRepository.findRecordIdsByAccountId(accountId);
+    }
 }

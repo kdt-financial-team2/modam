@@ -2,29 +2,53 @@ package com.intelliJ_JO.modam.domain.transaction.dto;
 
 import com.intelliJ_JO.modam.domain.transaction.entity.Transaction;
 import com.intelliJ_JO.modam.domain.transaction.entity.TransactionType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.time.format.DateTimeFormatter;
 
+@Schema(description = "거래 응답 DTO")
 @Getter
 public class TransactionResponseDto {
 
-    // 기존 필드
+    @Schema(description = "거래 ID", example = "1")
     private Long transactionId;
+
+    @Schema(description = "거래 유형 (DEPOSIT / WITHDRAW / PAYMENT)", example = "PAYMENT")
     private String txType;
+
+    @Schema(description = "거래 금액 (원)", example = "15000")
     private Long amount;
+
+    @Schema(description = "거래 후 잔액 (원)", example = "485000")
     private Long afterBalance;
+
+    @Schema(description = "가맹점명", example = "스타벅스 강남점")
     private String merchantName;
+
+    @Schema(description = "카테고리", example = "식비")
     private String category;
 
-    // 프론트가 필요한 추가 필드
-    private String type;      // "deposit" or "withdrawal"
-    private String merchant;  // merchantName과 동일
-    private Long balance;     // afterBalance와 동일
-    private String date;      // "2026.05.07" 형식
-    private String time;      // "14:30" 형식
-    private String cardName;  // 카드명
-    private String iconName;  // 아이콘명
+    @Schema(description = "거래 방향 (deposit: 입금 / withdrawal: 출금)", example = "withdrawal")
+    private String type;
+
+    @Schema(description = "가맹점명 (merchantName과 동일)", example = "스타벅스 강남점")
+    private String merchant;
+
+    @Schema(description = "거래 후 잔액 (afterBalance와 동일)", example = "485000")
+    private Long balance;
+
+    @Schema(description = "거래 날짜 (yyyy.MM.dd 형식)", example = "2026.05.07")
+    private String date;
+
+    @Schema(description = "거래 시간 (HH:mm 형식)", example = "14:30")
+    private String time;
+
+    @Schema(description = "카드명", example = "모담 체크카드")
+    private String cardName;
+
+    @Schema(description = "카테고리 아이콘명", example = "utensils")
+    private String iconName;
 
     public TransactionResponseDto(Transaction transaction) {
         this.transactionId = transaction.getId();

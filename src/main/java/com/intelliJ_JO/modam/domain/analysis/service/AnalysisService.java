@@ -1,5 +1,7 @@
 package com.intelliJ_JO.modam.domain.analysis.service;
 
+import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
 import com.intelliJ_JO.modam.domain.analysis.dto.response.AnalysisSummaryResponseDto;
 import com.intelliJ_JO.modam.domain.analysis.dto.response.CategoryBreakdownDto;
@@ -32,8 +34,13 @@ public class AnalysisService {
             List.of(TransactionType.WITHDRAW, TransactionType.PAYMENT);
 
     public AnalysisSummaryResponseDto getAnalysisSummary(Long accountId, int year, int month) {
-        if (!accountRepository.existsById(accountId)) {
-            throw new IllegalArgumentException("계좌를 찾을 수 없습니다.");
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다."));
+        if (account.getStatus() == AccountStatus.CLOSED) {
+            return AnalysisSummaryResponseDto.builder()
+                    .totalSpend(0L).dailyAvgSpend(0L).topCategory("-").topCategoryAmount(0L)
+                    .prevMonthChangeRate(0.0).prevMonthChangeDirection("동일")
+                    .categoryBreakdowns(List.of()).insights(List.of()).build();
         }
 
         YearMonth ym = YearMonth.of(year, month);
@@ -86,8 +93,10 @@ public class AnalysisService {
     }
 
     public MonthlyTrendResponseDto getMonthlyTrend(Long accountId, int year, int month) {
-        if (!accountRepository.existsById(accountId)) {
-            throw new IllegalArgumentException("계좌를 찾을 수 없습니다.");
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다."));
+        if (account.getStatus() == AccountStatus.CLOSED) {
+            return MonthlyTrendResponseDto.builder().trends(List.of()).build();
         }
 
         YearMonth targetYm = YearMonth.of(year, month);

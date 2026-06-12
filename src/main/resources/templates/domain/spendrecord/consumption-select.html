@@ -42,24 +42,27 @@
 
           <!-- 날짜 범위 필터 (시작일 ~ 종료일) -->
           <div class="flex items-center gap-2">
-            <!-- 시작일 -->
-            <div class="relative">
-              <i data-lucide="calendar" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
-              <input type="date" id="startDateInput" onchange="applyFilter()"
-                     class="pl-12 pr-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors bg-white cursor-pointer hover:border-[#F5A5A5]" />
-            </div>
-            <span class="text-gray-400 font-medium">~</span>
-            <!-- 종료일 -->
-            <div class="relative">
-              <i data-lucide="calendar" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
-              <input type="date" id="endDateInput" onchange="applyFilter()"
-                     class="pl-12 pr-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors bg-white cursor-pointer hover:border-[#F5A5A5]" />
-            </div>
-            <!-- 날짜 초기화 (기본값과 다를 때만 표시) -->
-            <button id="clearDateBtn" onclick="clearDate()"
-                    class="hidden px-4 py-3 text-sm text-[#A89089] hover:text-[#6E5A55] border-2 border-gray-200 rounded-2xl hover:border-[#F5A5A5] transition-colors bg-white">
-              초기화
+            <input type="date" id="startDateInput" onclick="this.showPicker()" onkeydown="return false"
+                   class="bg-white border-2 border-gray-200 rounded-xl px-3 py-1.5 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors text-sm select-none">
+            <span class="text-gray-400 font-semibold">~</span>
+            <input type="date" id="endDateInput" onclick="this.showPicker()" onkeydown="return false"
+                   class="bg-white border-2 border-gray-200 rounded-xl px-3 py-1.5 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors text-sm select-none">
+            <button onclick="applyFilter()" class="flex items-center gap-1.5 px-4 py-1.5 bg-[#F5A5A5] text-white rounded-xl text-sm font-semibold hover:bg-[#F28B8B] active:scale-95 transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="w-4 h-4"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
+              조회
             </button>
+            <div class="relative ml-auto">
+              <select id="categorySelect" onchange="applyFilter()" class="appearance-none bg-white border-2 border-gray-200 rounded-xl px-4 py-1.5 pr-9 cursor-pointer hover:border-[#F5A5A5] transition-colors font-medium text-sm text-gray-800">
+                <option value="전체">전체</option>
+                <option value="식비">식비</option>
+                <option value="데이트">데이트</option>
+                <option value="생활비">생활비</option>
+                <option value="교통비">교통비</option>
+                <option value="쇼핑">쇼핑</option>
+                <option value="기타">기타</option>
+              </select>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
           </div>
         </div>
 
@@ -166,6 +169,7 @@
     let searchQuery     = '';
     let startDateFilter = DEFAULT_START;
     let endDateFilter   = DEFAULT_END;
+    let categoryFilter  = '전체';
 
     /* ===== 아이콘 매핑 ===== */
     const iconMap = {
@@ -179,21 +183,7 @@
       searchQuery     = document.getElementById('searchInput').value.trim().toLowerCase();
       startDateFilter = document.getElementById('startDateInput').value;
       endDateFilter   = document.getElementById('endDateInput').value;
-
-      // 기본값(1년 범위)과 다를 때만 초기화 버튼 표시
-      const isChanged = startDateFilter !== DEFAULT_START || endDateFilter !== DEFAULT_END;
-      document.getElementById('clearDateBtn').classList.toggle('hidden', !isChanged);
-
-      renderList();
-    }
-
-    /* ===== 날짜 초기화: 기본 1년 범위로 복원 ===== */
-    function clearDate() {
-      document.getElementById('startDateInput').value = DEFAULT_START;
-      document.getElementById('endDateInput').value   = DEFAULT_END;
-      startDateFilter = DEFAULT_START;
-      endDateFilter   = DEFAULT_END;
-      document.getElementById('clearDateBtn').classList.add('hidden');
+      categoryFilter  = document.getElementById('categorySelect').value;
       renderList();
     }
 
@@ -214,7 +204,10 @@
         const matchDate  = (!startDateFilter || recordDate >= startDateFilter)
                         && (!endDateFilter   || recordDate <= endDateFilter);
 
-        return matchSearch && matchDate;
+        const matchCategory = !categoryFilter || categoryFilter === '전체'
+                           || (r.category || '') === categoryFilter;
+
+        return matchSearch && matchDate && matchCategory;
       });
 
       document.getElementById('emptyMsg').classList.toggle('hidden', filtered.length > 0 || allItems.length === 0);

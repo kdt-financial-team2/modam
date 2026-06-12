@@ -40,6 +40,9 @@ dependencies {
 	testCompileOnly 'org.projectlombok:lombok'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	// .env 파일 로드 (환경변수 관리)
+	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
 
 // Spring Boot 3.2+에서 @RequestParam, @PathVariable 등의 파라미터 이름을

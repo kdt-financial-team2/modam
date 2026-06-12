@@ -3,6 +3,7 @@ package com.intelliJ_JO.modam.global.view;
 import com.intelliJ_JO.modam.config.security.CustomUserDetails;
 import com.intelliJ_JO.modam.domain.account.entity.Account;
 import com.intelliJ_JO.modam.domain.account.entity.AccountMember;
+import com.intelliJ_JO.modam.domain.account.entity.AccountStatus;
 import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
@@ -74,6 +75,25 @@ public class SpendingViewController {
         model.addAttribute("myName", member.getName());
         model.addAttribute("myProfileImg", member.getProfileImg());
 
+        // 공동 계좌 없거나 해지 시 안내 화면 렌더
+        Account groupAccount = getGroupAccount(member.getId());
+        boolean accountClosed = (groupAccount == null || groupAccount.getStatus() == AccountStatus.CLOSED);
+        model.addAttribute("accountClosed", accountClosed);
+
+        if (accountClosed) {
+            model.addAttribute("partnerConnected", false);
+            model.addAttribute("partnerName", "");
+            model.addAttribute("partnerProfileImg", null);
+            model.addAttribute("coupleAcctAlias", "");
+            model.addAttribute("records", List.of());
+            model.addAttribute("storyRecords", List.of());
+            model.addAttribute("totalAmount", 0L);
+            model.addAttribute("writtenCount", 0L);
+            model.addAttribute("favoriteCount", 0L);
+            model.addAttribute("totalCount", 0);
+            return "domain/spendrecord/consumption-history";
+        }
+
         // 파트너 연결 여부 확인 — 미연결 시 잠금 화면 렌더
         boolean partnerConnected = isPartnerConnected(member.getId());
         model.addAttribute("partnerConnected", partnerConnected);
@@ -127,8 +147,8 @@ public class SpendingViewController {
                 .stream()
                 .collect(Collectors.toMap(r -> r.getTransaction().getId(), r -> r, (a, b) -> a));
 
-        // 현재 회원의 즐겨찾기 SpendRecord id 집합
-        java.util.Set<Long> favIds = favoriteService.getFavoriteRecordIds(member.getId());
+        // 커플 계좌 기준 즐겨찾기 SpendRecord id 집합 (파트너 즐겨찾기도 포함)
+        java.util.Set<Long> favIds = favoriteService.getFavoriteRecordIdsByAccount(account.getId());
 
         List<ConsumptionHistoryItemDto> records = txList.stream()
                 .map(tx -> {
@@ -281,11 +301,12 @@ public class SpendingViewController {
                     model.addAttribute("record", record));
         });
 
-        // 보유 이모티콘 목록 (포인트 샵에서 구매한 것만)
+        // 보유 이모티콘 목록 (포인트 샵에서 구매한 emoticon 타입만, image null 제외)
         List<String> ownedEmojis = inventoryRepository
                 .findEmojiItemsByMemberId(userDetails.getMember().getId())
                 .stream()
                 .map(inv -> inv.getItem().getImage())
+                .filter(img -> img != null && !img.isEmpty())
                 .collect(Collectors.toList());
         model.addAttribute("ownedEmojis", ownedEmojis);
 
@@ -341,6 +362,7 @@ public class SpendingViewController {
                     .findEmojiItemsByMemberId(memberId)
                     .stream()
                     .map(inv -> inv.getItem().getImage())
+                    .filter(img -> img != null && !img.isEmpty())
                     .collect(Collectors.toList());
             model.addAttribute("ownedEmojis", ownedEmojis);
             model.addAttribute("errorMessage", e.getMessage());
@@ -367,7 +389,8 @@ public class SpendingViewController {
         SpendRecord record = spendRecordService.getSpendRecordEntityById(id);
         var tx = record.getTransaction();
 
-        boolean liked = favoriteService.getFavoriteRecordIds(userDetails.getMember().getId())
+        // 커플 계좌 기준 즐겨찾기 여부 확인 (파트너 즐겨찾기도 포함)
+        boolean liked = favoriteService.getFavoriteRecordIdsByAccount(record.getTransaction().getAccount().getId())
                 .contains(record.getId());
 
         ConsumptionDetailDto consumption = ConsumptionDetailDto.builder()

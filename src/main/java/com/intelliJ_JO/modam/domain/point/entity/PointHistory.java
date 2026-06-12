@@ -32,24 +32,10 @@ import java.time.LocalDateTime;
 // created_at 자동 생성
 // =========================================
 @EntityListeners(AuditingEntityListener.class)
-
-@SequenceGenerator(
-        name = "point_seq_generator",
-
-        // =========================================
-        // 🔥 point 테이블용 시퀀스
-        // =========================================
-        sequenceName = "point_seq",
-
-        allocationSize = 1
-)
 public class PointHistory {
 
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "point_seq_generator"
-    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

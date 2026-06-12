@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.domain.savings.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
 import com.intelliJ_JO.modam.domain.member.repository.MemberRepository;
@@ -40,6 +41,9 @@ public class SavingsService {
     public void createSavings(SavingsCreateRequestDto requestDto) {
         Account account = accountRepository.findById(requestDto.getAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 모임 통장을 찾을 수 없습니다."));
+        if (account.getStatus() == AccountStatus.CLOSED) {
+            throw new IllegalStateException("해지된 계좌에는 저축 목표를 생성할 수 없습니다.");
+        }
 
         Savings savings = Savings.builder()
                 .account(account)
@@ -56,11 +60,10 @@ public class SavingsService {
 
         savingsRepository.save(savings);
 
-        Member member = memberRepository.findById(requestDto.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
         String msg = String.format("'%s' 저축 목표가 생성되었습니다. 목표 금액: %,d원",
                 requestDto.getGoalName(), requestDto.getTargetAmount());
-        notificationService.send(member, NotificationType.SAVINGS_GOAL, msg, "/savings");
+        memberRepository.findByAccount(account)
+                .forEach(m -> notificationService.send(m, NotificationType.SAVINGS_GOAL, msg, "/savings"));
     }
 
     public List<SavingsResponseDto> getSavingsByAccountId(Long accountId) {

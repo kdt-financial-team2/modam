@@ -195,9 +195,8 @@
 
             <!-- 이미지 없을 때 -->
             <th:block th:unless="${consumption.imageUrl != null}">
-              <a th:href="@{/consumption-upload}" href="/consumption-upload"
-                 class="h-[600px] w-full flex flex-col items-center justify-center p-12 text-center hover:bg-[#FFF7F5] transition-colors cursor-pointer group block">
-                <div class="w-24 h-24 bg-gradient-to-br from-[#FCE8E3] to-[#F5E6E0] rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <div class="h-[600px] w-full flex flex-col items-center justify-center p-12 text-center">
+                <div class="w-24 h-24 bg-gradient-to-br from-[#FCE8E3] to-[#F5E6E0] rounded-full flex items-center justify-center mb-6">
                   <i data-lucide="calendar" class="w-12 h-12 text-[#D9B8AE]"></i>
                 </div>
                 <h3 class="text-xl text-[#6E5A55] font-semibold mb-3">소중한 순간</h3>
@@ -205,10 +204,7 @@
                 <p class="text-sm text-[#C4B5B0] mt-4">
                   사진을 추가하여<br />추억을 더욱 생생하게 남겨보세요
                 </p>
-                <div class="mt-6 px-6 py-3 bg-gradient-to-br from-[#D9B8AE] to-[#C4A79D] text-white rounded-full group-hover:shadow-lg transition-all">
-                  사진 추가하기
-                </div>
-              </a>
+              </div>
             </th:block>
           </div>
 

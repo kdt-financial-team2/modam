@@ -1,24 +1,29 @@
 server:
-  port: 8080
+  port: ${APP_PORT:8080}
 
 app:
-  base-url: http://localhost:8080
+  base-url: ${APP_BASE_URL:http://localhost:8080}
 
 spring:
   application:
     name: modam
 
   datasource:
-    url: jdbc:oracle:thin:@localhost:15210/XEPDB1
+    url: ${DB_URL}
     driver-class-name: oracle.jdbc.OracleDriver
-    username: insurance
-    password: 1234
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     show-sql: false
-    
+
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
 
   thymeleaf:
     prefix: classpath:/templates/
@@ -29,14 +34,14 @@ spring:
 
   security:
     user:
-      name: test
-      password: 1234
+      name: ${SECURITY_USER_NAME:test}
+      password: ${SECURITY_USER_PASSWORD:1234}
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: kbh02180@gmail.com   # Gmail 주소로 교체
-    password: pjgj apso hthq trvi              # Gmail 앱 비밀번호로 교체
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -49,11 +54,11 @@ logging:
   file:
     name: logs/modam.log
   level:
-    root: INFO
-    "[com.intelliJ_JO.modam]": DEBUG
-    "[org.springframework.security.web.authentication.rememberme]": TRACE
-    "[org.springframework.security.web.context]": DEBUG
-    "[org.springframework.security.web]": DEBUG
+    root: WARN
+    "[com.intelliJ_JO.modam]": INFO
+    "[org.springframework.security.web.authentication.rememberme]": WARN
+    "[org.springframework.security.web.context]": WARN
+    "[org.springframework.security.web]": WARN
 
 springdoc:
   api-docs:

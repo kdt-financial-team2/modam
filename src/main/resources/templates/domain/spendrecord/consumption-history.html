@@ -103,7 +103,25 @@
     </div><!-- /고정 상단 -->
 
     <!-- ===== 파트너 미연결 안내 화면 ===== -->
-    <div th:unless="${partnerConnected}" class="flex-1 flex flex-col items-center justify-center py-24 text-center px-8">
+    <!-- 공동 계좌 없음 / 해지 안내 -->
+    <div th:if="${accountClosed}" class="flex-1 flex flex-col items-center justify-center py-24 text-center px-8">
+      <div class="w-24 h-24 bg-[#FCE8E3] rounded-full flex items-center justify-center mx-auto mb-6">
+        <i data-lucide="wallet" class="w-12 h-12 text-[#D9B8AE]"></i>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-700 mb-3">공동 계좌가 필요해요</h3>
+      <p class="text-sm text-gray-400 mb-8 leading-relaxed">
+        소비 스토리는 공동 계좌가 있어야 이용할 수 있어요.<br>
+        새 공동 계좌를 만들고 우리만의 이야기를 시작해 보세요 🌸
+      </p>
+      <a href="/group-account/new"
+         class="inline-flex items-center gap-2 px-8 py-3.5 bg-[#F5A5A5] text-white rounded-full hover:bg-[#F28B8B] transition-colors font-medium shadow-md">
+        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+        공동 계좌 만들기
+      </a>
+    </div>
+
+    <!-- 파트너 미연결 안내 -->
+    <div th:if="${!accountClosed && !partnerConnected}" class="flex-1 flex flex-col items-center justify-center py-24 text-center px-8">
       <div class="w-24 h-24 bg-[#FCE8E3] rounded-full flex items-center justify-center mx-auto mb-6">
         <i data-lucide="lock" class="w-12 h-12 text-[#D9B8AE]"></i>
       </div>

@@ -1,6 +1,7 @@
 package com.intelliJ_JO.modam.domain.card.service;
 
 import com.intelliJ_JO.modam.domain.account.entity.Account;
+import com.intelliJ_JO.modam.domain.account.entity.AccountType;
 import com.intelliJ_JO.modam.domain.account.entity.InviteStatus;
 import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
@@ -38,35 +39,51 @@ public class CardService {
         Member member = memberRepository.findById(requestDto.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
-        // 2) 해당 계좌의 구성원인지 확인
+        // 2) 공통 계좌(GROUP)인지 확인 — 개인 계좌에는 카드를 발급할 수 없음
+        if (account.getAccountType() != AccountType.GROUP) {
+            throw new IllegalArgumentException("카드는 공통 계좌(모임 통장)에만 발급할 수 있습니다.");
+        }
+
+        // 3) 해당 계좌의 구성원인지 확인
         accountMemberRepository.findByAccountIdAndMemberId(requestDto.getAccountId(), requestDto.getMemberId())
                 .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
                 .orElseThrow(() -> new IllegalArgumentException("해당 계좌의 구성원만 카드를 발급받을 수 있습니다."));
 
-        // 3) 카드 번호 암호화
+        // 4) 카드 번호 암호화
         String encryptedCardNumber = aes256Util.encrypt(requestDto.getCardNumber());
 
-        // 🔥 [추가] 4자리 비밀번호 암호화 처리
+        // 5) 4자리 비밀번호 암호화 처리
         String encryptedPassword = requestDto.getPassword() != null ? aes256Util.encrypt(requestDto.getPassword()) : null;
 
-        // 4) 카드 중복 번호 검증 한 번 더 방어 (DB에는 암호화되어 저장되므로, 암호화된 값으로 비교해야 함)
+        // 6) 계좌의 기존 카드 확인 — LOST만 있으면 전부 삭제 후 재발급, 그 외(ACTIVE/STOPPED)이면 차단
+        List<Card> existingCards = cardRepository.findByAccountId(requestDto.getAccountId());
+        if (!existingCards.isEmpty()) {
+            boolean allLost = existingCards.stream().allMatch(c -> c.getStatus() == CardStatus.LOST);
+            if (allLost) {
+                cardRepository.deleteAll(existingCards);
+            } else {
+                throw new IllegalArgumentException("이미 이 계좌에 발급된 카드가 있습니다.");
+            }
+        }
+
+        // 7) 카드 번호 중복 방어
         if (cardRepository.findByCardNumber(encryptedCardNumber).isPresent()) {
             throw new IllegalArgumentException("이미 등록된 카드 번호입니다.");
         }
 
-        // 5) 카드 엔티티 생성
+        // 8) 카드 엔티티 생성
         Card card = Card.builder()
                 .account(account)
                 .member(member)
-                .cardNumber(encryptedCardNumber) // 🔥 DB에는 암호화된 번호가 들어갑니다!
+                .cardNumber(encryptedCardNumber) // DB에는 암호화된 번호가 들어갑니다
                 .expiryDate(requestDto.getExpiryDate())
-                .cardDesign(requestDto.getCardDesign()) // 🔥 [추가] 디자인 저장
-                .cardType(requestDto.getCardType())     // 🔥 [추가] 타입 저장
-                .password(encryptedPassword)            // 🔥 [추가] 암호화된 비밀번호 저장
-                // status는 @Builder.Default 처리가 되어 있으므로 자동으로 ACTIVE가 들어갑니다.
+                .cardDesign(requestDto.getCardDesign())
+                .cardType(requestDto.getCardType())
+                .password(encryptedPassword) // 암호화된 비밀번호
+                // status는 @Builder.Default 처리가 되어 있으므로 자동으로 ACTIVE가 들어갑니다
                 .build();
 
-        // 6) DB에 저장
+        // 9) DB에 저장
         cardRepository.save(card);
     }
 
@@ -89,8 +106,13 @@ public class CardService {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 카드를 찾을 수 없습니다."));
 
-        if (!card.getMember().getId().equals(memberId)) {
-            throw new IllegalArgumentException("본인 카드만 상태를 변경할 수 있습니다.");
+        // 같은 계좌의 멤버라면 파트너 카드도 상태 변경 가능
+        boolean isMemberOfAccount = accountMemberRepository
+                .findByAccountIdAndMemberId(card.getAccount().getId(), memberId)
+                .filter(am -> am.getInviteStatus() == InviteStatus.ACCEPT)
+                .isPresent();
+        if (!isMemberOfAccount) {
+            throw new IllegalArgumentException("해당 계좌의 구성원만 카드 상태를 변경할 수 있습니다.");
         }
 
         card.updateStatus(newStatus);

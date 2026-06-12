@@ -9,7 +9,7 @@
 </head>
 <body class="min-h-screen bg-[#FAFAFA] flex flex-col">
 
-<th:block th:replace="~{common/layout/header :: nav}"></th:block>
+<th:block th:replace="~{common/layout/header-dashboard :: nav}"></th:block>
 
 <div class="flex flex-1">
     <th:block th:replace="~{common/layout/mypage-sidebar :: sidebar('notifications')}"></th:block>
@@ -203,6 +203,6 @@
       checkMasterStatus(); // 페이지 첫 로드 시 마스터 상태 세팅
     }
 </script>
-<th:block th:replace="~{common/layout/header :: scripts}"></th:block>
+<th:block th:replace="~{common/layout/header-dashboard :: scripts}"></th:block>
 </body>
 </html>

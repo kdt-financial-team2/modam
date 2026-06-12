@@ -70,17 +70,24 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                                      @Param("start") LocalDateTime start,
                                      @Param("end") LocalDateTime end);
 
-    // 소비 분석: 월별 합계 (라인 차트용)
-    @Query(value = "SELECT YEAR(created_at), MONTH(created_at), SUM(amt) " +
+    // 소비 분석: 월별 합계 (라인 차트용) — Oracle 호환 EXTRACT 사용
+    @Query(value = "SELECT EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at), SUM(amt) " +
                    "FROM transaction WHERE acct_id = :accountId " +
                    "AND tx_type IN ('WITHDRAW', 'PAYMENT') " +
                    "AND created_at >= :start AND created_at < :end " +
-                   "GROUP BY YEAR(created_at), MONTH(created_at) " +
-                   "ORDER BY YEAR(created_at), MONTH(created_at)",
+                   "GROUP BY EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at) " +
+                   "ORDER BY EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)",
            nativeQuery = true)
     List<Object[]> sumSpendGroupByMonth(@Param("accountId") Long accountId,
                                         @Param("start") LocalDateTime start,
                                         @Param("end") LocalDateTime end);
 
     boolean existsByAccountId(Long accountId);
+
+    // 저축 환급 분배용 — 계좌 내 특정 멤버의 '저축 납입' 트랜잭션 합계
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
+           "WHERE t.account.id = :accountId AND t.member.id = :memberId " +
+           "AND t.category = '저축 납입'")
+    Long sumSavingsDepositByMember(@Param("accountId") Long accountId,
+                                   @Param("memberId") Long memberId);
 }

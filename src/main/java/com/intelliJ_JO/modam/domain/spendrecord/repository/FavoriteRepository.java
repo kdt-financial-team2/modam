@@ -22,4 +22,12 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
 
     // 회원별 전체 즐겨찾기 (화면 렌더용)
     List<Favorite> findByMemberIdOrderByCreatedAtDesc(Long memberId);
+
+    // 커플 계좌 전원이 즐겨찾기한 SpendRecord id 목록 (파트너 즐겨찾기도 포함)
+    @Query("SELECT DISTINCT f.spendRecord.id FROM Favorite f " +
+           "WHERE f.member.id IN (" +
+           "  SELECT am.member.id FROM AccountMember am " +
+           "  WHERE am.account.id = :accountId AND am.inviteStatus = com.intelliJ_JO.modam.domain.account.entity.InviteStatus.ACCEPT" +
+           ")")
+    Set<Long> findRecordIdsByAccountId(@Param("accountId") Long accountId);
 }

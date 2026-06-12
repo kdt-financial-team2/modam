@@ -14,7 +14,13 @@ import com.intelliJ_JO.modam.domain.account.repository.AccountMemberRepository;
 import com.intelliJ_JO.modam.domain.account.repository.AccountRepository;
 import com.intelliJ_JO.modam.domain.couple.entity.Couple;
 import com.intelliJ_JO.modam.domain.couple.repository.CoupleRepository;
+import com.intelliJ_JO.modam.domain.notification.repository.NotificationRepository;
 import com.intelliJ_JO.modam.domain.member.entity.Member;
+import com.intelliJ_JO.modam.domain.savings.entity.Savings;
+import com.intelliJ_JO.modam.domain.savings.repository.SavingsRepository;
+import com.intelliJ_JO.modam.domain.transaction.entity.Transaction;
+import com.intelliJ_JO.modam.domain.transaction.entity.TransactionType;
+import com.intelliJ_JO.modam.domain.transaction.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +40,9 @@ public class AccountService {
     private final AccountMemberRepository accountMemberRepository;
     private final CoupleRepository coupleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final SavingsRepository savingsRepository;
+    private final TransactionRepository transactionRepository;
+    private final NotificationRepository notificationRepository;
 
     // 계좌 개설 — 세션의 인증된 사용자를 개설자로 등록
     @Transactional
@@ -269,9 +278,78 @@ public class AccountService {
             personalAccount.updateBalance(refundAmount);
         }
 
-        // 3. 공동 원장 잔액 청산 및 계좌 상태 폐쇄
+        // 3. 저축 환급 — '저축 납입' 트랜잭션을 멤버별로 합산한 비율로 전체 저축 잔액 분배
+        List<Savings> savingsList = savingsRepository.findByAccountId(groupAccount.getId());
+        long totalSavingsToRefund = savingsList.stream()
+                .mapToLong(Savings::getCurrentAmount).sum();
+
+        if (totalSavingsToRefund > 0) {
+            // 각 멤버가 실제로 납입한 저축 트랜잭션 합계
+            long totalSavingsTxDeposit = activeMembers.stream()
+                    .mapToLong(am -> transactionRepository
+                            .sumSavingsDepositByMember(groupAccount.getId(), am.getMember().getId()))
+                    .sum();
+            long totalAccountDeposit = activeMembers.stream()
+                    .mapToLong(AccountMember::getTotalDeposit).sum();
+
+            long remainingSavings = totalSavingsToRefund;
+
+            for (int i = 0; i < activeMembers.size(); i++) {
+                AccountMember am = activeMembers.get(i);
+                Account personalAccount = accountMemberRepository.findByMemberId(am.getMember().getId()).stream()
+                        .filter(pam -> pam.getAccount().getAccountType() == AccountType.PERSONAL)
+                        .map(AccountMember::getAccount)
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException(am.getMember().getName() + "님의 환급받을 개인 주계좌가 존재하지 않습니다."));
+
+                long savingsRefund;
+                if (i == activeMembers.size() - 1) {
+                    // 마지막 멤버는 자투리 금액까지 수령해 총합이 정확히 맞도록
+                    savingsRefund = remainingSavings;
+                } else if (totalSavingsTxDeposit > 0) {
+                    // 실제 납입 트랜잭션 비율로 분배
+                    long memberTx = transactionRepository
+                            .sumSavingsDepositByMember(groupAccount.getId(), am.getMember().getId());
+                    savingsRefund = (long) Math.floor(totalSavingsToRefund * (double) memberTx / totalSavingsTxDeposit);
+                    remainingSavings -= savingsRefund;
+                } else if (totalAccountDeposit > 0) {
+                    // 저축 납입 기록이 없으면 계좌 전체 입금 비율로 fallback
+                    savingsRefund = (long) Math.floor(totalSavingsToRefund * (double) am.getTotalDeposit() / totalAccountDeposit);
+                    remainingSavings -= savingsRefund;
+                } else {
+                    savingsRefund = totalSavingsToRefund / activeMembers.size();
+                    remainingSavings -= savingsRefund;
+                }
+
+                personalAccount.updateBalance(savingsRefund);
+                transactionRepository.save(Transaction.builder()
+                        .account(personalAccount)
+                        .member(am.getMember())
+                        .txType(TransactionType.DEPOSIT)
+                        .amount(savingsRefund)
+                        .afterBalance(personalAccount.getAvailableBalance())
+                        .merchantName("모임통장 저축 환급")
+                        .category("환급")
+                        .build());
+            }
+        }
+
+        // 저축 목표 전체 비활성화
+        for (Savings savings : savingsList) {
+            savings.deactivate();
+        }
+
+        // 4. 공동 원장 잔액 청산 및 계좌 상태 폐쇄
         groupAccount.updateBalance(-totalBalance);
         groupAccount.close();
+
+        // 5. 커플 정보(시작일, 계좌 애칭) 초기화
+        coupleRepository.findByAccountId(groupAccount.getId()).ifPresent(Couple::clearCoupleInfo);
+
+        // 6. 멤버별 알림 전체 삭제
+        for (AccountMember am : activeMembers) {
+            notificationRepository.deleteByMemberId(am.getMember().getId());
+        }
     }
 
     // 🔥 [추가됨] 계좌 비밀번호 변경 비즈니스 로직

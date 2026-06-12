@@ -53,6 +53,11 @@ public class Couple {
         this.dDay = dDay;
     }
 
+    public void clearCoupleInfo() {
+        this.dDay = null;
+        this.accountAlias = null;
+    }
+
     // 🔥 [버그 픽스용] 잘못 생성된 초대 코드를 6자리로 덮어씌우기 위한 메서드
     public void updateInviteCode(String newInviteCode) {
         this.inviteCode = newInviteCode;

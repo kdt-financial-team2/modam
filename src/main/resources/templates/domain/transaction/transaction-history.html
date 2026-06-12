@@ -12,6 +12,13 @@
   <!-- ===== 헤더 ===== -->
   <th:block th:replace="~{common/layout/header-dashboard :: nav}"></th:block>
 
+  <!-- ===== 날짜 범위 초과 경고 토스트 ===== -->
+  <div id="dateWarningToast"
+       class="hidden fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white border border-red-200 shadow-lg rounded-2xl px-5 py-3 text-sm text-red-600 font-medium transition-all">
+    <i data-lucide="alert-circle" class="w-5 h-5 text-red-400 flex-shrink-0"></i>
+    <span>조회 기간은 최대 1년 이내로 설정해 주세요.</span>
+  </div>
+
   <!-- ===== 메인 콘텐츠 ===== -->
   <main class="flex-1 min-h-0 flex flex-col overflow-hidden">
     <div class="max-w-5xl mx-auto px-8 py-6 flex flex-col flex-1 min-h-0 overflow-hidden w-full">
@@ -45,11 +52,16 @@
         </div>
         <!-- 기간 + 카테고리 -->
         <div class="flex items-center gap-2">
-          <input type="date" id="startDateInput" onchange="applyFilters()" onclick="this.showPicker()" onkeydown="return false"
+          <input type="date" id="startDateInput" onclick="this.showPicker()" onkeydown="return false"
                  class="bg-white border-2 border-gray-200 rounded-xl px-3 py-1.5 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors text-sm select-none" />
           <span class="text-gray-400 font-semibold">~</span>
-          <input type="date" id="endDateInput" onchange="applyFilters()" onclick="this.showPicker()" onkeydown="return false"
+          <input type="date" id="endDateInput" onclick="this.showPicker()" onkeydown="return false"
                  class="bg-white border-2 border-gray-200 rounded-xl px-3 py-1.5 text-gray-900 font-medium cursor-pointer hover:border-[#F5A5A5] transition-colors text-sm select-none" />
+          <button onclick="searchWithValidation()"
+                  class="flex items-center gap-1.5 px-4 py-1.5 bg-[#F5A5A5] text-white rounded-xl text-sm font-semibold hover:bg-[#F28B8B] active:scale-95 transition-all">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            조회
+          </button>
           <div class="relative ml-auto">
             <select id="categorySelect" onchange="applyFilters()"
                     class="appearance-none bg-white border-2 border-gray-200 rounded-xl px-4 py-1.5 pr-9 cursor-pointer hover:border-[#F5A5A5] transition-colors font-medium text-sm text-gray-800">
@@ -147,7 +159,8 @@
                 <span th:classappend="${tx.type == 'deposit'} ? 'text-blue-600' : 'text-gray-900'"
                       class="text-sm font-bold">
                   <th:block th:if="${tx.type == 'deposit'}">+</th:block>
-                  <th:block th:text="${#numbers.formatInteger(tx.amount, 0, 'COMMA')}">-12,500</th:block>원
+                  <th:block th:unless="${tx.type == 'deposit'}">-</th:block>
+                  <th:block th:text="${#numbers.formatInteger(tx.amount, 0, 'COMMA')}">12,500</th:block>원
                 </span>
               </div>
 
@@ -167,6 +180,12 @@
           </div>
         </div>
 
+        <!-- 로딩 인디케이터 -->
+        <div id="loadingIndicator" class="hidden flex-1 flex flex-col items-center justify-center gap-3 py-16">
+          <div class="w-8 h-8 border-4 border-[#FCE8E3] border-t-[#F5A5A5] rounded-full animate-spin"></div>
+          <p class="text-sm text-gray-400">조회 중입니다...</p>
+        </div>
+
         <!-- 클라이언트사이드 폴백 (서버 데이터 없을 때 JS로 렌더) -->
         <div id="jsTransactionList" class="hidden flex-1 overflow-y-auto min-h-0"></div>
 
@@ -183,23 +202,7 @@
     /* ===== 서버 데이터 주입 ===== */
     const serverTransactions = /*[[${transactions}]]*/ null;
 
-    /* ===== 클라이언트 폴백 데이터 ===== */
-    const fallbackTransactions = [
-      { id:1,  type:'withdrawal', merchant:'스타벅스 강남점',      amount:-12500,   balance:1487500,  date:'2026.05.07', time:'14:30', category:'식비',   iconName:'coffee',       cardName:'모담 체크카드' },
-      { id:2,  type:'withdrawal', merchant:'홈플러스 광명점',       amount:-85000,   balance:1402500,  date:'2026.05.06', time:'18:45', category:'생활비', iconName:'shopping-bag', cardName:'모담 체크카드' },
-      { id:3,  type:'deposit',    merchant:'김민수',                amount:50000,    balance:1487500,  date:'2026.05.06', time:'10:20', category:'입금',   iconName:'wallet',       cardName:'-' },
-      { id:4,  type:'withdrawal', merchant:'CGV 여의도',            amount:-32000,   balance:1437500,  date:'2026.05.05', time:'19:20', category:'데이트', iconName:'heart',        cardName:'모담 체크카드' },
-      { id:5,  type:'withdrawal', merchant:'GS주유소',              amount:-65000,   balance:1405500,  date:'2026.05.04', time:'09:15', category:'교통비', iconName:'car',          cardName:'모담 체크카드' },
-      { id:6,  type:'withdrawal', merchant:'올리브영 압구정',        amount:-45000,   balance:1470500,  date:'2026.05.03', time:'16:00', category:'쇼핑',   iconName:'shopping-bag', cardName:'모담 체크카드' },
-      { id:7,  type:'withdrawal', merchant:'배달의민족',             amount:-28000,   balance:1515500,  date:'2026.05.02', time:'20:30', category:'식비',   iconName:'utensils',     cardName:'모담 체크카드' },
-      { id:8,  type:'deposit',    merchant:'급여',                  amount:3000000,  balance:1543500,  date:'2026.05.01', time:'09:00', category:'입금',   iconName:'wallet',       cardName:'-' },
-      { id:9,  type:'withdrawal', merchant:'쿠팡',                  amount:-120000,  balance:1456500,  date:'2026.04.30', time:'15:40', category:'쇼핑',   iconName:'shopping-bag', cardName:'모담 체크카드' },
-      { id:10, type:'withdrawal', merchant:'넷플릭스',               amount:-17000,   balance:1336500,  date:'2026.04.30', time:'00:05', category:'생활비', iconName:'home',         cardName:'모담 체크카드' },
-      { id:11, type:'withdrawal', merchant:'스타벅스 역삼점',        amount:-8500,    balance:1319500,  date:'2026.04.29', time:'11:15', category:'식비',   iconName:'coffee',       cardName:'모담 체크카드' },
-      { id:12, type:'withdrawal', merchant:'롯데시네마 월드타워',     amount:-36000,   balance:1311000,  date:'2026.04.28', time:'18:50', category:'데이트', iconName:'heart',        cardName:'모담 체크카드' },
-    ];
-
-    const allTransactions = serverTransactions || fallbackTransactions;
+    const allTransactions = serverTransactions || [];
     const BATCH_SIZE = 20;       // 한 번에 불러오는 건수
     let filteredData = [...allTransactions];
     let displayedCount = 0;      // 현재 화면에 표시된 건수
@@ -232,6 +235,39 @@
       applyFilters();
     }
 
+    /* ===== 날짜 범위 초과 시 토스트 경고 표시 (3초 후 자동 닫힘) ===== */
+    let toastTimer = null;
+    function showDateWarning() {
+      const toast = document.getElementById('dateWarningToast');
+      toast.classList.remove('hidden');
+      lucide.createIcons();
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    /* ===== 조회 버튼 전용: 날짜 범위 검사 → 로딩 표시 → 필터 실행 ===== */
+    function searchWithValidation() {
+      const startDate = document.getElementById('startDateInput').value;
+      const endDate   = document.getElementById('endDateInput').value;
+      /* 시작일~종료일 범위가 1년 초과인지 검사 */
+      const start = new Date(startDate);
+      const end   = new Date(endDate);
+      const oneYearLater = new Date(start);
+      oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+
+      if (startDate && endDate && end > oneYearLater) {
+        showDateWarning();
+        return;
+      }
+
+      /* 로딩 인디케이터 표시 */
+      document.getElementById('jsTransactionList').classList.add('hidden');
+      document.getElementById('transactionList').classList.add('hidden');
+      document.getElementById('loadingIndicator').classList.remove('hidden');
+
+      setTimeout(applyFilters, 500);
+    }
+
     /* ===== 필터 적용 ===== */
     function applyFilters() {
       const query     = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -240,7 +276,7 @@
       const category  = document.getElementById('categorySelect').value;
 
       filteredData = allTransactions.filter(tx => {
-        const matchSearch   = !query    || tx.merchant.toLowerCase().includes(query);
+        const matchSearch   = !query    || (tx.merchant ?? '').toLowerCase().includes(query);
         const matchCategory = category === '전체' || tx.category === category;
         const txDateNorm    = tx.date.replace(/\./g, '-'); // '2026.05.07' → '2026-05-07'
         const matchDate     = (!startDate || txDateNorm >= startDate) &&
@@ -273,7 +309,7 @@
         </div>
         <div class="col-span-2 text-right">
           <span class="text-sm font-bold ${tx.type === 'deposit' ? 'text-blue-600' : 'text-gray-900'}">
-            ${tx.amount > 0 ? '+' : ''}${tx.amount.toLocaleString()}원
+            ${tx.type === 'deposit' ? '+' : '-'}${tx.amount.toLocaleString()}원
           </span>
         </div>
         <div class="col-span-1 text-right text-xs text-gray-500">${tx.balance.toLocaleString()}</div>
@@ -285,6 +321,9 @@
       displayedCount = 0;
       lastLoadedDate = null;
       isLoading = false;
+
+      /* 로딩 인디케이터 숨김 */
+      document.getElementById('loadingIndicator').classList.add('hidden');
 
       /* 건수 업데이트 */
       document.getElementById('countNum').textContent = filteredData.length.toLocaleString();
@@ -371,7 +410,14 @@
       const today = new Date();
       const oneYearAgo = new Date(today);
       oneYearAgo.setFullYear(today.getFullYear() - 1);
-      const fmt = d => d.toISOString().slice(0, 10); // 'yyyy-MM-dd'
+      // toISOString()은 UTC 기준이라 KST(+9)에서 하루 밀림 → 로컬 날짜로 포맷
+      const fmt = d => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      };
+
       document.getElementById('startDateInput').value = fmt(oneYearAgo);
       document.getElementById('endDateInput').value   = fmt(today);
 

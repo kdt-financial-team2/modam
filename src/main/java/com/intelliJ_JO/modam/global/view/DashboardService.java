@@ -75,8 +75,16 @@ public class DashboardService {
 
         if (myMembership == null) {
             populateEmpty(member, model);
+            model.addAttribute("accountClosed", false);
             return;
         }
+        if ("CLOSED".equals(myMembership.getAccount().getStatus().name())) {
+            populateEmpty(member, model);
+            model.addAttribute("accountClosed", true);
+            return;
+        }
+
+        model.addAttribute("accountClosed", false);
 
         Long accountId = myMembership.getAccount().getId();
         long accountBalance = myMembership.getAccount().getBalance();

@@ -19,43 +19,106 @@
       <p class="text-gray-600 mt-2">빠르고 안전하게 송금하세요</p>
     </div>
 
-    <form th:action="@{/transfer}" method="post" id="transferForm" onsubmit="handleTransfer(event)">
+    <form th:action="@{/transfer}" method="post" id="transferForm">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <input type="hidden" id="amountHidden" name="amount"/>
+      <input type="hidden" id="transferType" name="transferType" value="external"/>
+      <input type="hidden" id="savingsIdHidden" name="savingsId"/>
+      <input type="hidden" id="goalNameHidden" name="goalName"/>
 
       <div class="bg-white rounded-3xl shadow-sm p-10">
+
+        <!-- 이체 유형 탭 -->
+        <div class="flex gap-2 mb-8 bg-gray-100 p-1 rounded-2xl">
+          <button type="button" id="tabExternal" onclick="switchTab('external')"
+                  class="flex-1 py-3 rounded-xl text-sm font-medium transition-all bg-white text-gray-800 shadow-sm">
+            외부 계좌 이체
+          </button>
+          <button type="button" id="tabSavings" onclick="switchTab('savings')"
+                  class="flex-1 py-3 rounded-xl text-sm font-medium transition-all text-gray-500">
+            목표 저축 입금
+          </button>
+        </div>
+
         <div class="space-y-6">
 
-          <div>
-            <label class="block text-gray-800 mb-2 text-lg">은행</label>
-            <select name="bankName" id="bankSelect" onchange="checkForm()"
-                    class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800">
-              <option value="">은행을 선택하세요</option>
-              <option value="국민은행">국민은행</option>
-              <option value="신한은행">신한은행</option>
-              <option value="우리은행">우리은행</option>
-              <option value="하나은행">하나은행</option>
-              <option value="농협은행">농협은행</option>
-              <option value="카카오뱅크">카카오뱅크</option>
-              <option value="토스뱅크">토스뱅크</option>
-            </select>
+          <!-- ===== 외부 계좌 이체 섹션 ===== -->
+          <div id="externalSection">
+            <div class="space-y-6">
+              <div>
+                <label class="block text-gray-800 mb-2 text-lg">은행</label>
+                <select name="bankName" id="bankSelect" onchange="checkForm()"
+                        class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800">
+                  <option value="">은행을 선택하세요</option>
+                  <option value="국민은행">국민은행</option>
+                  <option value="신한은행">신한은행</option>
+                  <option value="우리은행">우리은행</option>
+                  <option value="하나은행">하나은행</option>
+                  <option value="농협은행">농협은행</option>
+                  <option value="카카오뱅크">카카오뱅크</option>
+                  <option value="토스뱅크">토스뱅크</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-gray-800 mb-2 text-lg">계좌번호</label>
+                <input type="text" id="accountNumber" name="accountNumber"
+                       oninput="checkForm()"
+                       class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800"
+                       placeholder="계좌번호를 입력하세요 (- 제외)" />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-gray-800 mb-2 text-lg">계좌번호</label>
-            <input type="text" id="accountNumber" name="accountNumber"
-                   oninput="checkForm()"
-                   class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800"
-                   placeholder="계좌번호를 입력하세요 (- 제외)" />
+          <!-- ===== 목표 저축 입금 섹션 ===== -->
+          <div id="savingsSection" class="hidden">
+            <!-- 저축 목표 없을 때 -->
+            <div th:if="${#lists.isEmpty(savingsList)}"
+                 class="text-center py-8 bg-[#FAFAFA] rounded-2xl border-2 border-dashed border-gray-200">
+              <i data-lucide="piggy-bank" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+              <p class="text-gray-500 mb-3">등록된 저축 목표가 없습니다</p>
+              <a th:href="@{/savings-goal-setup}"
+                 class="text-sm text-[#F5A5A5] hover:underline">저축 목표 만들기</a>
+            </div>
+
+            <!-- 저축 목표 선택 -->
+            <div th:unless="${#lists.isEmpty(savingsList)}">
+              <label class="block text-gray-800 mb-2 text-lg">저축 목표 선택</label>
+              <select id="savingsSelect" onchange="onSavingsSelect(this)"
+                      class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800">
+                <option value="">저축 목표를 선택하세요</option>
+                <option th:each="s : ${savingsList}"
+                        th:value="${s.savingsId}"
+                        th:text="${s.goalName}"
+                        th:attr="data-current=${s.currentAmount}, data-target=${s.targetAmount}, data-progress=${s.progressPercent}">
+                </option>
+              </select>
+
+              <!-- 선택된 목표 정보 카드 -->
+              <div id="selectedGoalInfo" class="hidden mt-4 bg-[#FCE8E3] rounded-2xl p-5">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-gray-800 font-medium" id="selectedGoalName"></span>
+                  <span class="text-sm text-[#F5A5A5] font-semibold" id="selectedGoalProgress"></span>
+                </div>
+                <div class="bg-white bg-opacity-60 rounded-full h-2 mb-2">
+                  <div class="bg-[#F5A5A5] h-2 rounded-full transition-all duration-300" id="selectedGoalBar" style="width:0%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-600">
+                  <span id="selectedGoalCurrent"></span>
+                  <span id="selectedGoalTarget"></span>
+                </div>
+              </div>
+            </div>
           </div>
 
+          <!-- 금액 (공통) -->
           <div>
             <label class="block text-gray-800 mb-2 text-lg">금액</label>
             <div class="relative">
               <input type="text" id="amountDisplay"
                      oninput="handleAmountInput(this)"
                      class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#F5A5A5] focus:outline-none transition-colors text-gray-800"
-                     placeholder="송금할 금액을 입력하세요" />
+                     placeholder="금액을 입력하세요" />
               <span class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600">원</span>
             </div>
             <p id="amountFormatted" class="text-sm text-gray-500 mt-2 hidden"></p>
@@ -80,6 +143,7 @@
             </button>
           </div>
 
+          <!-- 계좌 비밀번호 (공통) -->
           <div>
             <label class="block text-gray-800 mb-2 text-lg">계좌 비밀번호</label>
             <input type="password" name="accountPassword" id="accountPassword" maxlength="4"
@@ -110,10 +174,58 @@
 <script>
   lucide.createIcons();
 
-  /* ---- 드롭다운 / 모달 ---- */
-
-  // ===== [추가] 폼 유효성 검사 및 금액 변환 로직 =====
   let currentAmount = 0;
+
+  function switchTab(type) {
+    const isExternal = type === 'external';
+    document.getElementById('transferType').value = type;
+    document.getElementById('externalSection').classList.toggle('hidden', !isExternal);
+    document.getElementById('savingsSection').classList.toggle('hidden', isExternal);
+
+    const tabExternal = document.getElementById('tabExternal');
+    const tabSavings  = document.getElementById('tabSavings');
+
+    if (isExternal) {
+      tabExternal.classList.add('bg-white', 'text-gray-800', 'shadow-sm');
+      tabExternal.classList.remove('text-gray-500');
+      tabSavings.classList.remove('bg-white', 'text-gray-800', 'shadow-sm');
+      tabSavings.classList.add('text-gray-500');
+    } else {
+      tabSavings.classList.add('bg-white', 'text-gray-800', 'shadow-sm');
+      tabSavings.classList.remove('text-gray-500');
+      tabExternal.classList.remove('bg-white', 'text-gray-800', 'shadow-sm');
+      tabExternal.classList.add('text-gray-500');
+    }
+
+    document.getElementById('transferBtn').textContent = isExternal ? '송금하기' : '저축하기';
+    checkForm();
+  }
+
+  function onSavingsSelect(select) {
+    const option = select.options[select.selectedIndex];
+    document.getElementById('savingsIdHidden').value = option.value;
+    document.getElementById('goalNameHidden').value = option.text;
+
+    const infoCard = document.getElementById('selectedGoalInfo');
+    if (!option.value) {
+      infoCard.classList.add('hidden');
+      checkForm();
+      return;
+    }
+
+    const current   = parseInt(option.dataset.current, 10);
+    const target    = parseInt(option.dataset.target, 10);
+    const progress  = parseInt(option.dataset.progress, 10);
+
+    document.getElementById('selectedGoalName').textContent     = option.text;
+    document.getElementById('selectedGoalProgress').textContent = progress + '%';
+    document.getElementById('selectedGoalBar').style.width      = progress + '%';
+    document.getElementById('selectedGoalCurrent').textContent  = '현재 ' + current.toLocaleString() + '원';
+    document.getElementById('selectedGoalTarget').textContent   = '목표 ' + target.toLocaleString() + '원';
+
+    infoCard.classList.remove('hidden');
+    checkForm();
+  }
 
   function handleAmountInput(input) {
     const rawValue = input.value.replace(/[^0-9]/g, '');
@@ -145,13 +257,21 @@
   }
 
   function checkForm() {
-    const bank = document.getElementById('bankSelect').value;
-    const account = document.getElementById('accountNumber').value;
+    const type     = document.getElementById('transferType').value;
     const password = document.getElementById('accountPassword').value;
-    const btn = document.getElementById('transferBtn');
+    const btn      = document.getElementById('transferBtn');
 
-    // 은행, 계좌(최소 6자리 이상), 금액, 비밀번호(4자리) 확인
-    if (bank && account.length > 5 && currentAmount > 0 && password.length === 4) {
+    let valid = false;
+    if (type === 'savings') {
+      const savingsId = document.getElementById('savingsIdHidden').value;
+      valid = !!savingsId && currentAmount > 0 && password.length === 4;
+    } else {
+      const bank    = document.getElementById('bankSelect').value;
+      const account = document.getElementById('accountNumber').value;
+      valid = !!bank && account.length > 5 && currentAmount > 0 && password.length === 4;
+    }
+
+    if (valid) {
       btn.disabled = false;
       btn.classList.remove('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
       btn.classList.add('bg-[#F5A5A5]', 'text-white', 'hover:bg-[#F28B8B]', 'shadow-md');
@@ -160,11 +280,6 @@
       btn.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
       btn.classList.remove('bg-[#F5A5A5]', 'text-white', 'hover:bg-[#F28B8B]', 'shadow-md');
     }
-  }
-
-  function handleTransfer(event) {
-    // 폼 제출 전 최종 확인이 필요하다면 여기에 로직 작성 가능
-    // 기본 제출을 막지 않음으로써 정상적으로 POST 백엔드 호출 진행됨
   }
 </script>
 <th:block th:replace="~{common/layout/header :: scripts}"></th:block>
