@@ -17,7 +17,7 @@
 | **김병현** | Backend<br>*(PM · TechReader)* | • 팀 운영 & 프로젝트 관리<br>• PR 관리: 전체 140개 PR 중 48개 직접 리뷰 및 병합 (팀 코드 게이트 역할)<br>• API 스펙 관리: Swagger 문서 설계 및 유지 (팀 병렬 개발 가능)<br>• 개발 환경 표준화: .env 기반 환경변수 체계 도입 (팀원 로컬 환경 통일)<br>• 품질 관리: 12개 도메인 통합 테스트 41개 설계, 243개 전원 통과<br>• 브랜치 전략: dev / feat / refactor 전략 수립 및 운영 | [@bhkim-fullstack](https://github.com/bhkim-fullstack) |
 | **이원석** | Backend<br>*(DB Architect · Infra Lead)* | • 데이터베이스 스키마 설계 및 형상 관리 (16개 핵심 도메인)<br>• AWS 클라우드 인프라 구축 및 운영 (RDS, EC2)<br>• 데이터베이스 명세서 및 ERD 다이어그램 산출물 설계 및 유지보수 | [@wonseok5577](https://github.com/wonseok5577) |
 | **이지원** | Frontend<br>*(Frontend Lead)* | • 프론트엔드 아키텍처 총괄 및 UI/UX 리드 | [@jiwon0822](https://github.com/jiwon0822) |
-| **박지연** | Backend | • 소비 제한(Spending Limit) 기능 개발<br>• 포인트(Point) 기능 개발<br>• JPA 일부 엔티티 작성 및 수정<br>• 계좌 개설 과정 내 개인정보 수정 기능 개선<br>• DB 설계서 및 요구사항 정의서 수정<br>• Item / Inventory 도메인 API 명세서 작성<br>• Figma UI 디자인 및 일부 화면 통합 작업<br>• QA 검증 및 오류 수정<br>• 프로젝트 PPT 제작 | [@jyeon64](https://github.com/jyeon64) |
+| **박지연** | Backend<br>*(Presentation Designer)* | • 소비 제한(Spending Limit) 기능 개발<br>• 포인트(Point) 기능 개발<br>• JPA 일부 엔티티 작성 및 수정<br>• 계좌 개설 과정 내 개인정보 수정 기능 개선<br>• DB 설계서 및 요구사항 정의서 수정<br>• Item / Inventory 도메인 API 명세서 작성<br>• Figma UI 디자인 및 일부 화면 통합 작업<br>• QA 검증 및 오류 수정<br>• 프로젝트 PPT 제작 | [@jyeon64](https://github.com/jyeon64) |
 | **임수아** | Frontend<br>*(UI/UX Designer)* | • 와이어프레임 설계 (로그인·회원가입·소비분석·소비제한·목표저축 등 전 페이지)<br>• Figma UI 디자인 및 통합 작업 (여러 화면 설계 및 반복 수정)<br>• 플로우차트 작성<br>• 소비내역·저축목표 페이지 백엔드 연결<br>• 회의록 전체 통합 정리<br>• QA 검증 및 오류 수정 (마이페이지 알림 설정 부분)<br>• Oracle DB 더미데이터 연결<br>• 포트폴리오 작성 | [@lSOOAH](https://github.com/lSOOAH) |
 | **권순우** | Frontend | • 웹 페이지 UI 설계 (포인트 상점) | [@Soon5](https://github.com/soon5) |
 
